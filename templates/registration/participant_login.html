@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Participant Login</title>
+    <style>
+        :root {
+            --bg: #f5f7fb;
+            --card: #ffffff;
+            --text: #101828;
+            --muted: #475467;
+            --accent: #027a48;
+            --border: #d0d5dd;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(145deg, #eefcf3, #f9fbff 35%, #f0fff7 100%);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .card {
+            width: min(420px, 100%);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 14px 40px rgba(16, 24, 40, 0.08);
+            padding: 26px;
+        }
+
+        h1 {
+            margin: 0 0 6px;
+            font-size: 1.5rem;
+        }
+
+        p {
+            margin: 0 0 18px;
+            color: var(--muted);
+        }
+
+        label {
+            display: block;
+            margin: 12px 0 6px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+        }
+
+        button {
+            margin-top: 16px;
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            padding: 11px 12px;
+            background: var(--accent);
+            color: #ffffff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .errors {
+            margin: 12px 0 0;
+            color: #b42318;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <section class="card">
+        <h1>Participant Login</h1>
+        <p>Sign in to browse events and manage your registrations.</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <label for="id_username">Username</label>
+            <input id="id_username" type="text" name="username" required autofocus>
+
+            <label for="id_password">Password</label>
+            <input id="id_password" type="password" name="password" required>
+
+            <button type="submit">Log In as Participant</button>
+        </form>
+
+        {% if form.errors %}
+            <p class="errors">Invalid username or password. Please try again.</p>
+        {% endif %}
+    </section>
+</body>
+</html>
