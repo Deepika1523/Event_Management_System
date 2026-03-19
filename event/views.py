@@ -1,9 +1,10 @@
+from django.contrib.auth import get_user_model, login
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.http import HttpResponseNotAllowed, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import Event
+from .models import Event, Profile
 
 
 def _can_manage_event(user, event):
@@ -138,15 +139,28 @@ def role_based_user_page(request):
 	if request.user.is_authenticated and request.user.is_superuser:
 		role = "Admin"
 		message = "You have full administrative control over the platform."
-	elif request.user.is_authenticated and request.user.is_staff:
-		role = "Staff"
-		message = "You can manage event operations and participant updates."
 	elif request.user.is_authenticated:
-		role = "User"
-		message = "You can browse, register, and track your event participation."
+		profile_role = (
+			Profile.objects.filter(user=request.user).values_list("role", flat=True).first()
+		)
+		if profile_role == "coordinator":
+			role = "Coordinator"
+			message = "You can coordinate schedules, activities, and registrations."
+		elif profile_role == "organizer":
+			role = "Organizer"
+			message = "You can manage events, announcements, and platform operations."
+		elif profile_role == "participant":
+			role = "Participant"
+			message = "You can browse, register, and track your event participation."
+		elif request.user.is_staff:
+			role = "Staff"
+			message = "You can manage event operations and participant updates."
+		else:
+			role = "User"
+			message = "You can browse, register, and track your event participation."
 	else:
 		role = "Guest"
-		message = "Sign in to create events and manage your registrations."
+		message = "Sign up to create events and manage your registrations."
 
 	return render(
 		request,
@@ -154,5 +168,67 @@ def role_based_user_page(request):
 		{
 			"role": role,
 			"message": message,
+		},
+	)
+
+
+def signup(request):
+	user_model = get_user_model()
+	valid_roles = {key for key, _ in Profile.ROLE_CHOICES}
+	selected_role = request.GET.get("role")
+	if selected_role not in valid_roles:
+		selected_role = "participant"
+
+	if request.method == "POST":
+		username = (request.POST.get("username") or "").strip()
+		email = (request.POST.get("email") or "").strip()
+		password1 = request.POST.get("password1") or ""
+		password2 = request.POST.get("password2") or ""
+		role = request.POST.get("role") or ""
+		errors = []
+
+		if not username:
+			errors.append("Username is required.")
+		if not email:
+			errors.append("Email is required.")
+		if not password1:
+			errors.append("Password is required.")
+		if password1 != password2:
+			errors.append("Passwords do not match.")
+		if role not in valid_roles:
+			errors.append("Please select a valid role.")
+		if username and user_model.objects.filter(username=username).exists():
+			errors.append("Username is already taken.")
+		if email and user_model.objects.filter(email=email).exists():
+			errors.append("Email is already registered.")
+
+		if not errors:
+			user = user_model.objects.create_user(
+				username=username,
+				email=email,
+				password=password1,
+			)
+			Profile.objects.create(user=user, role=role)
+			login(request, user)
+			return redirect("role_based_user")
+
+		return render(
+			request,
+			"registration/signup.html",
+			{
+				"errors": errors,
+				"username": username,
+				"email": email,
+				"selected_role": role,
+				"roles": Profile.ROLE_CHOICES,
+			},
+		)
+
+	return render(
+		request,
+		"registration/signup.html",
+		{
+			"selected_role": selected_role,
+			"roles": Profile.ROLE_CHOICES,
 		},
 	)

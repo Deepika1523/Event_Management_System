@@ -3,60 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Role Based User</title>
+    <title>Event Management System</title>
     <style>
+        @import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700&display=swap");
+
         :root {
-            --bg: #f6f8fc;
-            --card: #ffffff;
-            --text: #1d2939;
-            --subtle: #475467;
-            --admin: #b42318;
-            --staff: #175cd3;
-            --user: #027a48;
-            --border: #d0d5dd;
+            --green-900: #0b2b1b;
+            --green-800: #123824;
+            --green-700: #174a2f;
+            --beige-100: #efe3cd;
+            --beige-200: #e4d4b9;
+            --white: #ffffff;
+            --text: #1c231f;
+            --muted: #5c6a61;
+            --border: rgba(16, 45, 28, 0.18);
         }
- 
-        * {
-            box-sizing: border-box;
-        }
+
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
             min-height: 100vh;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            background: radial-gradient(circle at top right, #e8eefc 0%, var(--bg) 45%, #edf7f2 100%);
+            font-family: "Source Sans 3", "SF Pro Text", "Segoe UI", sans-serif;
             color: var(--text);
+            background: radial-gradient(circle at top right, rgba(18, 56, 36, 0.16), transparent 45%),
+                radial-gradient(circle at 10% 20%, rgba(23, 74, 47, 0.18), transparent 40%),
+                linear-gradient(180deg, var(--beige-100), var(--beige-200));
             display: grid;
             place-items: center;
-            padding: 24px;
+            padding: 40px 20px;
         }
 
-        .card {
-            width: min(620px, 100%);
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 28px;
-            box-shadow: 0 12px 32px rgba(16, 24, 40, 0.08);
+        .layout {
+            width: min(1100px, 100%);
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+            gap: 28px;
+        }
+
+        .hero,
+        .panel {
+            border-radius: 26px;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 26px 60px rgba(10, 25, 15, 0.12);
+            padding: 32px;
+            backdrop-filter: blur(8px);
+            animation: rise 0.5s ease both;
+        }
+
+        .panel {
+            animation-delay: 0.08s;
         }
 
         .eyebrow {
-            letter-spacing: 0.08em;
             text-transform: uppercase;
-            font-size: 0.78rem;
-            color: var(--subtle);
-            margin: 0 0 10px;
+            letter-spacing: 0.3em;
+            font-size: 0.72rem;
+            color: var(--green-700);
         }
 
-        h1 {
-            margin: 0 0 12px;
-            font-size: clamp(1.5rem, 2.5vw, 2rem);
+        .hero h1 {
+            margin: 16px 0 12px;
+            font-size: clamp(2.2rem, 4vw, 3.1rem);
+            font-weight: 600;
+            color: var(--green-900);
         }
 
-        .message {
-            margin: 0 0 20px;
-            color: var(--subtle);
+        .hero p {
+            margin: 0 0 18px;
+            color: var(--muted);
             line-height: 1.6;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 22px;
+        }
+
+        .metric {
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: var(--white);
+            border: 1px solid var(--border);
+        }
+
+        .metric strong {
+            display: block;
+            font-size: 1.3rem;
+            color: var(--green-900);
+        }
+
+        .metric span {
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        .panel h2 {
+            margin: 0 0 6px;
+            font-size: 1.5rem;
+            color: var(--green-900);
+        }
+
+        .panel p {
+            margin: 0 0 16px;
+            color: var(--muted);
         }
 
         .role-pill {
@@ -65,53 +118,151 @@
             gap: 8px;
             border-radius: 999px;
             padding: 8px 14px;
-            font-weight: 700;
-            border: 1px solid currentColor;
-            margin-bottom: 20px;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            background: var(--white);
+            color: var(--green-800);
+            margin: 10px 0 14px;
         }
-
-        .admin { color: var(--admin); background: #fef3f2; }
-        .staff { color: var(--staff); background: #eff4ff; }
-        .user { color: var(--user); background: #ecfdf3; }
 
         ul {
             margin: 0;
-            padding-left: 20px;
-            color: var(--subtle);
+            padding-left: 18px;
+            color: var(--muted);
             line-height: 1.7;
+        }
+
+        .actions {
+            margin-top: 18px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .actions h3 {
+            margin: 8px 0 0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--green-700);
+        }
+
+        .actions a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            text-decoration: none;
+            color: var(--green-900);
+            font-weight: 600;
+            background: var(--white);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .actions a:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 28px rgba(16, 45, 28, 0.16);
+        }
+
+        .actions a span {
+            font-weight: 700;
+            color: var(--green-700);
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 12px 0 2px;
+        }
+
+        @keyframes rise {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <section class="card">
-        <p class="eyebrow">Event Management System</p>
-        <h1>Welcome, {{ request.user.username }}</h1>
+    <main class="layout">
+        <section class="hero">
+            <div class="eyebrow">Event Management System</div>
+            <h1>Curate, coordinate, and host with quiet confidence.</h1>
+            <p>Manage events effortlessly with full control and real-time insights.</p>
+            <div class="metrics">
+                <div class="metric">
+                    <strong>3 roles</strong>
+                    <span>Tailored access paths</span>
+                </div>
+                <div class="metric">
+                    <strong>Live</strong>
+                    <span>Real-time event control</span>
+                </div>
+                <div class="metric">
+                    <strong>Secure</strong>
+                    <span>Permission-aware flows</span>
+                </div>
+            </div>
+        </section>
 
-        {% if role == "Admin" %}
-            <span class="role-pill admin">Role: {{ role }}</span>
-            <p class="message">{{ message }}</p>
-            <ul>
-                <li>Access to platform analytics and security controls</li>
-                <li>Approve or remove any event listing</li>
-                <li>Manage user roles and permissions</li>
-            </ul>
-        {% elif role == "Staff" %}
-            <span class="role-pill staff">Role: {{ role }}</span>
-            <p class="message">{{ message }}</p>
-            <ul>
-                <li>Create and update event activities</li>
-                <li>Review registrations and participant records</li>
-                <li>Publish updates to announcements</li>
-            </ul>
-        {% else %}
-            <span class="role-pill user">Role: {{ role }}</span>
-            <p class="message">{{ message }}</p>
-            <ul>
-                <li>Browse available events</li>
-                <li>Register for upcoming activities</li>
-                <li>Track your own registrations</li>
-            </ul>
-        {% endif %}
-    </section>
+        <section class="panel">
+            <h2>Welcome, {{ request.user.username }}</h2>
+
+            {% if role == "Admin" %}
+                <span class="role-pill">Role: {{ role }}</span>
+                <p>{{ message }}</p>
+                <ul>
+                    <li>Access to platform analytics and security controls</li>
+                    <li>Approve or remove any event listing</li>
+                    <li>Manage user roles and permissions</li>
+                </ul>
+            {% elif role == "Staff" %}
+                <span class="role-pill">Role: {{ role }}</span>
+                <p>{{ message }}</p>
+                <ul>
+                    <li>Create and update event activities</li>
+                    <li>Review registrations and participant records</li>
+                    <li>Publish updates to announcements</li>
+                </ul>
+            {% elif role != "Guest" %}
+                <span class="role-pill">Role: {{ role }}</span>
+                <p>{{ message }}</p>
+                <ul>
+                    <li>Browse available events</li>
+                    <li>Register for upcoming activities</li>
+                    <li>Track your own registrations</li>
+                </ul>
+            {% endif %}
+
+            {% if role == "Guest" %}
+                <div class="actions">
+                    <h3>Sign up</h3>
+                    <a href="{% url 'signup' %}?role=coordinator">Coordinator signup <span>&rarr;</span></a>
+                    <a href="{% url 'signup' %}?role=organizer">Organizer signup <span>&rarr;</span></a>
+                    <a href="{% url 'signup' %}?role=participant">Participant signup <span>&rarr;</span></a>
+                    <div class="divider"></div>
+                    <h3>Sign in</h3>
+                    <a href="{% url 'coordinator_login' %}">Coordinator login <span>&rarr;</span></a>
+                    <a href="{% url 'organizer_login' %}">Organizer login <span>&rarr;</span></a>
+                    <a href="{% url 'participant_login' %}">Participant login <span>&rarr;</span></a>
+                </div>
+            {% endif %}
+        </section>
+    </main>
 </body>
 </html>
