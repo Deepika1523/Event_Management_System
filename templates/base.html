@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Event Management System{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap");
+
+        :root {
+            --green-900: #2b2620;
+            --green-800: #4a4036;
+            --green-700: #23574f;
+            --beige-100: #f7f1e9;
+            --beige-200: #f1e7db;
+            --white: #ffffff;
+            --text: #2b2620;
+            --muted: rgba(74, 64, 54, 0.7);
+            --border: rgba(43, 38, 32, 0.16);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Manrope", "Segoe UI", sans-serif;
+            color: var(--text);
+            background: linear-gradient(180deg, var(--beige-100), var(--beige-200));
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+        }
+
+        header {
+            background: transparent;
+            border-bottom: 1px solid rgba(43, 38, 32, 0.08);
+            padding: 16px 20px;
+            backdrop-filter: blur(8px);
+        }
+
+        body[class*="page-"] header {
+            background: rgba(18, 18, 18, 0.55);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .header-content {
+            width: min(1200px, 100%);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--green-900);
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: opacity 0.2s ease;
+        }
+
+        body[class*="page-"] .logo {
+            color: #f8fafc;
+        }
+
+        .logo:hover {
+            opacity: 0.8;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #2f6f66, #1f4d46);
+            border-radius: 6px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .top-link {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            color: var(--green-900);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.6);
+            transition: all 0.2s ease;
+        }
+
+        body[class*="page-"] .top-link {
+            color: #f8fafc;
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .top-link:hover {
+            background: rgba(47, 111, 102, 0.12);
+            border-color: rgba(47, 111, 102, 0.35);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid var(--border);
+        }
+
+        body[class*="page-"] .user-info {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .user-name {
+            color: var(--green-900);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        body[class*="page-"] .user-name {
+            color: #f8fafc;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background: #2f6f66;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(80, 62, 44, 0.25);
+            background: #23574f;
+        }
+
+        .auth-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .auth-links a {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            color: var(--green-900);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.6);
+            transition: all 0.2s ease;
+        }
+
+        body[class*="page-"] .auth-links a {
+            color: #f8fafc;
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .auth-links a:hover {
+            background: rgba(47, 111, 102, 0.12);
+            border-color: rgba(47, 111, 102, 0.35);
+        }
+
+        .auth-links .signup {
+            background: #2f6f66;
+            color: white;
+            border: none;
+        }
+
+        .auth-links .signup:hover {
+            background: #23574f;
+        }
+
+        main {
+            flex: 1;
+            display: grid;
+            place-items: center;
+            padding: 40px 20px;
+        }
+
+        @keyframes rise {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        body[class*="page-"] .card,
+        body[class*="page-"] .panel,
+        body[class*="page-"] .form-card,
+        body[class*="page-"] .hero,
+        body[class*="page-"] .intro {
+            background: rgba(18, 18, 18, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+            color: #f8fafc;
+        }
+
+        body[class*="page-"] .card h1,
+        body[class*="page-"] .card h2,
+        body[class*="page-"] .panel h2,
+        body[class*="page-"] .hero h1,
+        body[class*="page-"] .form-card h2 {
+            color: #f8fafc;
+        }
+
+        body[class*="page-"] .card p,
+        body[class*="page-"] .panel p,
+        body[class*="page-"] .hero p,
+        body[class*="page-"] .form-card p {
+            color: rgba(248, 250, 252, 0.82);
+        }
+
+        body[class*="page-"] {
+            color: #f8fafc;
+        }
+
+        body[class*="page-"] h1,
+        body[class*="page-"] h2,
+        body[class*="page-"] h3,
+        body[class*="page-"] h4,
+        body[class*="page-"] h5,
+        body[class*="page-"] h6 {
+            color: #f8fafc;
+        }
+
+        body[class*="page-"] p,
+        body[class*="page-"] span,
+        body[class*="page-"] small,
+        body[class*="page-"] label,
+        body[class*="page-"] li,
+        body[class*="page-"] a,
+        body[class*="page-"] td,
+        body[class*="page-"] th {
+            color: rgba(248, 250, 252, 0.9);
+        }
+
+        body[class*="page-"] a {
+            text-underline-offset: 3px;
+        }
+
+        body[class*="page-"] ul,
+        body[class*="page-"] li,
+        body[class*="page-"] .role-pill {
+            color: rgba(248, 250, 252, 0.86);
+        }
+
+        body[class*="page-"] .table-wrap,
+        body[class*="page-"] table {
+            background: rgba(18, 18, 18, 0.6);
+            border-color: rgba(255, 255, 255, 0.18);
+        }
+
+        body[class*="page-"] th,
+        body[class*="page-"] td {
+            color: rgba(248, 250, 252, 0.9);
+            border-bottom-color: rgba(255, 255, 255, 0.12);
+        }
+
+        body[class*="page-"] th {
+            background: rgba(18, 18, 18, 0.72);
+        }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon"></div>
+                Event Manager
+            </a>
+            <nav class="nav-right">
+                <a href="{% url 'dashboard' %}" class="top-link">Dashboard</a>
+                {% if request.user.is_authenticated %}
+                    <div class="user-info">
+                        <span class="user-name">{{ request.user.username }}</span>
+                    </div>
+                    <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-btn">Sign Out</button>
+                    </form>
+                {% else %}
+                    <div class="auth-links">
+                        <a href="{% url 'signup' %}">Sign Up</a>
+                        <a href="{% url 'unified_login' %}" class="signup">Sign In</a>
+                    </div>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

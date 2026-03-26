@@ -1,242 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
-    <style>
-        @import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700&display=swap");
+{% extends "registration/auth_base.html" %}
 
-        :root {
-            --green-900: #0b2b1b;
-            --green-800: #123824;
-            --green-700: #174a2f;
-            --beige-100: #efe3cd;
-            --beige-200: #e4d4b9;
-            --white: #ffffff;
-            --text: #1c231f;
-            --muted: #5c6a61;
-            --border: rgba(16, 45, 28, 0.18);
-        }
+{% block title %}Sign Up{% endblock %}
 
-        * { box-sizing: border-box; }
+{% block intro_eyebrow %}Event Management System{% endblock %}
+{% block intro_heading %}Create a calm, role-first workspace.{% endblock %}
+{% block intro_text %}Pick your user type, complete your profile, and enter a refined event workflow in seconds.{% endblock %}
+{% block intro_bullets %}
+    <li>Coordinator, organizer, and participant access from one signup.</li>
+    <li>Clean layout with a neon night palette.</li>
+    <li>Responsive structure tuned for desktop and mobile.</li>
+{% endblock %}
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: "Source Sans 3", "SF Pro Text", "Segoe UI", sans-serif;
-            color: var(--text);
-            background: radial-gradient(circle at top right, rgba(18, 56, 36, 0.16), transparent 45%),
-                radial-gradient(circle at 10% 20%, rgba(23, 74, 47, 0.18), transparent 40%),
-                linear-gradient(180deg, var(--beige-100), var(--beige-200));
-            display: grid;
-            place-items: center;
-            padding: 40px 20px;
-        }
+{% block form_title %}Create account{% endblock %}
+{% block form_subtitle %}Fill in your details to continue.{% endblock %}
 
-        .shell {
-            width: min(980px, 100%);
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            gap: 28px;
-        }
+{% block form_content %}
+    <form method="post">
+        {% csrf_token %}
+        <label for="id_username">Username</label>
+        <input id="id_username" type="text" name="username" required value="{{ username|default:'' }}" autofocus>
 
-        .intro,
-        .form-card {
-            border-radius: 26px;
-            background: rgba(255, 255, 255, 0.86);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 26px 60px rgba(10, 25, 15, 0.12);
-            padding: 32px;
-            animation: rise 0.5s ease both;
-        }
+        <label for="id_email">Email</label>
+        <input id="id_email" type="email" name="email" required value="{{ email|default:'' }}">
 
-        .form-card {
-            animation-delay: 0.08s;
-        }
+        <label for="id_role">User type</label>
+        <select id="id_role" name="role" required>
+            {% for key, label in roles %}
+                <option value="{{ key }}" {% if selected_role == key %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
 
-        .eyebrow {
-            text-transform: uppercase;
-            letter-spacing: 0.3em;
-            font-size: 0.72rem;
-            color: var(--green-700);
-        }
+        <label for="id_password1">Password</label>
+        <input id="id_password1" type="password" name="password1" required>
 
-        .intro h1 {
-            margin: 16px 0 10px;
-            font-size: clamp(2rem, 3.6vw, 2.8rem);
-            font-weight: 600;
-            color: var(--green-900);
-        }
+        <label for="id_password2">Confirm password</label>
+        <input id="id_password2" type="password" name="password2" required>
 
-        .intro p {
-            margin: 0 0 18px;
-            color: var(--muted);
-            line-height: 1.6;
-        }
+        <button type="submit">Create account</button>
+    </form>
 
-        .intro ul {
-            margin: 18px 0 0;
-            padding-left: 18px;
-            color: var(--muted);
-            line-height: 1.7;
-        }
-
-        .form-card h2 {
-            margin: 0 0 6px;
-            font-size: 1.5rem;
-            color: var(--green-900);
-        }
-
-        .form-card p {
-            margin: 0 0 20px;
-            color: var(--muted);
-        }
-
-        label {
-            display: block;
-            margin: 12px 0 6px;
-            font-weight: 600;
-            color: var(--green-900);
-        }
-
-        input,
-        select {
-            width: 100%;
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 12px 14px;
-            font-size: 0.95rem;
-            background: var(--white);
-            color: var(--text);
-            transition: border 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        input:focus,
-        select:focus {
-            outline: none;
-            border-color: rgba(23, 74, 47, 0.6);
-            box-shadow: 0 0 0 3px rgba(23, 74, 47, 0.12);
-        }
-
-        button {
-            margin-top: 18px;
-            width: 100%;
-            border: none;
-            border-radius: 999px;
-            padding: 12px 14px;
-            background: var(--green-900);
-            color: var(--white);
-            font-weight: 600;
-            letter-spacing: 0.02em;
-            cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 30px rgba(16, 45, 28, 0.22);
-        }
-
-        .errors {
-            margin: 16px 0 0;
-            padding: 12px 14px;
-            border-radius: 12px;
-            background: rgba(122, 28, 28, 0.08);
-            border: 1px solid rgba(122, 28, 28, 0.2);
-            color: #7a1c1c;
-            font-size: 0.9rem;
-        }
-
-        .errors ul {
-            margin: 8px 0 0;
-            padding-left: 18px;
-        }
-
-        .helper {
-            margin-top: 18px;
-            color: var(--muted);
-            font-size: 0.9rem;
-        }
-
-        @keyframes rise {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 860px) {
-            .shell {
-                grid-template-columns: 1fr;
-            }
-
-            .intro {
-                order: 2;
-            }
-        }
-    </style>
-</head>
-<body>
-    <main class="shell">
-        <section class="intro">
-            <div class="eyebrow">Event Management System</div>
-            <h1>Create a calm, role-first workspace.</h1>
-            <p>Pick your user type, complete your profile, and enter a refined event workflow in seconds.</p>
+    {% if errors %}
+        <div class="errors">
+            <strong>Please fix the following:</strong>
             <ul>
-                <li>Coordinator, organizer, and participant access from one signup.</li>
-                <li>Clean layout with a calm green-beige palette.</li>
-                <li>Responsive structure tuned for desktop and mobile.</li>
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
             </ul>
-        </section>
+        </div>
+    {% endif %}
+{% endblock %}
 
-        <section class="form-card">
-            <h2>Create account</h2>
-            <p>Fill in your details to continue.</p>
-
-            <form method="post">
-                {% csrf_token %}
-                <label for="id_username">Username</label>
-                <input id="id_username" type="text" name="username" required value="{{ username|default:'' }}" autofocus>
-
-                <label for="id_email">Email</label>
-                <input id="id_email" type="email" name="email" required value="{{ email|default:'' }}">
-
-                <label for="id_role">User type</label>
-                <select id="id_role" name="role" required>
-                    {% for key, label in roles %}
-                        <option value="{{ key }}" {% if selected_role == key %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-
-                <label for="id_password1">Password</label>
-                <input id="id_password1" type="password" name="password1" required>
-
-                <label for="id_password2">Confirm password</label>
-                <input id="id_password2" type="password" name="password2" required>
-
-                <button type="submit">Create account</button>
-            </form>
-
-            {% if errors %}
-                <div class="errors">
-                    <strong>Please fix the following:</strong>
-                    <ul>
-                        {% for error in errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
-
-            <div class="helper">
-                Already registered? Return to the home page to sign in.
-            </div>
-        </section>
-    </main>
-</body>
-</html>
+{% block after_form %}
+    <div class="helper">
+        Already registered? Return to the home page to sign in.
+    </div>
+{% endblock %}

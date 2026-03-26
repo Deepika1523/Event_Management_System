@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Manage Events{% endblock %}
+
+{% block body_class %}page-manage-events{% endblock %}
+
+{% block extra_css %}
+        body.page-manage-events {
+            background-image: linear-gradient(rgba(18, 18, 18, 0.45), rgba(18, 18, 18, 0.45)),
+                url("{% static 'images/gold_and_black_decor-_backdrop (1).webp' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        .event-shell {
+            width: min(1200px, 100%);
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+            gap: 24px;
+        }
+
+        .card {
+            border-radius: 20px;
+            background: #ffffff;
+            border: 1px solid rgba(43, 38, 32, 0.08);
+            box-shadow: 0 24px 60px rgba(80, 62, 44, 0.16);
+            padding: 24px;
+            animation: rise 0.5s ease both;
+        }
+
+        .card h1,
+        .card h2 {
+            margin: 0 0 8px;
+            color: var(--green-900);
+        }
+
+        .card p {
+            margin: 0 0 18px;
+            color: var(--muted);
+        }
+
+        label {
+            display: block;
+            margin: 12px 0 6px;
+            color: var(--green-900);
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            background: #ffffff;
+            color: var(--text);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: rgba(47, 111, 102, 0.6);
+            box-shadow: 0 0 0 3px rgba(47, 111, 102, 0.15);
+        }
+
+        .btn {
+            margin-top: 16px;
+            width: 100%;
+            border: none;
+            border-radius: 999px;
+            padding: 11px 14px;
+            background: #2f6f66;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 28px rgba(80, 62, 44, 0.18);
+            background: #23574f;
+        }
+
+        .message-list {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .msg {
+            border-radius: 10px;
+            padding: 10px 12px;
+            border: 1px solid;
+            font-size: 0.9rem;
+        }
+
+        .msg.success {
+            background: rgba(47, 111, 102, 0.12);
+            border-color: rgba(47, 111, 102, 0.35);
+            color: #23574f;
+        }
+
+        .msg.error {
+            background: rgba(185, 28, 28, 0.08);
+            border-color: rgba(185, 28, 28, 0.25);
+            color: #9f1239;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 760px;
+            background: #ffffff;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+            vertical-align: top;
+        }
+
+        th {
+            color: var(--green-900);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            background: rgba(247, 241, 233, 0.9);
+        }
+
+        .delete-btn {
+            border: 1px solid rgba(185, 28, 28, 0.35);
+            background: rgba(185, 28, 28, 0.08);
+            color: #9f1239;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 0.82rem;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background: rgba(185, 28, 28, 0.14);
+        }
+
+        .empty {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .notice {
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(247, 241, 233, 0.8);
+            color: var(--muted);
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        .hint {
+            display: block;
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 950px) {
+            .event-shell {
+                grid-template-columns: 1fr;
+            }
+        }
+{% endblock %}
+
+{% block content %}
+    <main class="event-shell">
+        <section class="card">
+            <h1>Create Event</h1>
+            {% if can_create_event %}
+                <p>Add a new event with activity name, date, time, and registration fees.</p>
+
+                <p><a href="{% url 'manage_activities' %}">Manage activities and coordinators</a></p>
+
+                <form method="post" action="{% url 'manage_events' %}">
+                    {% csrf_token %}
+                    <label for="event">Event Name</label>
+                    <input id="event" name="event" type="text" required>
+
+                    <label for="activity">Activity Name</label>
+                    <input id="activity" name="activity" type="text" required>
+
+                    <label for="date_of_event">Date of Event</label>
+                    <input id="date_of_event" name="date_of_event" type="date" required>
+
+                    <label for="time_of_event">Time of Event</label>
+                    <input id="time_of_event" name="time_of_event" type="time" required>
+
+                    <label for="registration_fees">Registration Fees</label>
+                    <input id="registration_fees" name="registration_fees" type="text" required>
+
+                    <label for="coordinator_emails">Add Coordinators</label>
+                    <input id="coordinator_emails" name="coordinator_emails" type="text" placeholder="email1@example.com, email2@example.com">
+                    <span class="hint">Comma-separated emails. Each coordinator will receive an invite link.</span>
+
+                    <button type="submit" class="btn">Create Event</button>
+                </form>
+            {% else %}
+                <p>Event creation is restricted by role.</p>
+                <div class="notice">Only users with Organizer role can create events.</div>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>View Events</h2>
+            <p>All your events are listed here. Admin and staff can view every event.</p>
+
+            {% if messages %}
+                <div class="message-list">
+                    {% for message in messages %}
+                        <div class="msg {% if message.tags == 'error' %}error{% else %}success{% endif %}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if events %}
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Owner</th>
+                                <th>Event</th>
+                                <th>Activity</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Registration Fees</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in events %}
+                                <tr>
+                                    <td>{{ item.id }}</td>
+                                    <td>{{ item.user.username }}</td>
+                                    <td>{{ item.event }}</td>
+                                    <td>{{ item.activity }}</td>
+                                    <td>{{ item.date_of_event }}</td>
+                                    <td>{{ item.time_of_event }}</td>
+                                    <td>{{ item.registration }}</td>
+                                    <td>
+                                        <form method="post" action="{% url 'delete_event' item.id %}" onsubmit="return confirm('Delete this event?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="delete-btn">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty">No events found. Create your first event using the form.</p>
+            {% endif %}
+        </section>
+    </main>
+{% endblock %}

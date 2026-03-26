@@ -1,39 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Management System</title>
-    <style>
-        @import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700&display=swap");
+{% extends "base.html" %}
+{% load static %}
 
-        :root {
-            --green-900: #0b2b1b;
-            --green-800: #123824;
-            --green-700: #174a2f;
-            --beige-100: #efe3cd;
-            --beige-200: #e4d4b9;
-            --white: #ffffff;
-            --text: #1c231f;
-            --muted: #5c6a61;
-            --border: rgba(16, 45, 28, 0.18);
+{% block title %}Event Management System{% endblock %}
+
+{% block body_class %}page-index{% endblock %}
+
+{% block extra_css %}
+        body.page-index {
+            background-image: linear-gradient(rgba(18, 18, 18, 0.45), rgba(18, 18, 18, 0.45)),
+                url("{% static 'images/New_Project_41.webp' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
         }
-
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: "Source Sans 3", "SF Pro Text", "Segoe UI", sans-serif;
-            color: var(--text);
-            background: radial-gradient(circle at top right, rgba(18, 56, 36, 0.16), transparent 45%),
-                radial-gradient(circle at 10% 20%, rgba(23, 74, 47, 0.18), transparent 40%),
-                linear-gradient(180deg, var(--beige-100), var(--beige-200));
-            display: grid;
-            place-items: center;
-            padding: 40px 20px;
-        }
-
         .layout {
             width: min(1100px, 100%);
             display: grid;
@@ -44,9 +24,9 @@
         .hero,
         .panel {
             border-radius: 26px;
-            background: rgba(255, 255, 255, 0.82);
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            box-shadow: 0 26px 60px rgba(10, 25, 15, 0.12);
+            background: #ffffff;
+            border: 1px solid rgba(43, 38, 32, 0.08);
+            box-shadow: 0 30px 70px rgba(80, 62, 44, 0.16);
             padding: 32px;
             backdrop-filter: blur(8px);
             animation: rise 0.5s ease both;
@@ -65,6 +45,7 @@
 
         .hero h1 {
             margin: 16px 0 12px;
+            font-family: "Playfair Display", "Times New Roman", serif;
             font-size: clamp(2.2rem, 4vw, 3.1rem);
             font-weight: 600;
             color: var(--green-900);
@@ -86,7 +67,7 @@
         .metric {
             padding: 14px 16px;
             border-radius: 16px;
-            background: var(--white);
+            background: rgba(247, 241, 233, 0.8);
             border: 1px solid var(--border);
         }
 
@@ -120,7 +101,7 @@
             padding: 8px 14px;
             font-weight: 600;
             border: 1px solid var(--border);
-            background: var(--white);
+            background: rgba(247, 241, 233, 0.8);
             color: var(--green-800);
             margin: 10px 0 14px;
         }
@@ -156,24 +137,72 @@
             text-decoration: none;
             color: var(--green-900);
             font-weight: 600;
-            background: var(--white);
+            background: #ffffff;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
 
         .actions a:hover {
             transform: translateY(-1px);
-            box-shadow: 0 12px 28px rgba(16, 45, 28, 0.16);
+            box-shadow: 0 12px 28px rgba(80, 62, 44, 0.18);
         }
 
         .actions a span {
             font-weight: 700;
-            color: var(--green-700);
+            color: #2f6f66;
+        }
+
+        body.page-index .metric {
+            background: rgba(18, 18, 18, 0.6);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        body.page-index .metric strong,
+        body.page-index .metric span {
+            color: rgba(248, 250, 252, 0.9);
+        }
+
+        body.page-index .actions h3 {
+            color: rgba(248, 250, 252, 0.65);
+        }
+
+        body.page-index .actions a {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.25);
+            color: #f8fafc;
+        }
+
+        body.page-index .actions a span {
+            color: #f8fafc;
         }
 
         .divider {
             height: 1px;
             background: var(--border);
             margin: 12px 0 2px;
+        }
+
+        .hero-art {
+            width: 100%;
+            margin-top: 18px;
+            border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(80, 62, 44, 0.18);
+            display: block;
+        }
+
+        .image-strip {
+            margin-top: 18px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .image-strip img {
+            width: 100%;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: 0 12px 24px rgba(80, 62, 44, 0.14);
         }
 
         @keyframes rise {
@@ -195,15 +224,20 @@
             .metrics {
                 grid-template-columns: 1fr;
             }
+
+            .image-strip {
+                grid-template-columns: 1fr;
+            }
         }
-    </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <main class="layout">
         <section class="hero">
             <div class="eyebrow">Event Management System</div>
             <h1>Curate, coordinate, and host with quiet confidence.</h1>
             <p>Manage events effortlessly with full control and real-time insights.</p>
+            <img class="hero-art" src="{% static 'images/New_Project_41.webp' %}" alt="Outdoor event setup with warm lights">
             <div class="metrics">
                 <div class="metric">
                     <strong>3 roles</strong>
@@ -217,6 +251,11 @@
                     <strong>Secure</strong>
                     <span>Permission-aware flows</span>
                 </div>
+            </div>
+            <div class="image-strip" aria-label="Event highlights">
+                <img src="{% static 'images/gold_and_black_decor-_backdrop.webp' %}" alt="Gold decor and stage backdrop">
+                <img src="{% static 'images/download.jpg' %}" alt="Crowd enjoying a concert">
+                <img src="{% static 'images/New_Project_41.webp' %}" alt="String lights over an outdoor dinner">
             </div>
         </section>
 
@@ -247,6 +286,19 @@
                     <li>Register for upcoming activities</li>
                     <li>Track your own registrations</li>
                 </ul>
+
+                <div class="actions">
+                    <h3>Dashboard</h3>
+                    <a href="{% url 'dashboard' %}">All events and registrations <span>&rarr;</span></a>
+                    {% if role != "Participant" %}
+                        <h3>Event Module</h3>
+                        {% if role == "Organizer" %}
+                            <a href="{% url 'manage_events' %}">Create, view, and delete events <span>&rarr;</span></a>
+                        {% else %}
+                            <a href="{% url 'manage_events' %}">View and delete events <span>&rarr;</span></a>
+                        {% endif %}
+                    {% endif %}
+                </div>
             {% endif %}
 
             {% if role == "Guest" %}
@@ -264,5 +316,4 @@
             {% endif %}
         </section>
     </main>
-</body>
-</html>
+{% endblock %}

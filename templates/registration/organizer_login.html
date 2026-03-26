@@ -1,205 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Organizer Login</title>
-    <style>
-        @import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700&display=swap");
+{% extends "registration/auth_base.html" %}
 
-        :root {
-            --green-900: #0b2b1b;
-            --green-800: #123824;
-            --green-700: #174a2f;
-            --beige-100: #efe3cd;
-            --beige-200: #e4d4b9;
-            --white: #ffffff;
-            --text: #1c231f;
-            --muted: #5c6a61;
-            --border: rgba(16, 45, 28, 0.18);
-        }
+{% block title %}Organizer Login{% endblock %}
 
-        * { box-sizing: border-box; }
+{% block intro_eyebrow %}Organizer Access{% endblock %}
+{% block intro_heading %}Shape every experience with clarity.{% endblock %}
+{% block intro_text %}Enter the organizer suite to manage events, announcements, and platform operations.{% endblock %}
+{% block intro_bullets %}
+    <li>Build and publish event timelines confidently.</li>
+    <li>Coordinate teams and approvals in one space.</li>
+    <li>Deliver consistent, professional outcomes.</li>
+{% endblock %}
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: "Source Sans 3", "SF Pro Text", "Segoe UI", sans-serif;
-            color: var(--text);
-            background: radial-gradient(circle at top right, rgba(18, 56, 36, 0.16), transparent 45%),
-                radial-gradient(circle at 10% 20%, rgba(23, 74, 47, 0.18), transparent 40%),
-                linear-gradient(180deg, var(--beige-100), var(--beige-200));
-            display: grid;
-            place-items: center;
-            padding: 40px 20px;
-        }
+{% block form_title %}Organizer login{% endblock %}
+{% block form_subtitle %}Enter your credentials to continue.{% endblock %}
 
-        .shell {
-            width: min(980px, 100%);
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            gap: 28px;
-        }
+{% block form_content %}
+    <form method="post">
+        {% csrf_token %}
+        <label for="id_username">Username</label>
+        <input id="id_username" type="text" name="username" required autofocus value="{{ username|default:'' }}">
 
-        .intro,
-        .form-card {
-            border-radius: 26px;
-            background: rgba(255, 255, 255, 0.86);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 26px 60px rgba(10, 25, 15, 0.12);
-            padding: 32px;
-            animation: rise 0.5s ease both;
-        }
+        <label for="id_password">Password</label>
+        <input id="id_password" type="password" name="password" required>
 
-        .form-card {
-            animation-delay: 0.08s;
-        }
+        <button type="submit">Continue</button>
+    </form>
 
-        .eyebrow {
-            text-transform: uppercase;
-            letter-spacing: 0.3em;
-            font-size: 0.72rem;
-            color: var(--green-700);
-        }
+    {% if form.errors %}
+        <div class="errors">Invalid username or password. Please try again.</div>
+    {% endif %}
 
-        .intro h1 {
-            margin: 16px 0 10px;
-            font-size: clamp(2rem, 3.6vw, 2.8rem);
-            font-weight: 600;
-            color: var(--green-900);
-        }
-
-        .intro p {
-            margin: 0 0 18px;
-            color: var(--muted);
-            line-height: 1.6;
-        }
-
-        .intro ul {
-            margin: 18px 0 0;
-            padding-left: 18px;
-            color: var(--muted);
-            line-height: 1.7;
-        }
-
-        .form-card h2 {
-            margin: 0 0 6px;
-            font-size: 1.5rem;
-            color: var(--green-900);
-        }
-
-        .form-card p {
-            margin: 0 0 20px;
-            color: var(--muted);
-        }
-
-        label {
-            display: block;
-            margin: 12px 0 6px;
-            font-weight: 600;
-            color: var(--green-900);
-        }
-
-        input {
-            width: 100%;
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 12px 14px;
-            font-size: 0.95rem;
-            background: var(--white);
-            color: var(--text);
-            transition: border 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: rgba(23, 74, 47, 0.6);
-            box-shadow: 0 0 0 3px rgba(23, 74, 47, 0.12);
-        }
-
-        button {
-            margin-top: 18px;
-            width: 100%;
-            border: none;
-            border-radius: 999px;
-            padding: 12px 14px;
-            background: var(--green-900);
-            color: var(--white);
-            font-weight: 600;
-            letter-spacing: 0.02em;
-            cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 30px rgba(16, 45, 28, 0.22);
-        }
-
-        .errors {
-            margin: 16px 0 0;
-            padding: 12px 14px;
-            border-radius: 12px;
-            background: rgba(122, 28, 28, 0.08);
-            border: 1px solid rgba(122, 28, 28, 0.2);
-            color: #7a1c1c;
-            font-size: 0.9rem;
-        }
-
-        @keyframes rise {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 860px) {
-            .shell {
-                grid-template-columns: 1fr;
-            }
-
-            .intro {
-                order: 2;
-            }
-        }
-    </style>
-</head>
-<body>
-    <main class="shell">
-        <section class="intro">
-            <div class="eyebrow">Organizer Access</div>
-            <h1>Shape every experience with clarity.</h1>
-            <p>Enter the organizer suite to manage events, announcements, and platform operations.</p>
-            <ul>
-                <li>Build and publish event timelines confidently.</li>
-                <li>Coordinate teams and approvals in one space.</li>
-                <li>Deliver consistent, professional outcomes.</li>
-            </ul>
-        </section>
-
-        <section class="form-card">
-            <h2>Organizer login</h2>
-            <p>Enter your credentials to continue.</p>
-
-            <form method="post">
-                {% csrf_token %}
-                <label for="id_username">Username</label>
-                <input id="id_username" type="text" name="username" required autofocus>
-
-                <label for="id_password">Password</label>
-                <input id="id_password" type="password" name="password" required>
-
-                <button type="submit">Continue</button>
-            </form>
-
-            {% if form.errors %}
-                <div class="errors">Invalid username or password. Please try again.</div>
-            {% endif %}
-        </section>
-    </main>
-</body>
-</html>
+    {% if error_message %}
+        <div class="errors">{{ error_message }}</div>
+    {% endif %}
+{% endblock %}

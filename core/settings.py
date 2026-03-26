@@ -10,10 +10,31 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def _load_dotenv():
+    env_path = BASE_DIR / ".env"
+    if not env_path.exists():
+        return
+
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+_load_dotenv()
 
 
 # Quick-start development settings - unsuitable for production
@@ -37,7 +58,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'event',
+    "event",
+    "accounts",
+    "payment",
+    "participant",
+    "notification",
+    "website",
 ]
 
 MIDDLEWARE = [
@@ -116,3 +142,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
+LOGIN_REDIRECT_URL = "/user/"
+LOGOUT_REDIRECT_URL = "/"
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv("EMAIL_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASS", "")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or "no-reply@example.com"

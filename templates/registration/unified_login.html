@@ -1,0 +1,51 @@
+{% extends "registration/auth_base.html" %}
+
+{% block title %}Sign In{% endblock %}
+
+{% block intro_eyebrow %}Event Management System{% endblock %}
+{% block intro_heading %}Sign in to your event workspace.{% endblock %}
+{% block intro_text %}Access the tools you need to manage and experience events with clarity.{% endblock %}
+{% block intro_bullets %}
+    <li>Unified access for every role.</li>
+    <li>Apple-inspired spacing and hierarchy.</li>
+    <li>Responsive layout for every screen.</li>
+{% endblock %}
+
+{% block form_title %}Sign In{% endblock %}
+{% block form_subtitle %}Select your role and enter credentials{% endblock %}
+
+{% block form_content %}
+    <form method="post">
+        {% csrf_token %}
+        
+        <label for="id_role">User Role</label>
+        <select id="id_role" name="role" required>
+            <option value="">-- Select your role --</option>
+            <option value="coordinator" {% if selected_role == "coordinator" %}selected{% endif %}>Coordinator</option>
+            <option value="organizer" {% if selected_role == "organizer" %}selected{% endif %}>Organizer</option>
+            <option value="participant" {% if selected_role == "participant" %}selected{% endif %}>Participant</option>
+        </select>
+
+        <label for="id_username">Username</label>
+        <input id="id_username" type="text" name="username" required autofocus value="{{ username|default:'' }}">
+
+        <label for="id_password">Password</label>
+        <input id="id_password" type="password" name="password" required>
+
+        <button type="submit">Sign In</button>
+    </form>
+
+    {% if error_message %}
+        <div class="errors">{{ error_message }}</div>
+    {% endif %}
+
+    {% if form.errors %}
+        <div class="errors">Invalid username or password. Please try again.</div>
+    {% endif %}
+{% endblock %}
+
+{% block after_form %}
+    <div class="helper">
+        Don't have an account? <a href="{% url 'signup' %}" style="color: #2f6f66; text-decoration: none;">Sign up here</a>.
+    </div>
+{% endblock %}

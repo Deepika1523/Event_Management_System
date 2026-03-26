@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block body_class %}page-dashboard{% endblock %}
+
+{% block extra_css %}
+        body.page-dashboard {
+            background-image: linear-gradient(rgba(18, 18, 18, 0.45), rgba(18, 18, 18, 0.45)),
+                url("{% static 'images/luxury-golden-glow-with-soft-light-trails-and-sparkling-particles-on-dark-background_11537186.jpg!bwr800' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        .dashboard-shell {
+            width: min(1200px, 100%);
+            display: grid;
+            gap: 24px;
+        }
+
+        .card {
+            border-radius: 20px;
+            background: #ffffff;
+            border: 1px solid rgba(43, 38, 32, 0.08);
+            box-shadow: 0 24px 60px rgba(80, 62, 44, 0.16);
+            padding: 24px;
+            animation: rise 0.45s ease both;
+        }
+
+        .card h1,
+        .card h2 {
+            margin: 0 0 8px;
+            color: var(--green-900);
+        }
+
+        .card p {
+            margin: 0 0 18px;
+            color: var(--muted);
+        }
+
+        .message-list {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .msg {
+            border-radius: 10px;
+            padding: 10px 12px;
+            border: 1px solid;
+            font-size: 0.9rem;
+        }
+
+        .msg.success {
+            background: rgba(47, 111, 102, 0.12);
+            border-color: rgba(47, 111, 102, 0.35);
+            color: #23574f;
+        }
+
+        .msg.error {
+            background: rgba(185, 28, 28, 0.08);
+            border-color: rgba(185, 28, 28, 0.25);
+            color: #9f1239;
+        }
+
+        .msg.info {
+            background: rgba(37, 99, 235, 0.1);
+            border-color: rgba(37, 99, 235, 0.25);
+            color: #1d4ed8;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 760px;
+            background: #ffffff;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+            vertical-align: top;
+        }
+
+        th {
+            color: var(--green-900);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            background: rgba(247, 241, 233, 0.9);
+        }
+
+        .btn {
+            border: none;
+            border-radius: 999px;
+            padding: 7px 12px;
+            background: #2f6f66;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #23574f;
+        }
+
+        .btn[disabled] {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .empty {
+            margin: 0;
+            color: var(--muted);
+        }
+{% endblock %}
+
+{% block content %}
+    <main class="dashboard-shell">
+        <section class="card">
+            <h1>Dashboard</h1>
+            <p>Basic event overview and registrations.</p>
+
+            {% if messages %}
+                <div class="message-list">
+                    {% for message in messages %}
+                        <div class="msg {% if message.tags == 'error' %}error{% elif message.tags == 'info' %}info{% else %}success{% endif %}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>All Events</h2>
+            <p>Showing all available events.</p>
+
+            {% if events %}
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Event</th>
+                                <th>Activity</th>
+                                <th>Date of Event</th>
+                                <th>Time of Event</th>
+                                <th>Organizer</th>
+                                <th>Registration Fees</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in events %}
+                                <tr>
+                                    <td>{{ item.id }}</td>
+                                    <td>{{ item.event }}</td>
+                                    <td>{{ item.activity }}</td>
+                                    <td>{{ item.date_of_event }}</td>
+                                    <td>{{ item.time_of_event }}</td>
+                                    <td>{{ item.user.username }}</td>
+                                    <td>{{ item.registration }}</td>
+                                    <td>
+                                        {% if can_register %}
+                                            {% if item.id in participant_registered_event_ids %}
+                                                <button type="button" class="btn" disabled>Registered</button>
+                                            {% else %}
+                                                <form method="post" action="{% url 'dashboard' %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="register_event">
+                                                    <input type="hidden" name="event_id" value="{{ item.id }}">
+                                                    <button type="submit" class="btn">Register</button>
+                                                </form>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty">No events available.</p>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>Registered Events</h2>
+            {% if can_view_participant_map %}
+                <p>Organizer view: participants and their participated events.</p>
+            {% else %}
+                <p>Your registered events.</p>
+            {% endif %}
+
+            {% if registered_events %}
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                {% if can_view_participant_map %}
+                                    <th>Participant</th>
+                                {% endif %}
+                                <th>Event</th>
+                                <th>Activity</th>
+                                <th>Date of Event</th>
+                                <th>Time of Event</th>
+                                <th>Registered At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in registered_events %}
+                                <tr>
+                                    {% if can_view_participant_map %}
+                                        <td>{{ row.participant.username }}</td>
+                                    {% endif %}
+                                    <td>{{ row.event.event }}</td>
+                                    <td>{{ row.event.activity }}</td>
+                                    <td>{{ row.event.date_of_event }}</td>
+                                    <td>{{ row.event.time_of_event }}</td>
+                                    <td>{{ row.registered_at }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty">No registered events to show.</p>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>Activities</h2>
+            <p>Register for specific activities inside events.</p>
+
+            {% if activities %}
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Event</th>
+                                <th>Activity</th>
+                                <th>Fee</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity in activities %}
+                                <tr>
+                                    <td>{{ activity.id }}</td>
+                                    <td>{{ activity.event.event }}</td>
+                                    <td>{{ activity.name }}</td>
+                                    <td>{{ activity.registration_fee }}</td>
+                                    <td>
+                                        {% if can_register %}
+                                            {% if activity.id in participant_registered_activity_ids %}
+                                                <button type="button" class="btn" disabled>Registered</button>
+                                            {% else %}
+                                                <form method="post" action="{% url 'dashboard' %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="register_activity">
+                                                    <input type="hidden" name="activity_id" value="{{ activity.id }}">
+                                                    <button type="submit" class="btn">Register</button>
+                                                </form>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty">No activities available.</p>
+            {% endif %}
+        </section>
+
+        {% if can_check_payments %}
+            <section class="card">
+                <h2>Activity Registrations</h2>
+                <p>Coordinator view: confirm payment for activity registrations.</p>
+
+                {% if activity_registrations %}
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Participant</th>
+                                    <th>Event</th>
+                                    <th>Activity</th>
+                                    <th>Registered At</th>
+                                    <th>Payment Status</th>
+                                    <th>Checked By</th>
+                                    <th>Checked At</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in activity_registrations %}
+                                    <tr>
+                                        <td>{{ item.registration.participant.username }}</td>
+                                        <td>{{ item.registration.activity.event.event }}</td>
+                                        <td>{{ item.registration.activity.name }}</td>
+                                        <td>{{ item.registration.registered_at }}</td>
+                                        <td>{{ item.payment_status }}</td>
+                                        <td>{% if item.checked_by %}{{ item.checked_by.username }}{% else %}-{% endif %}</td>
+                                        <td>{% if item.checked_at %}{{ item.checked_at }}{% else %}-{% endif %}</td>
+                                        <td>
+                                            {% if item.payment_status == "confirmed" %}
+                                                <button type="button" class="btn" disabled>Confirmed</button>
+                                            {% else %}
+                                                <form method="post" action="{% url 'dashboard' %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="check_payment">
+                                                    <input type="hidden" name="registration_id" value="{{ item.registration.id }}">
+                                                    <button type="submit" class="btn">Mark Paid</button>
+                                                </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="empty">No activity registrations found.</p>
+                {% endif %}
+            </section>
+        {% endif %}
+    </main>
+{% endblock %}

@@ -18,8 +18,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-urlpatterns = [ 
+urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
-    path('', include('event.urls')),
+    path("accounts-app/", include("accounts.urls")),
+    path("payment/", include("payment.urls")),
+    path("participant/", include("participant.urls")),
+    path("notification/", include("notification.urls")),
+    path("website/", include("website.urls")),
+    path("", include("event.urls")),
 ]
