@@ -168,30 +168,75 @@
             {% if can_manage %}
                 <p>Add activities for an event and assign a coordinator.</p>
 
-                <form method="post" action="{% url 'manage_activities' %}">
+                <form method="post" action="{% url 'events:manage_activities' %}">
                     {% csrf_token %}
                     <label for="event_id">Event</label>
                     <select id="event_id" name="event_id" required>
                         <option value="" disabled selected>Select an event</option>
                         {% for event in events %}
-                            <option value="{{ event.id }}">{{ event.event }} ({{ event.date_of_event }})</option>
+                            <option value="{{ event.id }}" {% if selected_event_id == event.id|stringformat:"s" %}selected{% endif %}>
+                                {% if can_view_event_names %}
+                                    {{ event.event }} ({{ event.date_of_event }})
+                                {% else %}
+                                    Event #{{ event.id }} ({{ event.date_of_event }})
+                                {% endif %}
+                            </option>
                         {% endfor %}
                     </select>
 
                     <label for="activity_name">Activity Name</label>
                     <input id="activity_name" name="activity_name" type="text" required>
 
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" required></textarea>
+
+                    <label for="rules">Rules</label>
+                    <textarea id="rules" name="rules"></textarea>
+
+                    <label for="eligibility">Eligibility</label>
+                    <input id="eligibility" name="eligibility" type="text">
+
+                    <label for="date">Date</label>
+                    <input id="date" name="date" type="date" required>
+
+                    <label for="start_time">Start Time</label>
+                    <input id="start_time" name="start_time" type="time" required>
+
+                    <label for="end_time">End Time</label>
+                    <input id="end_time" name="end_time" type="time" required>
+
+
                     <label for="registration_fee">Registration Fee</label>
                     <input id="registration_fee" name="registration_fee" type="text" required>
 
-                    <label for="coordinator_email">Coordinator Email (optional)</label>
-                    <input id="coordinator_email" name="coordinator_email" type="email" placeholder="coordinator@example.com">
+                    <label for="prize">Prize</label>
+                    <input id="prize" name="prize" type="text">
+
+                    <label for="max_participants">Max Participants</label>
+                    <input id="max_participants" name="max_participants" type="number" min="1">
+
+                    <label for="is_team_event">
+                        <input id="is_team_event" name="is_team_event" type="checkbox">
+                        Team event
+                    </label>
+
+                    <label for="team_size">Team Size (if team event)</label>
+                    <input id="team_size" name="team_size" type="number" min="2" placeholder="2">
+
+                    <label for="coordinator_email">Invite Coordinator</label>
+                    <input id="coordinator_email" name="coordinator_email" type="email" placeholder="coordinator@example.com" required>
+
+                    <label for="registration_form">Registration Form (attach file)</label>
+                    <input id="registration_form" name="registration_form" type="file" accept=".pdf,.doc,.docx,.jpg,.png">
+
+                    <label for="registration_form_fields">Custom Registration Fields<br><span style="font-weight:400;font-size:0.95em;">(One per line, use * for required. Example: Full Name*, Email*, College, Team Members)</span></label>
+                    <textarea id="registration_form_fields" name="registration_form_fields" rows="4" placeholder="Full Name*\nEmail*\nPhone\nCollege\nTeam Members (if team event)"></textarea>
 
                     <button type="submit" class="btn">Create Activity</button>
                 </form>
             {% else %}
                 <p>Activity creation is restricted by role.</p>
-                <div class="notice">Only users with Organizer role can create activities.</div>
+                <div class="notice">Only organizers and authorized coordinators can create activities.</div>
             {% endif %}
         </section>
 
@@ -216,6 +261,7 @@
                                 <th>Event</th>
                                 <th>Activity</th>
                                 <th>Fee</th>
+                                <th>Time</th>
                                 <th>Coordinators</th>
                             </tr>
                         </thead>
@@ -223,9 +269,16 @@
                             {% for item in activities %}
                                 <tr>
                                     <td>{{ item.activity.id }}</td>
-                                    <td>{{ item.activity.event.event }}</td>
+                                    <td>
+                                        {% if can_view_event_names %}
+                                            {{ item.activity.event.event }}
+                                        {% else %}
+                                            Event #{{ item.activity.event.id }}
+                                        {% endif %}
+                                    </td>
                                     <td>{{ item.activity.name }}</td>
                                     <td>{{ item.activity.registration_fee }}</td>
+                                    <td>{{ item.activity.start_time }} - {{ item.activity.end_time }}</td>
                                     <td>
                                         {{ item.coordinator_names }}
                                     </td>

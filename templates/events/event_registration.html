@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Register for {{ event.event }}{% endblock %}
+
+{% block body_class %}page-event-registration{% endblock %}
+
+{% block extra_css %}
+        body.page-event-registration {
+            background: radial-gradient(circle at top, #f7f1e9 0%, #efe5d9 60%, #e7d9c8 100%);
+        }
+        .register-shell {
+            width: min(900px, 100%);
+            display: grid;
+            gap: 24px;
+        }
+
+        .card {
+            border-radius: 20px;
+            background: #ffffff;
+            border: 1px solid rgba(43, 38, 32, 0.08);
+            box-shadow: 0 24px 60px rgba(80, 62, 44, 0.16);
+            padding: 24px;
+            animation: rise 0.5s ease both;
+        }
+
+        .card h1 {
+            margin: 0 0 8px;
+            color: var(--green-900);
+        }
+
+        label {
+            display: block;
+            margin: 12px 0 6px;
+            color: var(--green-900);
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            background: #ffffff;
+            color: var(--text);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: rgba(47, 111, 102, 0.6);
+            box-shadow: 0 0 0 3px rgba(47, 111, 102, 0.15);
+        }
+
+        .btn {
+            margin-top: 16px;
+            width: 100%;
+            border: none;
+            border-radius: 999px;
+            padding: 11px 14px;
+            background: #2f6f66;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 28px rgba(80, 62, 44, 0.18);
+            background: #23574f;
+        }
+
+        .message-list {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .msg {
+            border-radius: 10px;
+            padding: 10px 12px;
+            border: 1px solid;
+            font-size: 0.9rem;
+        }
+
+        .msg.success {
+            background: rgba(47, 111, 102, 0.12);
+            border-color: rgba(47, 111, 102, 0.35);
+            color: #23574f;
+        }
+
+        .msg.error {
+            background: rgba(185, 28, 28, 0.08);
+            border-color: rgba(185, 28, 28, 0.25);
+            color: #9f1239;
+        }
+{% endblock %}
+
+{% block content %}
+    <main class="register-shell">
+        <section class="card">
+            <h1>Register for {{ event.event }}</h1>
+            <p>{{ event.description }}</p>
+
+            {% if messages %}
+                <div class="message-list">
+                    {% for message in messages %}
+                        <div class="msg {% if message.tags == 'error' %}error{% else %}success{% endif %}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'events:event_registration_form' event.id %}">
+                {% csrf_token %}
+                {% if fields %}
+                    {% for field in fields %}
+                        <label for="{{ field.key }}">{{ field.label }}{% if field.required %} *{% endif %}</label>
+                        <input id="{{ field.key }}" name="{{ field.key }}" type="text" {% if field.required %}required{% endif %}>
+                    {% endfor %}
+                {% else %}
+                    <p>No extra form fields are required for this event.</p>
+                {% endif %}
+                <button type="submit" class="btn">Submit Registration</button>
+            </form>
+        </section>
+    </main>
+{% endblock %}

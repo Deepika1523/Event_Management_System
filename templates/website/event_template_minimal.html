@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ event.event }}{% endblock %}
+
+{% block body_class %}page-event-minimal{% endblock %}
+
+{% block extra_css %}
+        body.page-event-minimal {
+            background: #f8f4ee;
+        }
+        .event-shell {
+            width: min(960px, 100%);
+            display: grid;
+            gap: 20px;
+        }
+
+        .card {
+            border-radius: 18px;
+            background: #ffffff;
+            border: 1px solid rgba(43, 38, 32, 0.08);
+            padding: 22px;
+        }
+
+        .header h1 {
+            margin: 0 0 10px;
+            font-size: clamp(1.9rem, 3vw, 2.6rem);
+            color: var(--green-900);
+        }
+
+        .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 0.28em;
+            font-size: 0.72rem;
+            color: var(--green-700);
+        }
+
+        .header p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .event-links {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .event-link {
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: #2f6f66;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .event-link:hover {
+            background: #23574f;
+        }
+
+        .meta div {
+            border-radius: 12px;
+            background: rgba(247, 241, 233, 0.8);
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+        }
+
+        .meta strong {
+            display: block;
+            color: var(--green-900);
+        }
+
+        .meta span {
+            color: var(--muted);
+        }
+
+        .image {
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .image img {
+            width: 100%;
+            display: block;
+        }
+{% endblock %}
+
+{% block content %}
+    <main class="event-shell">
+        <section class="card">
+            <div class="event-links">
+                <a class="event-link" href="{{ coordinator_login_url }}">Coordinator Login</a>
+                <a class="event-link" href="{{ participant_login_url }}">Participant Login</a>
+                <a class="event-link" href="{% url 'events:event_registration_form' event.id %}">Register</a>
+                {% if can_create_activity %}
+                    <a class="event-link" href="{% if request.user.is_superuser %}{{ admin_activity_url }}{% else %}{{ organizer_activity_url }}{% endif %}">Create Activity</a>
+                {% endif %}
+            </div>
+        </section>
+        <section class="card header">
+            <p class="eyebrow">{{ event.get_category_display }}</p>
+            <h1>{{ event.event }}</h1>
+            {% if event.tagline %}
+                <p><strong>{{ event.tagline }}</strong></p>
+            {% endif %}
+            <p>{{ event.description }}</p>
+        </section>
+
+        {% if event.image %}
+            <div class="image">
+                <img src="{{ event.image.url }}" alt="{{ event.event }}">
+            </div>
+        {% elif event.image_url %}
+            <div class="image">
+                <img src="{{ event.image_url }}" alt="{{ event.event }}">
+            </div>
+        {% endif %}
+
+        <section class="card">
+            <div class="meta">
+                <div>
+                    <strong>Date</strong>
+                    <span>{{ event.date_of_event }}</span>
+                </div>
+                <div>
+                    <strong>Time</strong>
+                    <span>{{ event.time_of_event }}</span>
+                </div>
+                <div>
+                    <strong>Venue</strong>
+                    <span>{{ event.venue }}</span>
+                </div>
+                <div>
+                    <strong>Registration Fee</strong>
+                    <span>{{ event.registration }}</span>
+                </div>
+                <div>
+                    <strong>Contact</strong>
+                    <span>{{ event.contact_info }}</span>
+                </div>
+            </div>
+        </section>
+
+        {% if event.schedule or event.activities_overview or event.rules %}
+            <section class="card">
+                {% if event.schedule %}
+                    <h2>Schedule</h2>
+                    <p>{{ event.schedule|linebreaks }}</p>
+                {% endif %}
+                {% if event.activities_overview %}
+                    <h2>Activities</h2>
+                    <p>{{ event.activities_overview|linebreaks }}</p>
+                {% endif %}
+                {% if event.rules %}
+                    <h2>Rules</h2>
+                    <p>{{ event.rules|linebreaks }}</p>
+                {% endif %}
+            </section>
+        {% endif %}
+    </main>
+{% endblock %}

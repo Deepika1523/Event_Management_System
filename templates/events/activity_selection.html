@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Select Activities for {{ event.event }}{% endblock %}
+
+{% block body_class %}page-activity-selection{% endblock %}
+
+{% block content %}
+<main class="register-shell">
+    <section class="card">
+        <h1>Select Activities for {{ event.event }}</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div>
+                {% for activity in activities %}
+                    <label>
+                        <input type="checkbox" name="activities" value="{{ activity.id }}" {% if activity.id in registered_ids %}checked{% endif %}>
+                        {{ activity.name }} (Fee: {{ activity.registration_fee }})
+                    </label><br>
+                {% empty %}
+                    <p>No activities available for this event.</p>
+                {% endfor %}
+            </div>
+            <div style="margin-top: 16px;">
+                <label for="custom_amount">Custom Amount (optional):</label>
+                <input type="number" name="custom_amount" id="custom_amount" min="0">
+                <small>If you select more than 2 activities, 50 will be added to the total fee automatically unless you specify a custom amount.</small>
+            </div>
+            <button type="submit" class="btn">Register for Selected Activities</button>
+        </form>
+    </section>
+</main>
+{% endblock %}

@@ -30,7 +30,8 @@
             min-height: 100vh;
             font-family: "Manrope", "Segoe UI", sans-serif;
             color: var(--text);
-            background: linear-gradient(180deg, var(--beige-100), var(--beige-200));
+            background: url('{% static "images/event_bg.jpg" %}') no-repeat center center fixed;
+            background-size: cover;
             display: flex;
             flex-direction: column;
             padding: 0;
@@ -288,10 +289,171 @@
             background: rgba(18, 18, 18, 0.72);
         }
 
+        /* Sidebar styles */
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-bg: #0f1113; /* very dark */
+            --sidebar-contrast: #0b0c0d;
+            --gold: #f5c34a;
+            --gold-glow: rgba(245, 195, 74, 0.22);
+            --muted-light: rgba(255,255,255,0.85);
+        }
+
+        aside.sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, var(--sidebar-bg), var(--sidebar-contrast));
+            color: var(--muted-light);
+            padding: 28px 18px;
+            flex-direction: column;
+            gap: 18px;
+            box-shadow: 4px 0 30px rgba(2,2,2,0.6);
+            z-index: 9999;
+            display: none; /* hidden by default */
+        }
+
+        body.authenticated aside.sidebar {
+            display: flex; /* show when authenticated */
+        }
+
+        aside.sidebar .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        aside.sidebar .brand .logo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: linear-gradient(135deg,#2f6f66,#1f4d46);
+        }
+
+        aside.sidebar h3 {
+            margin: 6px 0 8px 0;
+            color: var(--gold);
+            font-size: 1.05rem;
+            letter-spacing: 0.2px;
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+        }
+
+        aside.sidebar nav { flex: 1 1 auto; overflow: auto; }
+
+        aside.sidebar .menu { list-style: none; padding: 0; margin: 6px 0 0 0; display: flex; flex-direction: column; gap: 6px; }
+
+        aside.sidebar .menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            color: var(--muted-light);
+            text-decoration: none;
+            font-size: 1.05rem; /* increased for readability */
+            font-weight: 600;
+            transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+        }
+
+        aside.sidebar .menu a .icon { width: 18px; height: 18px; opacity: 0.88; }
+
+        aside.sidebar .menu a:hover {
+            background: rgba(255,255,255,0.04);
+            box-shadow: 0 6px 22px var(--gold-glow);
+            transform: translateY(-2px);
+            color: var(--gold);
+        }
+
+        aside.sidebar .menu a.active,
+        aside.sidebar .menu a.active:hover {
+            background: linear-gradient(90deg, rgba(245,195,74,0.08), rgba(245,195,74,0.03));
+            color: var(--gold);
+            box-shadow: 0 8px 30px var(--gold-glow);
+        }
+
+        aside.sidebar .spacer { flex: 1 1 auto; }
+
+        aside.sidebar .logout-wrap { margin-top: 12px; }
+
+        aside.sidebar .logout {
+            display:flex;
+            width:100%;
+            align-items:center;
+            justify-content:center;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.06);
+            color: var(--muted-light);
+            text-decoration:none;
+            font-weight:700;
+            transition: all 0.16s ease;
+        }
+
+        aside.sidebar .logout:hover {
+            color: var(--gold);
+            box-shadow: 0 10px 28px var(--gold-glow);
+            transform: translateY(-2px);
+            border-color: rgba(245,195,74,0.22);
+        }
+
+        /* Shift header and main to accommodate fixed sidebar (only when authenticated) */
+        body.authenticated header,
+        body.authenticated main {
+            margin-left: var(--sidebar-width);
+        }
+
+        @media (max-width: 920px) {
+            body.authenticated aside.sidebar { transform: translateX(-10px); width: 220px; }
+            body.authenticated header,
+            body.authenticated main { margin-left: 220px; }
+        }
+
+        @media (max-width: 720px) {
+            body.authenticated aside.sidebar { position: relative; width: 100%; height: auto; flex-direction: row; padding: 12px; gap: 8px; }
+            body.authenticated aside.sidebar nav { order: 2; }
+            body.authenticated header,
+            body.authenticated main { margin-left: 0; }
+        }
+
         {% block extra_css %}{% endblock %}
     </style>
 </head>
-<body class="{% block body_class %}{% endblock %}">
+<body class="{% if request.user.is_authenticated %}authenticated{% endif %} {% block body_class %}{% endblock %}">
+    <aside class="sidebar" aria-label="Main sidebar">
+        <div class="brand">
+            <div class="logo-icon"></div>
+            <div>
+                <div style="font-weight:700;color:var(--gold);font-size:1.05rem;">Event Manager</div>
+                <div style="font-size:0.82rem;color:rgba(255,255,255,0.62);">Admin Dashboard</div>
+            </div>
+        </div>
+        <h3>Navigation</h3>
+        <nav>
+            <ul class="menu">
+                <li><a href="{% url 'events:dashboard' %}" class="active"><span class="icon">🏠</span> Dashboard</a></li>
+                <li><a href="{% url 'events:manage_events' %}"><span class="icon">📅</span> Events</a></li>
+                <li><a href="{% url 'events:manage_activities' %}"><span class="icon">🧭</span> Activities</a></li>
+                <li><a href="{% url 'events:participant_dashboard' %}"><span class="icon">👥</span> Participants</a></li>
+                <li><a href="{% url 'payment_status' %}"><span class="icon">💳</span> Payments</a></li>
+                <li><a href="{% url 'notification-index' %}"><span class="icon">🔔</span> Notifications</a></li>
+                <li><a href="{% url 'website-index' %}"><span class="icon">⚙️</span> Settings</a></li>
+            </ul>
+        </nav>
+        <div class="spacer"></div>
+        <div class="logout-wrap">
+            {% if request.user.is_authenticated %}
+                <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+                    <button class="logout" type="submit">Logout</button>
+                </form>
+            {% else %}
+                <a class="logout" href="{% url 'events:unified_login' %}">Sign In</a>
+            {% endif %}
+        </div>
+    </aside>
     <header>
         <div class="header-content">
             <a href="/" class="logo">
@@ -299,7 +461,7 @@
                 Event Manager
             </a>
             <nav class="nav-right">
-                <a href="{% url 'dashboard' %}" class="top-link">Dashboard</a>
+                <a href="{% url 'events:dashboard' %}" class="top-link">Dashboard</a>
                 {% if request.user.is_authenticated %}
                     <div class="user-info">
                         <span class="user-name">{{ request.user.username }}</span>
@@ -310,8 +472,8 @@
                     </form>
                 {% else %}
                     <div class="auth-links">
-                        <a href="{% url 'signup' %}">Sign Up</a>
-                        <a href="{% url 'unified_login' %}" class="signup">Sign In</a>
+                        <a href="{% url 'events:signup' %}">Sign Up</a>
+                        <a href="{% url 'events:unified_login' %}" class="signup">Sign In</a>
                     </div>
                 {% endif %}
             </nav>

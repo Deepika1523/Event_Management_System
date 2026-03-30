@@ -16,6 +16,8 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import include, path
 
 urlpatterns = [
@@ -25,6 +27,9 @@ urlpatterns = [
     path("payment/", include("payment.urls")),
     path("participant/", include("participant.urls")),
     path("notification/", include("notification.urls")),
-    path("website/", include("website.urls")),
-    path("", include("event.urls")),
+    path("", include("website.urls")),
+    path("events/", include("event.urls")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

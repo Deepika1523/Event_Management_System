@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Payment Status{% endblock %}
+
+{% block body_class %}page-payment-status{% endblock %}
+
+{% block extra_css %}
+        body.page-payment-status {
+            background-image: linear-gradient(rgba(18, 18, 18, 0.45), rgba(18, 18, 18, 0.45)),
+                url("{% static 'images/luxury-golden-glow-with-soft-light-trails-and-sparkling-particles-on-dark-background_11537186.jpg!bwr800' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        .status-shell {
+            width: min(1200px, 100%);
+            display: grid;
+            gap: 24px;
+        }
+
+        .card {
+            border-radius: 20px;
+            background: #ffffff;
+            border: 1px solid rgba(43, 38, 32, 0.08);
+            box-shadow: 0 24px 60px rgba(80, 62, 44, 0.16);
+            padding: 24px;
+            animation: rise 0.45s ease both;
+        }
+
+        .card h1,
+        .card h2 {
+            margin: 0 0 8px;
+            color: var(--green-900);
+        }
+
+        .card p {
+            margin: 0 0 18px;
+            color: var(--muted);
+        }
+
+        .message-list {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .msg {
+            border-radius: 10px;
+            padding: 10px 12px;
+            border: 1px solid;
+            font-size: 0.9rem;
+        }
+
+        .msg.success {
+            background: rgba(47, 111, 102, 0.12);
+            border-color: rgba(47, 111, 102, 0.35);
+            color: #23574f;
+        }
+
+        .msg.error {
+            background: rgba(185, 28, 28, 0.08);
+            border-color: rgba(185, 28, 28, 0.25);
+            color: #9f1239;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 760px;
+            background: #ffffff;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+            vertical-align: top;
+        }
+
+        th {
+            color: var(--green-900);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            background: rgba(247, 241, 233, 0.9);
+        }
+
+        .btn {
+            border: none;
+            border-radius: 999px;
+            padding: 7px 12px;
+            background: #2f6f66;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #23574f;
+        }
+
+        .btn[disabled] {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .empty {
+            margin: 0;
+            color: var(--muted);
+        }
+{% endblock %}
+
+{% block content %}
+    <main class="status-shell">
+        <section class="card">
+            <h1>Payment Status</h1>
+            <p>Organizers see payments for their events. Coordinators see their assigned activities.</p>
+
+            {% if messages %}
+                <div class="message-list">
+                    {% for message in messages %}
+                        <div class="msg {% if message.tags == 'error' %}error{% else %}success{% endif %}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if activity_registrations %}
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Participant</th>
+                                <th>Event</th>
+                                <th>Activity</th>
+                                <th>Registered At</th>
+                                <th>Payment Status</th>
+                                <th>Checked By</th>
+                                <th>Checked At</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in activity_registrations %}
+                                <tr>
+                                    <td>{{ item.registration.participant.username }}</td>
+                                    <td>{{ item.registration.activity.event.event }}</td>
+                                    <td>{{ item.registration.activity.name }}</td>
+                                    <td>{{ item.registration.registered_at }}</td>
+                                    <td>{{ item.payment_status }}</td>
+                                    <td>{% if item.checked_by %}{{ item.checked_by.username }}{% else %}-{% endif %}</td>
+                                    <td>{% if item.checked_at %}{{ item.checked_at }}{% else %}-{% endif %}</td>
+                                    <td>
+                                        {% if item.payment_status == "confirmed" %}
+                                            <button type="button" class="btn" disabled>Confirmed</button>
+                                        {% else %}
+                                            <form method="post" action="{% url 'payment_status' %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="registration_id" value="{{ item.registration.id }}">
+                                                <button type="submit" class="btn">Mark Paid</button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty">No activity registrations found.</p>
+            {% endif %}
+        </section>
+    </main>
+{% endblock %}

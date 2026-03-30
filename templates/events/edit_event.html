@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Edit Event{% endblock %}
+
+{% block body_class %}page-edit-event{% endblock %}
+
+{% block extra_css %}
+        body.page-edit-event {
+            background-image: linear-gradient(rgba(18, 18, 18, 0.45), rgba(18, 18, 18, 0.45)),
+                url("{% static 'images/gold_and_black_decor-_backdrop (1).webp' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        .event-shell {
+            width: min(1100px, 100%);
+            display: grid;
+            gap: 24px;
+        }
+
+        .card {
+            border-radius: 20px;
+            background: #ffffff;
+            border: 1px solid rgba(43, 38, 32, 0.08);
+            box-shadow: 0 24px 60px rgba(80, 62, 44, 0.16);
+            padding: 24px;
+            animation: rise 0.5s ease both;
+        }
+
+        .card h1 {
+            margin: 0 0 8px;
+            color: var(--green-900);
+        }
+
+        label {
+            display: block;
+            margin: 12px 0 6px;
+            color: var(--green-900);
+            font-weight: 600;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            background: #ffffff;
+            color: var(--text);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: rgba(47, 111, 102, 0.6);
+            box-shadow: 0 0 0 3px rgba(47, 111, 102, 0.15);
+        }
+
+        .btn {
+            margin-top: 16px;
+            width: 100%;
+            border: none;
+            border-radius: 999px;
+            padding: 11px 14px;
+            background: #2f6f66;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 28px rgba(80, 62, 44, 0.18);
+            background: #23574f;
+        }
+
+        .hint {
+            display: block;
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+{% endblock %}
+
+{% block content %}
+    <main class="event-shell">
+        <section class="card">
+            <h1>Edit Event</h1>
+            <form method="post" action="{% url 'events:edit_event' event.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label for="event">Event Name</label>
+                <input id="event" name="event" type="text" value="{{ event.event }}" required>
+
+                <label for="description">Event Description</label>
+                <textarea id="description" name="description" required>{{ event.description }}</textarea>
+
+                <label for="tagline">Event Tagline</label>
+                <input id="tagline" name="tagline" type="text" value="{{ event.tagline }}">
+
+                <label for="schedule">Event Schedule</label>
+                <textarea id="schedule" name="schedule">{{ event.schedule }}</textarea>
+
+                <label for="activities_overview">Event Activities</label>
+                <textarea id="activities_overview" name="activities_overview">{{ event.activities_overview }}</textarea>
+
+                <label for="rules">Event Rules</label>
+                <textarea id="rules" name="rules">{{ event.rules }}</textarea>
+
+                <label for="date_of_event">Date of Event</label>
+                <input id="date_of_event" name="date_of_event" type="date" value="{{ event.date_of_event|date:'Y-m-d' }}" required>
+
+                <label for="time_of_event">Time of Event</label>
+                <input id="time_of_event" name="time_of_event" type="time" value="{{ event.time_of_event|time:'H:i' }}" required>
+
+                <label for="venue">Venue</label>
+                <input id="venue" name="venue" type="text" value="{{ event.venue }}" required>
+
+                <label for="category">Category</label>
+                <select id="category" name="category" required>
+                    {% for value, label in category_choices %}
+                        <option value="{{ value }}" {% if event.category == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="registration_fees">Registration Fees</label>
+                <input id="registration_fees" name="registration_fees" type="text" value="{{ event.registration }}" required>
+
+                <label for="contact_info">Contact Information</label>
+                <input id="contact_info" name="contact_info" type="text" value="{{ event.contact_info }}" required>
+
+                <label for="registration_form_fields">Registration Form Fields</label>
+                <textarea id="registration_form_fields" name="registration_form_fields">{{ event.registration_form_fields }}</textarea>
+                <span class="hint">One field per line. Add * to mark required fields. Avoid duplicates.</span>
+
+                <label for="image">Event Image (upload)</label>
+                <input id="image" name="image" type="file" accept="image/*">
+
+                <label for="image_url">Event Image URL</label>
+                <input id="image_url" name="image_url" type="url" value="{{ event.image_url }}" placeholder="https://example.com/image.jpg">
+
+                <label for="template_choice">Website Template</label>
+                <select id="template_choice" name="template_choice" required>
+                    {% for value, label in template_choices %}
+                        <option value="{{ value }}" {% if event.template_choice == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit" class="btn">Save Changes</button>
+            </form>
+        </section>
+    </main>
+{% endblock %}

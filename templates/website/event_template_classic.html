@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ event.event }}{% endblock %}
+
+{% block body_class %}page-event-classic{% endblock %}
+
+{% block extra_css %}
+        body.page-event-classic {
+            background-image: linear-gradient(rgba(18, 18, 18, 0.35), rgba(18, 18, 18, 0.35)),
+                url("{% static 'images/luxury-golden-glow-with-soft-light-trails-and-sparkling-particles-on-dark-background_11537186.jpg!bwr800' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        .event-shell {
+            width: min(1100px, 100%);
+            display: grid;
+            gap: 24px;
+        }
+
+        .card {
+            border-radius: 24px;
+            background: #ffffff;
+            border: 1px solid rgba(43, 38, 32, 0.08);
+            box-shadow: 0 24px 60px rgba(80, 62, 44, 0.16);
+            padding: 28px;
+            animation: rise 0.45s ease both;
+        }
+
+        .hero {
+            display: grid;
+            gap: 18px;
+        }
+
+        .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 0.28em;
+            font-size: 0.72rem;
+            color: var(--green-700);
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-family: "Playfair Display", "Times New Roman", serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: var(--green-900);
+        }
+
+        .hero p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .hero img {
+            width: 100%;
+            border-radius: 18px;
+            box-shadow: 0 18px 45px rgba(80, 62, 44, 0.2);
+        }
+
+        .details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .event-links {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .event-link {
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: #2f6f66;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .event-link:hover {
+            background: #23574f;
+        }
+
+        .detail {
+            background: rgba(247, 241, 233, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px 16px;
+        }
+
+        .detail strong {
+            display: block;
+            color: var(--green-900);
+        }
+
+        .detail span {
+            color: var(--muted);
+        }
+{% endblock %}
+
+{% block content %}
+    <main class="event-shell">
+        <section class="card">
+            <div class="event-links">
+                <a class="event-link" href="{{ coordinator_login_url }}">Coordinator Login</a>
+                <a class="event-link" href="{{ participant_login_url }}">Participant Login</a>
+                <a class="event-link" href="{% url 'events:event_registration_form' event.id %}">Register</a>
+                {% if can_create_activity %}
+                    <a class="event-link" href="{% if request.user.is_superuser %}{{ admin_activity_url }}{% else %}{{ organizer_activity_url }}{% endif %}">Create Activity</a>
+                {% endif %}
+            </div>
+        </section>
+        <section class="card hero">
+            <div>
+                <p class="eyebrow">{{ event.get_category_display }}</p>
+                <h1>{{ event.event }}</h1>
+                {% if event.tagline %}
+                    <p><strong>{{ event.tagline }}</strong></p>
+                {% endif %}
+                <p>{{ event.description }}</p>
+            </div>
+            {% if event.image %}
+                <img src="{{ event.image.url }}" alt="{{ event.event }}">
+            {% elif event.image_url %}
+                <img src="{{ event.image_url }}" alt="{{ event.event }}">
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>Event Details</h2>
+            <div class="details">
+                <div class="detail">
+                    <strong>Date</strong>
+                    <span>{{ event.date_of_event }}</span>
+                </div>
+                <div class="detail">
+                    <strong>Time</strong>
+                    <span>{{ event.time_of_event }}</span>
+                </div>
+                <div class="detail">
+                    <strong>Venue</strong>
+                    <span>{{ event.venue }}</span>
+                </div>
+                <div class="detail">
+                    <strong>Registration Fee</strong>
+                    <span>{{ event.registration }}</span>
+                </div>
+                <div class="detail">
+                    <strong>Contact</strong>
+                    <span>{{ event.contact_info }}</span>
+                </div>
+            </div>
+        </section>
+
+        {% if event.schedule or event.activities_overview or event.rules %}
+            <section class="card">
+                {% if event.schedule %}
+                    <h2>Schedule</h2>
+                    <p>{{ event.schedule|linebreaks }}</p>
+                {% endif %}
+
+                {% if event.activities_overview %}
+                    <h2>Activities</h2>
+                    <p>{{ event.activities_overview|linebreaks }}</p>
+                {% endif %}
+
+                {% if event.rules %}
+                    <h2>Rules</h2>
+                    <p>{{ event.rules|linebreaks }}</p>
+                {% endif %}
+            </section>
+        {% endif %}
+    </main>
+{% endblock %}

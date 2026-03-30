@@ -1,25 +1,110 @@
+# Ensure models is imported for all model classes
+from django.db import models
+from django.conf import settings
+# ActivityCoordinator model for per-activity coordinators
+class ActivityCoordinator(models.Model):
+    activity = models.ForeignKey('Activity', on_delete=models.CASCADE, related_name='coordinators')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("activity", "user")
+
+    def __str__(self):
+        return f"{self.activity.name} - {self.user.username}"
+# Custom registration form field for each activity
+class ActivityRegistrationFormField(models.Model):
+    FIELD_TYPES = [
+        ("text", "Text"),
+        ("email", "Email"),
+        ("phone", "Phone"),
+        ("file", "File Upload"),
+        ("number", "Number"),
+        ("textarea", "Textarea"),
+        ("team_members", "Team Members"),
+        ("custom", "Custom Question"),
+    ]
+    activity = models.ForeignKey('Activity', on_delete=models.CASCADE, related_name="registration_fields")
+    label = models.CharField(max_length=200)
+    field_type = models.CharField(max_length=20, choices=FIELD_TYPES)
+    required = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0)
+    choices = models.TextField(blank=True, help_text="Comma-separated options for select fields.")
+
+    class Meta:
+        ordering = ["order", "id"]
+
+    def __str__(self):
+        return f"{self.activity.name}: {self.label} ({self.field_type})"
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
 import uuid
+from .models_eventimage import EventImage
 
 
 class Event(models.Model):
+    CATEGORY_CHOICES = [
+        ("concert", "Concert"),
+        ("workshop", "Workshop"),
+        ("fest", "Fest"),
+        ("other", "Other"),
+    ]
+
+    TEMPLATE_CHOICES = [
+        ("classic", "Classic"),
+        ("bold", "Bold"),
+        ("minimal", "Minimal"),
+    ]
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     event = models.CharField(max_length=200)
     activity = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    tagline = models.CharField(max_length=200, blank=True)
+    schedule = models.TextField(blank=True)
+    activities_overview = models.TextField(blank=True)
+    rules = models.TextField(blank=True)
     date_of_event = models.DateField(null=True, blank=True)
     time_of_event = models.TimeField(null=True, blank=True)
+    venue = models.CharField(max_length=200, blank=True)
+    location = models.CharField(max_length=255, blank=True, help_text="Map URL or coordinates")
+    category = models.CharField(max_length=40, choices=CATEGORY_CHOICES, blank=True)
     registration = models.CharField(max_length=200)
+    last_registration_date = models.DateField(null=True, blank=True)
     announcement = models.CharField(max_length=200)
+    contact_info = models.CharField(max_length=200, blank=True)
+    registration_form_fields = models.TextField(blank=True)
+    past_event_history = models.TextField(blank=True)
+    about_page = models.TextField(blank=True, help_text="Rich text for About page")
+    schedule_page = models.TextField(blank=True, help_text="Rich text for Schedule page")
+    activities_page = models.TextField(blank=True, help_text="Rich text for Activities page")
+    contact_page = models.TextField(blank=True, help_text="Rich text for Contact page")
+    template_choice = models.CharField(
+        max_length=30,
+        choices=TEMPLATE_CHOICES,
+        default="classic",
+    )
+    registration_form_fields = models.TextField(blank=True, help_text="Custom registration fields for this activity (one per line, use * for required)")
+    image_url = models.CharField(max_length=500, blank=True, help_text="Event image URL")
+
+    class Meta:
+        ordering = ["-date_of_event"]
+
+    def __str__(self):
+        return self.event
 
 
 class Activity(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="activities")
     name = models.CharField(max_length=200)
     registration_fee = models.CharField(max_length=200)
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
+    is_team_event = models.BooleanField(default=False)
+    team_size = models.PositiveIntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -36,8 +121,20 @@ class Profile(models.Model):
         ("participant", "Participant"),
     ]
 
+    COORDINATOR_ROLE_CHOICES = [
+        ("activity", "Activity Coordinator"),
+        ("event", "Event Coordinator"),
+        ("head", "Head Coordinator"),
+    ]
+
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    coordinator_role = models.CharField(
+        max_length=20,
+        choices=COORDINATOR_ROLE_CHOICES,
+        blank=True,
+        null=True,
+    )
 
     def __str__(self):
         return f"{self.user.username} ({self.get_role_display()})"
@@ -91,16 +188,40 @@ class EventCoordinator(models.Model):
         unique_together = ("event", "user")
 
     def __str__(self):
-        return f"{self.user.username} -> {self.event}"
+        return f"{self.event.event} - {self.name}"
 
 
-class ActivityCoordinator(models.Model):
-    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    added_at = models.DateTimeField(auto_now_add=True)
+# Per-activity registration form field model
+class ActivityRegistrationFormField(models.Model):
+    FIELD_TYPES = [
+        ("text", "Text"),
+        ("number", "Number"),
+        ("email", "Email"),
+        ("date", "Date"),
+        ("choice", "Choice"),
+    ]
+    activity = models.ForeignKey('Activity', on_delete=models.CASCADE, related_name="registration_fields")
+    label = models.CharField(max_length=200)
+    field_type = models.CharField(max_length=20, choices=FIELD_TYPES)
+    required = models.BooleanField(default=True)
+    choices = models.TextField(blank=True, help_text="Comma-separated options for 'choice' type.")
+    order = models.PositiveIntegerField(default=0)
 
     class Meta:
-        unique_together = ("activity", "user")
+        ordering = ["order", "id"]
 
     def __str__(self):
-        return f"{self.user.username} -> {self.activity}"
+        return f"{self.label} ({self.get_field_type_display()}) for {self.activity.name}"
+
+
+# Stores participant responses to custom registration forms
+class ActivityRegistrationFormResponse(models.Model):
+    activity = models.ForeignKey('Activity', on_delete=models.CASCADE, related_name="registration_responses")
+    participant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="activity_responses")
+    field = models.ForeignKey(ActivityRegistrationFormField, on_delete=models.CASCADE)
+    value = models.TextField(blank=True, null=True)
+    file = models.FileField(upload_to="registration_uploads/", blank=True, null=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.participant} - {self.activity} - {self.field.label}"

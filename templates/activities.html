@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Activities | Event Management System{% endblock %}
+{% block body_class %}page-activities{% endblock %}
+{% block extra_css %}
+        body.page-activities::before {
+                content: "";
+                position: fixed;
+                top: 0; left: 0; width: 100vw; height: 100vh;
+                z-index: -1;
+                background: linear-gradient(rgba(18,18,18,0.75), rgba(18,18,18,0.75)), url('{% static "images/event_bg.jpg" %}');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                filter: blur(2.5px) brightness(0.85);
+        }
+{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:center;align-items:center;min-height:80vh;">
+    <div class="panel" style="max-width:600px;width:100%;padding:48px 36px 40px 36px;text-align:center;">
+        <h1 style="font-family:'Playfair Display',serif;font-size:2.3rem;font-weight:600;margin-bottom:18px;">Activities</h1>
+        <p style="font-size:1.15rem;line-height:1.7;color:#f3f3f3;">Browse and discover all activities available for your events.<br>More features coming soon.</p>
+    </div>
+</div>
+{% endblock %}

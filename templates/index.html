@@ -6,314 +6,302 @@
 {% block body_class %}page-index{% endblock %}
 
 {% block extra_css %}
-        body.page-index {
-            background-image: linear-gradient(rgba(18, 18, 18, 0.45), rgba(18, 18, 18, 0.45)),
-                url("{% static 'images/New_Project_41.webp' %}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }
+    body.page-index {
+        position: relative;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+    body.page-index::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -1;
+        background: url('{% static "images/New_Project_41.webp" %}');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        filter: none;
+        transition: none;
+    }
+    }
+    .layout {
+        width: min(1100px, 98vw);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 48px 36px;
+        margin: 0 auto;
+        padding: 48px 0 32px 0;
+    }
+    .hero, .panel {
+        border-radius: 22px;
+        background: rgba(255,255,255,0.10);
+        border: 1.5px solid rgba(255,255,255,0.13);
+        box-shadow: 0 8px 32px rgba(40, 60, 120, 0.18);
+        padding: 38px 32px 32px 32px;
+        margin-bottom: 0;
+        backdrop-filter: blur(18px) saturate(1.2);
+        transition: box-shadow 0.2s;
+    }
+    .hero {
+        grid-column: 1 / 3;
+        margin-bottom: 32px;
+        background: linear-gradient(120deg, rgba(120,80,255,0.18) 0%, rgba(0,180,255,0.13) 100%), rgba(30,30,40,0.18);
+        box-shadow: 0 8px 40px rgba(80, 120, 255, 0.10);
+    }
+    .panel {
+        min-width: 0;
+        min-height: 320px;
+        margin-bottom: 0;
+        background: rgba(255,255,255,0.08);
+        box-shadow: 0 4px 24px rgba(80, 120, 255, 0.08);
+    }
+    .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.22em;
+        font-size: 0.78rem;
+        color: #a6b8ff;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .hero h1 {
+        margin: 18px 0 14px;
+        font-family: "Playfair Display", serif;
+        font-size: clamp(2.3rem, 4vw, 3.2rem);
+        font-weight: 600;
+        color: #eaf0ff;
+        letter-spacing: -1px;
+    }
+    .hero p {
+        margin: 0 0 22px;
+        color: #b6c2e0;
+        line-height: 1.7;
+        font-size: 1.13rem;
+    }
+    .metrics {
+        display: flex;
+        gap: 32px;
+        margin-top: 28px;
+        margin-bottom: 12px;
+        justify-content: flex-start;
+    }
+    .metric {
+        padding: 18px 22px;
+        border-radius: 16px;
+        background: rgba(60, 80, 120, 0.18);
+        border: 1px solid rgba(255,255,255,0.13);
+        min-width: 120px;
+        text-align: left;
+        box-shadow: 0 2px 8px rgba(80, 120, 255, 0.07);
+    }
+    .metric strong {
+        display: block;
+        font-size: 1.18rem;
+        color: #eaf0ff;
+        font-weight: 700;
+    }
+    .metric span {
+        color: #b6c2e0;
+        font-size: 0.92rem;
+        font-weight: 500;
+    }
+    .panel h2 {
+        margin: 0 0 12px;
+        font-size: 1.35rem;
+        color: #eaf0ff;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+    }
+    .panel p {
+        margin: 0 0 18px;
+        color: #b6c2e0;
+        font-size: 1.08rem;
+        line-height: 1.7;
+    }
+    .role-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-weight: 600;
+        border: 1px solid rgba(255,255,255,0.13);
+        background: rgba(120, 80, 255, 0.13);
+        color: #eaf0ff;
+        margin: 10px 0 18px;
+        font-size: 1.01rem;
+    }
+    ul {
+        margin: 0 0 12px 0;
+        padding-left: 22px;
+        color: #b6c2e0;
+        line-height: 1.8;
+        font-size: 1.01rem;
+    }
+    .actions {
+        margin-top: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+    .actions h3 {
+        margin: 8px 0 0;
+        font-size: 0.98rem;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        color: #a6b8ff;
+        font-weight: 700;
+    }
+    .actions a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 13px 20px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.13);
+        text-decoration: none;
+        color: #eaf0ff;
+        font-weight: 600;
+        background: rgba(120, 80, 255, 0.10);
+        transition: transform 0.15s, box-shadow 0.15s;
+        font-size: 1.01rem;
+    }
+    .actions a:hover {
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 8px 24px rgba(120, 80, 255, 0.13);
+        background: rgba(120, 80, 255, 0.18);
+    }
+    .actions a span {
+        font-weight: 700;
+        color: #a6b8ff;
+    }
+    .divider {
+        height: 1px;
+        background: rgba(255,255,255,0.13);
+        margin: 14px 0 2px;
+    }
+    .hero-art {
+        width: 100%;
+        margin-top: 18px;
+        border-radius: 18px;
+        box-shadow: 0 8px 32px rgba(80, 120, 255, 0.10);
+        display: block;
+    }
+    .image-strip {
+        margin-top: 18px;
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+    .image-strip img {
+        width: 120px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.13);
+        box-shadow: 0 2px 8px rgba(80, 120, 255, 0.07);
+        background: rgba(255,255,255,0.04);
+    }
+    nav[style*="position:sticky"] {
+        background: rgba(30, 30, 40, 0.92)!important;
+        border-bottom: 1.5px solid rgba(255,255,255,0.10)!important;
+        box-shadow: 0 2px 12px rgba(80, 120, 255, 0.04);
+        margin-bottom: 0;
+    }
+    nav ul {
+        gap: 36px!important;
+        padding: 18px 32px 0 32px!important;
+    }
+    nav a {
+        color: #a6b8ff!important;
+        font-weight: 600;
+        text-decoration: none;
+        font-size: 1.08rem;
+        letter-spacing: 0.04em;
+        transition: color 0.18s;
+        padding: 2px 0;
+    }
+    nav a:hover {
+        color: #eaf0ff!important;
+        text-shadow: 0 2px 8px rgba(120,80,255,0.13);
+    }
+    section.panel {
+        margin-bottom: 0;
+        margin-top: 0;
+        min-height: 320px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        box-sizing: border-box;
+    }
+    section.panel:not(:last-child) {
+        margin-bottom: 0;
+    }
+    @media (max-width: 1100px) {
         .layout {
-            width: min(1100px, 100%);
-            display: grid;
-            grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-            gap: 28px;
+            grid-template-columns: 1fr;
+            gap: 32px 0;
+            padding: 32px 0 24px 0;
         }
-
-        .hero,
-        .panel {
-            border-radius: 26px;
-            background: #ffffff;
-            border: 1px solid rgba(43, 38, 32, 0.08);
-            box-shadow: 0 30px 70px rgba(80, 62, 44, 0.16);
-            padding: 32px;
-            backdrop-filter: blur(8px);
-            animation: rise 0.5s ease both;
+        .hero {
+            grid-column: 1 / 2;
         }
-
-        .panel {
-            animation-delay: 0.08s;
+    }
+    @media (max-width: 700px) {
+        .layout {
+            padding: 12px 0 8px 0;
+            gap: 18px 0;
         }
-
-        .eyebrow {
-            text-transform: uppercase;
-            letter-spacing: 0.3em;
-            font-size: 0.72rem;
-            color: var(--green-700);
+        .hero, .panel {
+            padding: 18px 8px 14px 8px;
         }
-
-        .hero h1 {
-            margin: 16px 0 12px;
-            font-family: "Playfair Display", "Times New Roman", serif;
-            font-size: clamp(2.2rem, 4vw, 3.1rem);
-            font-weight: 600;
-            color: var(--green-900);
-        }
-
-        .hero p {
-            margin: 0 0 18px;
-            color: var(--muted);
-            line-height: 1.6;
-        }
-
         .metrics {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 12px;
-            margin-top: 22px;
-        }
-
-        .metric {
-            padding: 14px 16px;
-            border-radius: 16px;
-            background: rgba(247, 241, 233, 0.8);
-            border: 1px solid var(--border);
-        }
-
-        .metric strong {
-            display: block;
-            font-size: 1.3rem;
-            color: var(--green-900);
-        }
-
-        .metric span {
-            color: var(--muted);
-            font-size: 0.85rem;
-        }
-
-        .panel h2 {
-            margin: 0 0 6px;
-            font-size: 1.5rem;
-            color: var(--green-900);
-        }
-
-        .panel p {
-            margin: 0 0 16px;
-            color: var(--muted);
-        }
-
-        .role-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            border-radius: 999px;
-            padding: 8px 14px;
-            font-weight: 600;
-            border: 1px solid var(--border);
-            background: rgba(247, 241, 233, 0.8);
-            color: var(--green-800);
-            margin: 10px 0 14px;
-        }
-
-        ul {
-            margin: 0;
-            padding-left: 18px;
-            color: var(--muted);
-            line-height: 1.7;
-        }
-
-        .actions {
-            margin-top: 18px;
-            display: grid;
+            flex-direction: column;
             gap: 12px;
         }
-
-        .actions h3 {
-            margin: 8px 0 0;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            color: var(--green-700);
-        }
-
-        .actions a {
-            display: inline-flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 16px;
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            text-decoration: none;
-            color: var(--green-900);
-            font-weight: 600;
-            background: #ffffff;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .actions a:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 28px rgba(80, 62, 44, 0.18);
-        }
-
-        .actions a span {
-            font-weight: 700;
-            color: #2f6f66;
-        }
-
-        body.page-index .metric {
-            background: rgba(18, 18, 18, 0.6);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        body.page-index .metric strong,
-        body.page-index .metric span {
-            color: rgba(248, 250, 252, 0.9);
-        }
-
-        body.page-index .actions h3 {
-            color: rgba(248, 250, 252, 0.65);
-        }
-
-        body.page-index .actions a {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 255, 255, 0.25);
-            color: #f8fafc;
-        }
-
-        body.page-index .actions a span {
-            color: #f8fafc;
-        }
-
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 12px 0 2px;
-        }
-
-        .hero-art {
-            width: 100%;
-            margin-top: 18px;
-            border-radius: 18px;
-            box-shadow: 0 20px 50px rgba(80, 62, 44, 0.18);
-            display: block;
-        }
-
         .image-strip {
-            margin-top: 18px;
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 12px;
+            gap: 8px;
         }
-
         .image-strip img {
-            width: 100%;
-            height: 110px;
-            object-fit: cover;
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            box-shadow: 0 12px 24px rgba(80, 62, 44, 0.14);
+            width: 100px;
+            height: 70px;
         }
-
-        @keyframes rise {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 900px) {
-            .layout {
-                grid-template-columns: 1fr;
-            }
-
-            .metrics {
-                grid-template-columns: 1fr;
-            }
-
-            .image-strip {
-                grid-template-columns: 1fr;
-            }
-        }
+    }
 {% endblock %}
 
 {% block content %}
-    <main class="layout">
-        <section class="hero">
-            <div class="eyebrow">Event Management System</div>
-            <h1>Curate, coordinate, and host with quiet confidence.</h1>
-            <p>Manage events effortlessly with full control and real-time insights.</p>
-            <img class="hero-art" src="{% static 'images/New_Project_41.webp' %}" alt="Outdoor event setup with warm lights">
-            <div class="metrics">
-                <div class="metric">
-                    <strong>3 roles</strong>
-                    <span>Tailored access paths</span>
-                </div>
-                <div class="metric">
-                    <strong>Live</strong>
-                    <span>Real-time event control</span>
-                </div>
-                <div class="metric">
-                    <strong>Secure</strong>
-                    <span>Permission-aware flows</span>
-                </div>
-            </div>
-            <div class="image-strip" aria-label="Event highlights">
-                <img src="{% static 'images/gold_and_black_decor-_backdrop.webp' %}" alt="Gold decor and stage backdrop">
-                <img src="{% static 'images/download.jpg' %}" alt="Crowd enjoying a concert">
-                <img src="{% static 'images/New_Project_41.webp' %}" alt="String lights over an outdoor dinner">
-            </div>
-        </section>
+<nav style="position:sticky;top:0;z-index:10;background:rgba(30,30,40,0.92);backdrop-filter:blur(6px);border-bottom:1.5px solid rgba(255,255,255,0.10);box-shadow:0 2px 12px rgba(80,120,255,0.04);margin-bottom:0;">
+    <ul style="display:flex;gap:36px;list-style:none;margin:0;padding:18px 32px 0 32px;justify-content:center;">
+        <li><a href="/about/" class="nav-link">About</a></li>
+        <li><a href="/activities/" class="nav-link">Activities</a></li>
+        <li><a href="/schedule/" class="nav-link">Schedule</a></li>
+        <li><a href="/gallery/" class="nav-link">Gallery</a></li>
+        <li><a href="/contact/" class="nav-link">Contact</a></li>
+    </ul>
+</nav>
+<main class="layout" style="min-height:70vh;align-items:center;justify-content:center;">
+    <!-- Left: Main Hero Glass Card -->
+    <section class="hero" style="display:flex;flex-direction:column;justify-content:center;align-items:flex-start;min-width:0;min-height:380px;box-sizing:border-box;">
+        <div class="eyebrow">Event Management System</div>
+        <h1 style="margin-bottom:18px;">Curate, coordinate, and host with confidence.</h1>
+        <p style="max-width:420px;margin-bottom:22px;">A premium platform to manage events effortlessly with full control, real-time insights, and a touch of elegance. Minimal, modern, and focused for your success.</p>
+        <img class="hero-art" src="{% static 'images/New_Project_41.webp' %}" alt="Event setup" style="max-width:320px;border-radius:18px;box-shadow:0 8px 32px rgba(80,120,255,0.10);margin-top:8px;">
+    </section>
 
-        <section class="panel">
-            <h2>Welcome, {{ request.user.username }}</h2>
-
-            {% if role == "Admin" %}
-                <span class="role-pill">Role: {{ role }}</span>
-                <p>{{ message }}</p>
-                <ul>
-                    <li>Access to platform analytics and security controls</li>
-                    <li>Approve or remove any event listing</li>
-                    <li>Manage user roles and permissions</li>
-                </ul>
-            {% elif role == "Staff" %}
-                <span class="role-pill">Role: {{ role }}</span>
-                <p>{{ message }}</p>
-                <ul>
-                    <li>Create and update event activities</li>
-                    <li>Review registrations and participant records</li>
-                    <li>Publish updates to announcements</li>
-                </ul>
-            {% elif role != "Guest" %}
-                <span class="role-pill">Role: {{ role }}</span>
-                <p>{{ message }}</p>
-                <ul>
-                    <li>Browse available events</li>
-                    <li>Register for upcoming activities</li>
-                    <li>Track your own registrations</li>
-                </ul>
-
-                <div class="actions">
-                    <h3>Dashboard</h3>
-                    <a href="{% url 'dashboard' %}">All events and registrations <span>&rarr;</span></a>
-                    {% if role != "Participant" %}
-                        <h3>Event Module</h3>
-                        {% if role == "Organizer" %}
-                            <a href="{% url 'manage_events' %}">Create, view, and delete events <span>&rarr;</span></a>
-                        {% else %}
-                            <a href="{% url 'manage_events' %}">View and delete events <span>&rarr;</span></a>
-                        {% endif %}
-                    {% endif %}
-                </div>
-            {% endif %}
-
-            {% if role == "Guest" %}
-                <div class="actions">
-                    <h3>Sign up</h3>
-                    <a href="{% url 'signup' %}?role=coordinator">Coordinator signup <span>&rarr;</span></a>
-                    <a href="{% url 'signup' %}?role=organizer">Organizer signup <span>&rarr;</span></a>
-                    <a href="{% url 'signup' %}?role=participant">Participant signup <span>&rarr;</span></a>
-                    <div class="divider"></div>
-                    <h3>Sign in</h3>
-                    <a href="{% url 'coordinator_login' %}">Coordinator login <span>&rarr;</span></a>
-                    <a href="{% url 'organizer_login' %}">Organizer login <span>&rarr;</span></a>
-                    <a href="{% url 'participant_login' %}">Participant login <span>&rarr;</span></a>
-                </div>
-            {% endif %}
-        </section>
-    </main>
+    <!-- Right: Login/Signup Glass Card -->
+    <section class="panel" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;min-height:380px;box-sizing:border-box;text-align:center;">
+        <h2 style="margin-bottom:12px;">Welcome</h2>
+        <p style="max-width:320px;margin-bottom:18px;">Sign in or create an account to access your personalized dashboard and event tools.</p>
+        <div class="actions" style="width:100%;max-width:260px;margin:0 auto;">
+            <a href="{% url 'events:unified_login' %}">Sign In <span>&rarr;</span></a>
+            <a href="{% url 'events:signup' %}?role=participant">Participant Signup <span>&rarr;</span></a>
+            <a href="{% url 'events:signup' %}?role=coordinator">Coordinator Signup <span>&rarr;</span></a>
+            <a href="{% url 'events:signup' %}?role=organizer">Organizer Signup <span>&rarr;</span></a>
+        </div>
+    </section>
+</main>
 {% endblock %}

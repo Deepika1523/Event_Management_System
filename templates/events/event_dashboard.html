@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ event.event }} Dashboard{% endblock %}
+
+{% block body_class %}page-event-dashboard{% endblock %}
+
+{% block extra_css %}
+        body.page-event-dashboard {
+            background-image: linear-gradient(rgba(18, 18, 18, 0.45), rgba(18, 18, 18, 0.45)),
+                url("{% static 'images/luxury-golden-glow-with-soft-light-trails-and-sparkling-particles-on-dark-background_11537186.jpg!bwr800' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        .event-shell {
+            width: min(1200px, 100%);
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+            gap: 24px;
+        }
+
+        .card {
+            border-radius: 20px;
+            background: #ffffff;
+            border: 1px solid rgba(43, 38, 32, 0.08);
+            box-shadow: 0 24px 60px rgba(80, 62, 44, 0.16);
+            padding: 24px;
+            animation: rise 0.5s ease both;
+        }
+
+        .card h1,
+        .card h2 {
+            margin: 0 0 8px;
+            color: var(--green-900);
+        }
+
+        .card p {
+            margin: 0 0 18px;
+            color: var(--muted);
+        }
+
+        label {
+            display: block;
+            margin: 12px 0 6px;
+            color: var(--green-900);
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            background: #ffffff;
+            color: var(--text);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: rgba(47, 111, 102, 0.6);
+            box-shadow: 0 0 0 3px rgba(47, 111, 102, 0.15);
+        }
+
+        .btn {
+            margin-top: 16px;
+            width: 100%;
+            border: none;
+            border-radius: 999px;
+            padding: 11px 14px;
+            background: #2f6f66;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 28px rgba(80, 62, 44, 0.18);
+            background: #23574f;
+        }
+
+        .message-list {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .msg {
+            border-radius: 10px;
+            padding: 10px 12px;
+            border: 1px solid;
+            font-size: 0.9rem;
+        }
+
+        .msg.success {
+            background: rgba(47, 111, 102, 0.12);
+            border-color: rgba(47, 111, 102, 0.35);
+            color: #23574f;
+        }
+
+        .msg.error {
+            background: rgba(185, 28, 28, 0.08);
+            border-color: rgba(185, 28, 28, 0.25);
+            color: #9f1239;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 760px;
+            background: #ffffff;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+            vertical-align: top;
+        }
+
+        th {
+            color: var(--green-900);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            background: rgba(247, 241, 233, 0.9);
+        }
+
+        .empty {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .summary {
+            display: grid;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .summary span {
+            color: var(--muted);
+        }
+
+        @media (max-width: 950px) {
+            .event-shell {
+                grid-template-columns: 1fr;
+            }
+        }
+{% endblock %}
+
+{% block content %}
+    <main class="event-shell">
+        <section class="card">
+            <h1>{{ event.event }}</h1>
+            <div class="summary">
+                <span>{{ event.description }}</span>
+                <span>{{ event.date_of_event }} at {{ event.time_of_event }}</span>
+                <span>{{ event.venue }} | {{ event.get_category_display }}</span>
+                <span>Contact: {{ event.contact_info }}</span>
+            </div>
+
+            {% if can_view_participants %}
+                <a class="btn" href="{% url 'events:export_event_excel' event.id %}">Export Excel</a>
+            {% endif %}
+
+            {% if can_manage %}
+                <h2>Add Activity</h2>
+                <form method="post" action="{% url 'events:event_dashboard' event.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_activity">
+                    <label for="activity_name">Activity Name</label>
+                    <input id="activity_name" name="activity_name" type="text" required>
+
+                    <label for="registration_fee">Registration Fee</label>
+                    <input id="registration_fee" name="registration_fee" type="text" required>
+
+                    <label for="start_time">Start Time</label>
+                    <input id="start_time" name="start_time" type="time" required>
+
+                    <label for="end_time">End Time</label>
+                    <input id="end_time" name="end_time" type="time" required>
+
+                    <label for="is_team_event">
+                        <input id="is_team_event" name="is_team_event" type="checkbox">
+                        Team event
+                    </label>
+
+                    <label for="team_size">Team Size</label>
+                    <input id="team_size" name="team_size" type="number" min="2" placeholder="2">
+
+                    <label for="coordinator_email">Invite Coordinator</label>
+                    <input id="coordinator_email" name="coordinator_email" type="email" placeholder="coordinator@example.com" required>
+
+                    <button type="submit" class="btn">Create Activity</button>
+                </form>
+            {% endif %}
+
+            {% if can_invite_event_coordinator %}
+                <h2>Invite Event Coordinator</h2>
+                <form method="post" action="{% url 'events:event_dashboard' event.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="invite_event_coordinator">
+                    <label for="event_coordinator_email">Coordinator Email</label>
+                    <input id="event_coordinator_email" name="event_coordinator_email" type="email" placeholder="coordinator@example.com" required>
+                    <button type="submit" class="btn">Send Invite</button>
+                </form>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>Activities</h2>
+            <p>Activities for this event and their coordinators.</p>
+
+            {% if messages %}
+                <div class="message-list">
+                    {% for message in messages %}
+                        <div class="msg {% if message.tags == 'error' %}error{% else %}success{% endif %}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if activities %}
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Activity</th>
+                                <th>Fee</th>
+                                <th>Time</th>
+                                <th>Coordinators</th>
+                                <th>Registrations</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in activities %}
+                                <tr>
+                                    <td>{{ item.activity.id }}</td>
+                                    <td>{{ item.activity.name }}</td>
+                                    <td>{{ item.activity.registration_fee }}</td>
+                                    <td>{{ item.activity.start_time }} - {{ item.activity.end_time }}</td>
+                                    <td>{{ item.coordinator_names }}</td>
+                                    <td>{{ item.registration_count }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty">No activities created yet.</p>
+            {% endif %}
+
+            {% if can_view_participants %}
+                <h2>Event Participants</h2>
+                <p>Participants registered for this event.</p>
+
+                {% if event_registrations %}
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Participant</th>
+                                    <th>Email</th>
+                                    <th>Registered At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in event_registrations %}
+                                    <tr>
+                                        <td>{{ row.participant.username }}</td>
+                                        <td>{{ row.participant.email }}</td>
+                                        <td>{{ row.registered_at }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="empty">No event registrations yet.</p>
+                {% endif %}
+
+                <h2>Activity Participants</h2>
+                <p>Registrations by activity.</p>
+
+                {% if activity_registrations %}
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Participant</th>
+                                    <th>Email</th>
+                                    <th>Activity</th>
+                                    <th>Registered At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in activity_registrations %}
+                                    <tr>
+                                        <td>{{ row.participant.username }}</td>
+                                        <td>{{ row.participant.email }}</td>
+                                        <td>{{ row.activity.name }}</td>
+                                        <td>{{ row.registered_at }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="empty">No activity registrations yet.</p>
+                {% endif %}
+            {% endif %}
+
+            <h2>Event Coordinators</h2>
+            {% if event_coordinators %}
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Coordinator</th>
+                                <th>Added At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for coordinator in event_coordinators %}
+                                <tr>
+                                    <td>{{ coordinator.user.username }}</td>
+                                    <td>{{ coordinator.added_at }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty">No event coordinators assigned yet.</p>
+            {% endif %}
+        </section>
+    </main>
+{% endblock %}

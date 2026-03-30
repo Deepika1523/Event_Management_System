@@ -30,6 +30,16 @@
             {% endfor %}
         </select>
 
+        <div id="coordinator-role-field" style="display: none;">
+            <label for="id_coordinator_role">Coordinator type</label>
+            <select id="id_coordinator_role" name="coordinator_role">
+                <option value="" disabled selected>Select coordinator role</option>
+                {% for key, label in coordinator_roles %}
+                    <option value="{{ key }}" {% if selected_coordinator_role == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
         <label for="id_password1">Password</label>
         <input id="id_password1" type="password" name="password1" required>
 
@@ -49,6 +59,21 @@
             </ul>
         </div>
     {% endif %}
+
+    <script>
+        const roleSelect = document.getElementById("id_role");
+        const coordinatorField = document.getElementById("coordinator-role-field");
+        const coordinatorSelect = document.getElementById("id_coordinator_role");
+
+        const toggleCoordinatorField = () => {
+            const isCoordinator = roleSelect.value === "coordinator";
+            coordinatorField.style.display = isCoordinator ? "block" : "none";
+            coordinatorSelect.required = isCoordinator;
+        };
+
+        roleSelect.addEventListener("change", toggleCoordinatorField);
+        toggleCoordinatorField();
+    </script>
 {% endblock %}
 
 {% block after_form %}

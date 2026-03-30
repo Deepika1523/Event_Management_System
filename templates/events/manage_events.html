@@ -48,7 +48,9 @@
             font-weight: 600;
         }
 
-        input {
+        input,
+        textarea,
+        select {
             width: 100%;
             border: 1px solid var(--border);
             border-radius: 12px;
@@ -58,7 +60,14 @@
             color: var(--text);
         }
 
-        input:focus {
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
             outline: none;
             border-color: rgba(47, 111, 102, 0.6);
             box-shadow: 0 0 0 3px rgba(47, 111, 102, 0.15);
@@ -173,6 +182,37 @@
             font-size: 0.85rem;
         }
 
+        .ai-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 12px 0 6px;
+        }
+
+        .btn.secondary {
+            background: #f7f1e9;
+            color: var(--green-900);
+            border: 1px solid rgba(47, 111, 102, 0.2);
+        }
+
+        .btn.secondary:hover {
+            background: #efe5d9;
+        }
+
+        .ai-status {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .banner-preview {
+            margin-top: 12px;
+            border-radius: 12px;
+            width: 100%;
+            display: none;
+            border: 1px solid var(--border);
+        }
+
         @media (max-width: 950px) {
             .event-shell {
                 grid-template-columns: 1fr;
@@ -185,17 +225,37 @@
         <section class="card">
             <h1>Create Event</h1>
             {% if can_create_event %}
-                <p>Add a new event with activity name, date, time, and registration fees.</p>
+                <p>Add a new event with details used to generate the public event website.</p>
 
-                <p><a href="{% url 'manage_activities' %}">Manage activities and coordinators</a></p>
-
-                <form method="post" action="{% url 'manage_events' %}">
+                <form method="post" action="{% url 'events:manage_events' %}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <label for="event">Event Name</label>
                     <input id="event" name="event" type="text" required>
 
-                    <label for="activity">Activity Name</label>
-                    <input id="activity" name="activity" type="text" required>
+                    <div class="ai-toolbar">
+                        <button type="button" class="btn secondary" id="ai-generate-content">
+                            Generate Description, Tagline, Schedule, Activities, Rules
+                        </button>
+                        <button type="button" class="btn secondary" id="ai-generate-banner">
+                            Generate AI Event Banner
+                        </button>
+                    </div>
+                    <div class="ai-status" id="ai-status"></div>
+
+                    <label for="description">Event Description</label>
+                    <textarea id="description" name="description" required></textarea>
+
+                    <label for="tagline">Event Tagline</label>
+                    <input id="tagline" name="tagline" type="text">
+
+                    <label for="schedule">Event Schedule</label>
+                    <textarea id="schedule" name="schedule"></textarea>
+
+                    <label for="activities_overview">Event Activities</label>
+                    <textarea id="activities_overview" name="activities_overview"></textarea>
+
+                    <label for="rules">Event Rules</label>
+                    <textarea id="rules" name="rules"></textarea>
 
                     <label for="date_of_event">Date of Event</label>
                     <input id="date_of_event" name="date_of_event" type="date" required>
@@ -203,12 +263,58 @@
                     <label for="time_of_event">Time of Event</label>
                     <input id="time_of_event" name="time_of_event" type="time" required>
 
+
+                    <label for="venue">Venue</label>
+                    <input id="venue" name="venue" type="text" required>
+
+                    <label for="location">Location (Map URL or coordinates)</label>
+                    <input id="location" name="location" type="text" placeholder="https://maps.google.com/..." required>
+
+                    <label for="schedule">Event Itinerary / Schedule</label>
+                    <textarea id="schedule" name="schedule"></textarea>
+
+                    <label for="past_event_history">Past Event History</label>
+                    <textarea id="past_event_history" name="past_event_history"></textarea>
+
+                    <label for="last_registration_date">Last Registration Date</label>
+                    <input id="last_registration_date" name="last_registration_date" type="date" required>
+
+                    <label for="images">Event Images/Posters (multiple)</label>
+                    <input id="images" name="images" type="file" accept="image/*" multiple>
+
+                    <label for="category">Category</label>
+                    <select id="category" name="category" required>
+                        <option value="" disabled selected>Select a category</option>
+                        {% for value, label in category_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+
                     <label for="registration_fees">Registration Fees</label>
                     <input id="registration_fees" name="registration_fees" type="text" required>
 
-                    <label for="coordinator_emails">Add Coordinators</label>
-                    <input id="coordinator_emails" name="coordinator_emails" type="text" placeholder="email1@example.com, email2@example.com">
-                    <span class="hint">Comma-separated emails. Each coordinator will receive an invite link.</span>
+                    <label for="contact_info">Contact Information</label>
+                    <input id="contact_info" name="contact_info" type="text" required>
+
+                    <label for="registration_form_fields">Registration Form Fields</label>
+                    <textarea id="registration_form_fields" name="registration_form_fields" placeholder="Full name*\nPhone number*\nCollege name\nDietary preference"></textarea>
+                    <span class="hint">One field per line. Add * to mark required fields. Avoid duplicates.</span>
+
+                    <label for="image">Event Image (upload)</label>
+                    <input id="image" name="image" type="file" accept="image/*">
+
+                    <label for="image_url">Event Image URL</label>
+                    <input id="image_url" name="image_url" type="url" placeholder="https://example.com/image.jpg">
+                    <span class="hint">Provide a file upload or an image URL (or both).</span>
+                    <img class="banner-preview" id="banner-preview" alt="AI banner preview">
+
+                    <label for="template_choice">Website Template</label>
+                    <select id="template_choice" name="template_choice" required>
+                        <option value="" disabled selected>Select a template</option>
+                        {% for value, label in template_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
 
                     <button type="submit" class="btn">Create Event</button>
                 </form>
@@ -219,8 +325,8 @@
         </section>
 
         <section class="card">
-            <h2>View Events</h2>
-            <p>All your events are listed here. Admin and staff can view every event.</p>
+            <h2>Your Events</h2>
+            <p>Manage event pages, dashboards, exports, and edits.</p>
 
             {% if messages %}
                 <div class="message-list">
@@ -236,29 +342,35 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Owner</th>
                                 <th>Event</th>
-                                <th>Activity</th>
                                 <th>Date</th>
-                                <th>Time</th>
-                                <th>Registration Fees</th>
-                                <th>Action</th>
+                                <th>Website</th>
+                                <th>Dashboard</th>
+                                <th>Edit</th>
+                                <th>Export</th>
+                                <th>Delete</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for item in events %}
+                            {% for event in events %}
                                 <tr>
-                                    <td>{{ item.id }}</td>
-                                    <td>{{ item.user.username }}</td>
-                                    <td>{{ item.event }}</td>
-                                    <td>{{ item.activity }}</td>
-                                    <td>{{ item.date_of_event }}</td>
-                                    <td>{{ item.time_of_event }}</td>
-                                    <td>{{ item.registration }}</td>
+                                    <td>{{ event.id }}</td>
+                                    <td>{{ event.event }}</td>
+                                    <td>{{ event.date_of_event }}</td>
+                                    <td><a href="{% url 'event_site' event.id %}">Open</a></td>
                                     <td>
-                                        <form method="post" action="{% url 'delete_event' item.id %}" onsubmit="return confirm('Delete this event?');">
+                                        {% if request.user.is_superuser %}
+                                            <a href="{% url 'events:event_dashboard' event.id %}">Open</a>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td><a href="{% url 'events:edit_event' event.id %}">Edit</a></td>
+                                    <td><a href="{% url 'events:export_event_excel' event.id %}">Excel</a></td>
+                                    <td>
+                                        <form method="post" action="{% url 'events:delete_event' event.id %}">
                                             {% csrf_token %}
-                                            <button type="submit" class="delete-btn">Delete</button>
+                                            <button class="delete-btn" type="submit">Delete</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -267,8 +379,122 @@
                     </table>
                 </div>
             {% else %}
-                <p class="empty">No events found. Create your first event using the form.</p>
+                <p class="empty">No events created yet.</p>
             {% endif %}
         </section>
     </main>
+
+    <script>
+        const aiStatus = document.getElementById("ai-status");
+        const bannerPreview = document.getElementById("banner-preview");
+
+        const setStatus = (message, isError = false) => {
+            aiStatus.textContent = message;
+            aiStatus.style.color = isError ? "#9f1239" : "";
+        };
+
+        const getCookie = (name) => {
+            const cookies = document.cookie ? document.cookie.split(";") : [];
+            for (const cookie of cookies) {
+                const trimmed = cookie.trim();
+                if (trimmed.startsWith(`${name}=`)) {
+                    return decodeURIComponent(trimmed.substring(name.length + 1));
+                }
+            }
+            return "";
+        };
+
+        const joinLines = (value) => {
+            if (Array.isArray(value)) {
+                return value.join("\n");
+            }
+            return value || "";
+        };
+
+        document.getElementById("ai-generate-content").addEventListener("click", async () => {
+            const title = document.getElementById("event").value.trim();
+            const category = document.getElementById("category").value.trim();
+            const venue = document.getElementById("venue").value.trim();
+            const dateOfEvent = document.getElementById("date_of_event").value.trim();
+
+            if (!title || !category) {
+                setStatus("Please enter an event name and category first.", true);
+                return;
+            }
+
+            setStatus("Generating content with AI...");
+
+            try {
+                const response = await fetch("{% url 'events:ai_generate_event_content' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
+                    body: JSON.stringify({
+                        event: title,
+                        category,
+                        venue,
+                        date_of_event: dateOfEvent,
+                    }),
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || "AI generation failed.");
+                }
+
+                document.getElementById("description").value = data.description || "";
+                document.getElementById("tagline").value = data.tagline || "";
+                document.getElementById("schedule").value = joinLines(data.schedule);
+                document.getElementById("activities_overview").value = joinLines(data.activities);
+                document.getElementById("rules").value = joinLines(data.rules);
+
+                setStatus("AI content ready. Review and edit as needed.");
+            } catch (error) {
+                setStatus(error.message, true);
+            }
+        });
+
+        document.getElementById("ai-generate-banner").addEventListener("click", async () => {
+            const title = document.getElementById("event").value.trim();
+            const category = document.getElementById("category").value.trim();
+
+            if (!title || !category) {
+                setStatus("Please enter an event name and category first.", true);
+                return;
+            }
+
+            setStatus("Generating banner image...");
+
+            try {
+                const response = await fetch("{% url 'events:ai_generate_event_banner' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
+                    body: JSON.stringify({
+                        event: title,
+                        category,
+                    }),
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || "AI banner generation failed.");
+                }
+
+                if (data.image_url) {
+                    document.getElementById("image_url").value = data.image_url;
+                    bannerPreview.src = data.image_url;
+                    bannerPreview.style.display = "block";
+                }
+
+                setStatus("AI banner generated. Review and edit as needed.");
+            } catch (error) {
+                setStatus(error.message, true);
+            }
+        });
+    </script>
 {% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Register for {{ activity.name }}{% endblock %}
+
+{% block body_class %}page-activity-registration{% endblock %}
+
+{% block content %}
+<main class="register-shell">
+    <section class="card">
+        <h1>Register for {{ activity.name }}</h1>
+        <p>{{ activity.event.description }}</p>
+
+        {% if messages %}
+            <div class="message-list">
+                {% for message in messages %}
+                    <div class="msg {% if message.tags == 'error' %}error{% else %}success{% endif %}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if fields %}
+                {% for field in fields %}
+                    <label for="field_{{ field.id }}">{{ field.label }}{% if field.required %} *{% endif %}</label>
+                    {% if field.field_type == 'text' or field.field_type == 'email' or field.field_type == 'phone' or field.field_type == 'number' %}
+                        <input id="field_{{ field.id }}" name="field_{{ field.id }}" type="{{ field.field_type }}" {% if field.required %}required{% endif %}>
+                    {% elif field.field_type == 'textarea' %}
+                        <textarea id="field_{{ field.id }}" name="field_{{ field.id }}" {% if field.required %}required{% endif %}></textarea>
+                    {% elif field.field_type == 'file' %}
+                        <input id="field_{{ field.id }}" name="field_{{ field.id }}" type="file" {% if field.required %}required{% endif %}>
+                    {% elif field.field_type == 'team_members' %}
+                        <input id="field_{{ field.id }}" name="field_{{ field.id }}" type="text" placeholder="Enter team members (comma separated)" {% if field.required %}required{% endif %}>
+                    {% elif field.field_type == 'custom' %}
+                        <input id="field_{{ field.id }}" name="field_{{ field.id }}" type="text" {% if field.required %}required{% endif %}>
+                    {% else %}
+                        <input id="field_{{ field.id }}" name="field_{{ field.id }}" type="text" {% if field.required %}required{% endif %}>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p>No extra form fields are required for this activity.</p>
+            {% endif %}
+            <button type="submit" class="btn">Submit Registration</button>
+        </form>
+    </section>
+</main>
+{% endblock %}
