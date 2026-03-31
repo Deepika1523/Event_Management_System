@@ -1,6 +1,35 @@
+
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
+from django.contrib.auth import authenticate, login
+def unified_login(request):
+    error_message = None
+    selected_role = request.GET.get("role", "")
+    username = ""
+    if request.method == "POST":
+        selected_role = request.POST.get("role", "")
+        username = request.POST.get("username", "")
+        password = request.POST.get("password", "")
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            # Redirect based on role
+            if selected_role == "organizer":
+                return redirect("organizer_dashboard")
+            elif selected_role == "coordinator":
+                return redirect("coordinator_dashboard")
+            elif selected_role == "participant":
+                return redirect("participant_dashboard")
+            else:
+                return redirect("website-index")
+        else:
+            error_message = "Invalid username or password."
+    return render(request, "registration/unified_login.html", {
+        "error_message": error_message,
+        "selected_role": selected_role,
+        "username": username,
+    })
 
 from event.models import Event
 
@@ -47,8 +76,8 @@ def event_site(request, event_id):
         request.user.is_authenticated
         and (request.user.is_superuser or event.user_id == request.user.id)
     )
-    admin_activity_url = reverse("event_dashboard", args=[event.id])
-    organizer_activity_url = f"{reverse('manage_activities')}?event_id={event.id}"
+    admin_activity_url = reverse("events:event_dashboard", args=[event.id])
+    organizer_activity_url = f"{reverse('events:manage_activities')}?event_id={event.id}"
 
     return render(
         request,

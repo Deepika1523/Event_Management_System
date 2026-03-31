@@ -10,8 +10,12 @@ urlpatterns = [
     path("gallery/", views.gallery, name="gallery"),
     path("contact/", views.contact, name="contact"),
     path("event/<int:event_id>/", views.event_site, name="event_site"),
-    # Organizer dashboard and event management
+
+    # Organizer dashboards
     path("organizer-dashboard/", event_views.organizer_dashboard, name="organizer_dashboard"),
     path("coordinator-dashboard/", event_views.coordinator_dashboard, name="coordinator_dashboard"),
     path("participant-dashboard/", event_views.participant_dashboard, name="participant_dashboard"),
+
+    # Your feature
+    path("unified-login/", views.unified_login, name="unified_login"),
 ]

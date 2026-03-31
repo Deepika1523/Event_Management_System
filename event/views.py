@@ -23,30 +23,39 @@ def activity_registration_form(request, activity_id):
     if hasattr(activity, "registration_fields"):
         fields = activity.registration_fields.all().order_by("order", "id")
 
-    if request.method == "POST":
-        form_data = {}
-        missing = []
-        for field in fields:
-            value = (request.POST.get(field.label) or "").strip()
-            if field.required and not value:
-                missing.append(field.label)
-            form_data[field.label] = value
+        if request.method == "POST":
+            form_data = {}
+            missing = []
+            for field in fields:
+                value = (request.POST.get(field.label) or "").strip()
+                if field.required and not value:
+                    missing.append(field.label)
+                form_data[field.label] = value
 
-        if missing:
-            messages.error(request, f"Please provide required fields: {', '.join(missing)}.")
-        else:
-            registration, created = ActivityRegistration.objects.get_or_create(
-                participant=request.user,
-                activity=activity,
-                defaults={"form_data": form_data},
-            )
-            if not created:
-                registration.form_data = form_data
-                registration.save(update_fields=["form_data"])
-                messages.info(request, "Registration updated.")
+            payment_qr = request.FILES.get('payment_qr')
+            if not payment_qr:
+                messages.error(request, "Payment QR screenshot is required.")
+                return render(request, "events/activity_registration.html", {"activity": activity, "fields": fields})
+
+            if missing:
+                messages.error(request, f"Please provide required fields: {', '.join(missing)}.")
             else:
-                messages.success(request, "You are registered for this activity.")
-            return redirect("events:dashboard")
+                registration, created = ActivityRegistration.objects.get_or_create(
+                    participant=request.user,
+                    activity=activity,
+                    defaults={"form_data": form_data},
+                )
+                if created:
+                    payment_check, _ = PaymentCheck.objects.get_or_create(registration=registration)
+                    payment_check.payment_proof = payment_qr
+                    payment_check.save()
+                    messages.success(request, "Registration + payment proof submitted.")
+                else:
+                    payment_check = registration.payment_check
+                    payment_check.payment_proof = payment_qr
+                    payment_check.save()
+                    messages.info(request, "Payment proof updated.")
+                return redirect("events:dashboard")
 
     return render(
         request,
@@ -1336,32 +1345,6 @@ def export_event_excel(request, event_id):
             ])
     else:
         ws.append(["No event registrations yet.", "", "", "", ""])
-        if registrations.exists():
-            for reg in registrations:
-                ws5.append([
-                    activity.name,
-                    reg.participant.username,
-                    reg.participant.email,
-                    reg.registered_at.isoformat(),
-                    activity.event.event,
-                    activity.event.date_of_event.isoformat() if activity.event.date_of_event else "",
-                    activity.start_time.isoformat() if activity.start_time else "",
-                    activity.end_time.isoformat() if activity.end_time else "",
-                    activity.registration_fee,
-                    "Yes" if activity.is_team_event else "No",
-                    activity.team_size or "",
-                ])
-        else:
-            ws5.append([
-                activity.name,
-                "No participants yet.", "", "", activity.event.event,
-                activity.event.date_of_event.isoformat() if activity.event.date_of_event else "",
-                activity.start_time.isoformat() if activity.start_time else "",
-                activity.end_time.isoformat() if activity.end_time else "",
-                activity.registration_fee,
-                "Yes" if activity.is_team_event else "No",
-                activity.team_size or "",
-            ])
     ws = wb.active
     ws.title = "Event Registrations"
     ws.append(["Participant", "Email", "Event", "Registered At", "Form Data"])

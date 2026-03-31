@@ -31,6 +31,8 @@ class PaymentCheck(models.Model):
 		blank=True,
 	)
 	checked_at = models.DateTimeField(null=True, blank=True)
+	payment_proof = models.FileField(upload_to='payment_proofs/', blank=True, null=True)
+	qr_code = models.ImageField(upload_to='payment_qrs/', blank=True, null=True)
 
 	def mark_confirmed(self, user):
 		self.status = self.STATUS_CONFIRMED

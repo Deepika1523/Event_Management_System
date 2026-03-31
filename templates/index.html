@@ -6,6 +6,15 @@
 {% block body_class %}page-index{% endblock %}
 
 {% block extra_css %}
+    /* Remove sidebar from main page */
+    body.page-index aside.sidebar {
+        display: none !important;
+    }
+    body.page-index header,
+    body.page-index main {
+        margin-left: 0 !important;
+    }
+    
     body.page-index {
         position: relative;
         min-height: 100vh;

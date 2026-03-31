@@ -171,6 +171,7 @@
                 <span>Contact: {{ event.contact_info }}</span>
             </div>
 
+            <a class="btn" href="{% url 'events:event_activities_pdf' event.id %}">📄 Download Activities PDF</a>
             {% if can_view_participants %}
                 <a class="btn" href="{% url 'events:export_event_excel' event.id %}">Export Excel</a>
             {% endif %}

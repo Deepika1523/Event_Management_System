@@ -2,7 +2,7 @@ from django.urls import path
 
 # Register a namespace so templates can use the 'events:' URL namespace
 app_name = 'events'
-from . import views
+from . import views, event_pdf_views
 
 urlpatterns = [
     path("", views.role_based_user_page, name="home"),
@@ -94,4 +94,5 @@ urlpatterns = [
     path("organizer-dashboard/", views.organizer_dashboard, name="organizer_dashboard"),
     path("coordinator-dashboard/", views.coordinator_dashboard, name="coordinator_dashboard"),
     path("participant-dashboard/", views.participant_dashboard, name="participant_dashboard"),
+    path("events/<int:event_id>/activities.pdf/", event_pdf_views.event_activities_pdf, name="event_activities_pdf"),
 ]

@@ -41,8 +41,12 @@
             {% else %}
                 <p>No extra form fields are required for this activity.</p>
             {% endif %}
-            <button type="submit" class="btn">Submit Registration</button>
+            <label for="payment_qr">Upload Payment QR Code Screenshot *</label>
+            <input id="payment_qr" name="payment_qr" type="file" accept="image/*" required>
+
+            <button type="submit" class="btn">Submit Registration + Payment Proof</button>
         </form>
     </section>
 </main>
+
 {% endblock %}

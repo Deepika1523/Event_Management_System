@@ -78,7 +78,7 @@ def payment_status(request):
     if request.method == "POST":
         registration_id = request.POST.get("registration_id")
         registration = get_object_or_404(
-            ActivityRegistration.objects.select_related("activity", "activity__event"),
+            ActivityRegistration.objects.select_related("activity__event"),
             id=registration_id,
         )
         if not _can_check_payment_for_registration(request.user, registration):
@@ -90,6 +90,17 @@ def payment_status(request):
 
         payment, _ = PaymentCheck.objects.get_or_create(registration=registration)
         payment.mark_confirmed(request.user)
+        
+        # Generate QR code
+        import qrcode
+        from io import BytesIO
+        from django.core.files.base import ContentFile
+        qr_data = f"REG-{registration.id}|USER-{registration.participant.username}|ACT-{registration.activity.name}"
+        qr = qrcode.make(qr_data)
+        buffer = BytesIO()
+        qr.save(buffer, format='PNG')
+        filename = f'qr_{registration.id}.png'
+        payment.qr_code.save(filename, ContentFile(buffer.getvalue()), save=True)
         messages.success(request, "Payment marked as confirmed.")
         return redirect("payment_status")
 

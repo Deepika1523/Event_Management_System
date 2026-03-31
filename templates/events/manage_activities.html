@@ -229,6 +229,9 @@
                     <label for="registration_form">Registration Form (attach file)</label>
                     <input id="registration_form" name="registration_form" type="file" accept=".pdf,.doc,.docx,.jpg,.png">
 
+                    <label for="qr_code">QR Code (attach file)</label>
+                    <input id="qr_code" name="qr_code" type="file" accept=".pdf,.doc,.docx,.jpg,.png">
+
                     <label for="registration_form_fields">Custom Registration Fields<br><span style="font-weight:400;font-size:0.95em;">(One per line, use * for required. Example: Full Name*, Email*, College, Team Members)</span></label>
                     <textarea id="registration_form_fields" name="registration_form_fields" rows="4" placeholder="Full Name*\nEmail*\nPhone\nCollege\nTeam Members (if team event)"></textarea>
 
@@ -281,6 +284,10 @@
                                     <td>{{ item.activity.start_time }} - {{ item.activity.end_time }}</td>
                                     <td>
                                         {{ item.coordinator_names }}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'events:event_activities_pdf' item.activity.event.id %}" class="btn" style="padding: 5px 10px; font-size: 0.8rem;">Event PDF</a>
+                                        <a href="#" class="btn" style="padding: 5px 10px; font-size: 0.8rem;">Activity PDF</a>
                                     </td>
                                 </tr>
                             {% endfor %}
