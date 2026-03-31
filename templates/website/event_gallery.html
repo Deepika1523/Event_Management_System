@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gallery - {{ event.event }} | EMS{% endblock %}
+{% block page_title %}{{ event.event }} - Gallery{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'events:event_website_home' event.id %}">{{ event.event }}</a>
+    <span class="breadcrumb-separator">/</span>
+    <span>Gallery</span>
+</div>
+
+<div style="margin-bottom: 30px;">
+    <h2 style="margin-bottom: 10px;">📸 Event Gallery</h2>
+    <p style="color: var(--text-secondary);">Photos and memories from past events</p>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if event.image_url %}
+        <div class="gallery">
+            <div class="gallery-item">
+                <img src="{{ event.image_url }}" alt="{{ event.event }}">
+            </div>
+            <div class="gallery-item">
+                <div class="gallery-placeholder">Event Photos Coming Soon</div>
+            </div>
+            <div class="gallery-item">
+                <div class="gallery-placeholder">Gallery Photos</div>
+            </div>
+            <div class="gallery-item">
+                <div class="gallery-placeholder">More Photos</div>
+            </div>
+            <div class="gallery-item">
+                <div class="gallery-placeholder">Participant Moments</div>
+            </div>
+            <div class="gallery-item">
+                <div class="gallery-placeholder">Highlight Moments</div>
+            </div>
+        </div>
+        {% else %}
+        <div class="gallery">
+            <div class="gallery-item">
+                <div class="gallery-placeholder">📸<br>Gallery Coming Soon</div>
+            </div>
+            <div class="gallery-item">
+                <div class="gallery-placeholder">Photos</div>
+            </div>
+            <div class="gallery-item">
+                <div class="gallery-placeholder">Photos</div>
+            </div>
+            <div class="gallery-item">
+                <div class="gallery-placeholder">Photos</div>
+            </div>
+            <div class="gallery-item">
+                <div class="gallery-placeholder">Photos</div>
+            </div>
+            <div class="gallery-item">
+                <div class="gallery-placeholder">Photos</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div style="margin-top: 30px;">
+    <a href="{% url 'events:event_website_home' event.id %}" class="btn btn-secondary">← Back to Event</a>
+</div>
+
+{% endblock %}

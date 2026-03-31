@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Activities - {{ event.event }} | EMS{% endblock %}
+{% block page_title %}{{ event.event }} - Activities{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'events:event_website_home' event.id %}">{{ event.event }}</a>
+    <span class="breadcrumb-separator">/</span>
+    <span>Activities</span>
+</div>
+
+<div style="margin-bottom: 30px;">
+    <h2 style="margin-bottom: 10px;">🎯 Event Activities</h2>
+    <p style="color: var(--text-secondary);">Register for the activities you're interested in</p>
+</div>
+
+{% if activities %}
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+    {% for activity in activities %}
+    <div class="activity-card">
+        <div class="activity-card-header">
+            <h3 class="activity-card-title">{{ activity.name }}</h3>
+        </div>
+        <div class="activity-card-body">
+            <p class="activity-card-description">{{ activity.description|truncatewords:20 }}</p>
+            <div class="activity-card-meta">
+                <div class="activity-card-meta-item">
+                    <strong>Fee:</strong> {{ activity.registration_fee }}
+                </div>
+                {% if activity.max_participants %}
+                <div class="activity-card-meta-item">
+                    <strong>Max:</strong> {{ activity.max_participants }}
+                </div>
+                {% endif %}
+            </div>
+            {% if activity.start_time %}
+            <div class="activity-card-meta">
+                <div class="activity-card-meta-item">
+                    <strong>⏰ Start:</strong> {{ activity.start_time|time:"H:i" }}
+                </div>
+                {% if activity.end_time %}
+                <div class="activity-card-meta-item">
+                    <strong>⏰ End:</strong> {{ activity.end_time|time:"H:i" }}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        <div class="activity-card-footer">
+            <a href="{% url 'events:activity_register' activity.id %}" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                ✅ Register
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 60px 30px;">
+    <p style="font-size: 48px; margin-bottom: 15px;">📭</p>
+    <p style="color: var(--text-secondary); margin-bottom: 20px;">No activities available yet</p>
+    <p style="color: var(--text-secondary);">Please check back later or contact the organizer</p>
+</div>
+{% endif %}
+
+<div style="margin-top: 30px;">
+    <a href="{% url 'events:event_website_home' event.id %}" class="btn btn-secondary">← Back to Event</a>
+</div>
+
+{% endblock %}

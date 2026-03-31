@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ event.event }} | EMS{% endblock %}
+{% block page_title %}{{ event.event }}{% endblock %}
+
+{% block content %}
+<!-- HERO SECTION -->
+<div class="hero" {% if event.image_url %}style="background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('{{ event.image_url }}'); background-size: cover; background-position: center;"{% endif %}>
+    <div class="hero-content">
+        <h1>{{ event.event }}</h1>
+        <p>{{ event.description|truncatewords:30 }}</p>
+        
+        {% if days_left is not None %}
+        <div class="countdown">
+            {% if days_left > 0 %}
+                <div class="countdown-item">
+                    <div class="countdown-value">{{ days_left }}</div>
+                    <div class="countdown-label">Days Left</div>
+                </div>
+            {% elif days_left == 0 %}
+                <div class="countdown-item">
+                    <div class="countdown-value" style="color: #f0ad4e;">TODAY!</div>
+                    <div class="countdown-label">Event is Today</div>
+                </div>
+            {% else %}
+                <div class="countdown-item">
+                    <div class="countdown-value" style="color: #f56565;">ENDED</div>
+                    <div class="countdown-label">Event has ended</div>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <a href="{% url 'events:event_website_activities' event.id %}" class="btn btn-primary btn-lg">
+            ✅ Register Now
+        </a>
+    </div>
+</div>
+
+<!-- EVENT INFO -->
+<div class="dashboard-grid" style="margin-bottom: 40px;">
+    <div class="stat-card">
+        <div style="font-size: 28px;">📅</div>
+        <div class="stat-value">{{ event.date_of_event|date:"M d" }}</div>
+        <div class="stat-label">{{ event.date_of_event|date:"Y" }}</div>
+    </div>
+    <div class="stat-card">
+        <div style="font-size: 28px;">⏰</div>
+        <div class="stat-value">{{ event.time_of_event|time:"H:i" }}</div>
+        <div class="stat-label">Start Time</div>
+    </div>
+    <div class="stat-card">
+        <div style="font-size: 28px;">📍</div>
+        <div class="stat-value" style="font-size: 16px; word-break: break-word;">{{ event.venue }}</div>
+        <div class="stat-label">Venue</div>
+    </div>
+    <div class="stat-card">
+        <div style="font-size: 28px;">🎯</div>
+        <div class="stat-value">{{ activities_count }}</div>
+        <div class="stat-label">Activities</div>
+    </div>
+</div>
+
+<!-- DESCRIPTION -->
+<div class="card">
+    <div class="card-header">
+        <h2>📖 About This Event</h2>
+    </div>
+    <div class="card-body" style="line-height: 1.8;">
+        {{ event.description|linebreaks }}
+    </div>
+</div>
+
+<!-- QUICK LINKS -->
+<div class="card" style="margin-top: 30px;">
+    <div class="card-header">
+        <h2>🔗 Quick Links</h2>
+    </div>
+    <div class="card-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+            <a href="{% url 'events:event_website_activities' event.id %}" class="btn btn-primary" style="justify-content: center;">
+                🎯 Activities
+            </a>
+            <a href="{% url 'events:event_website_schedule' event.id %}" class="btn btn-secondary" style="justify-content: center;">
+                📅 Schedule
+            </a>
+            <a href="{% url 'events:event_website_gallery' event.id %}" class="btn btn-secondary" style="justify-content: center;">
+                📸 Gallery
+            </a>
+            <a href="{% url 'events:event_website_contact' event.id %}" class="btn btn-secondary" style="justify-content: center;">
+                📞 Contact
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

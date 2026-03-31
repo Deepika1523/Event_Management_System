@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Event | EMS{% endblock %}
+{% block page_title %}Create New Event{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'events:organizer_dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator">/</span>
+    <a href="{% url 'events:manage_events' %}">Events</a>
+    <span class="breadcrumb-separator">/</span>
+    <span>Create Event</span>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>📅 Event Details</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST" class="form-row full">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label required">Event Name</label>
+                <input type="text" name="event_name" class="form-control" placeholder="e.g., Tech Conference 2024" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-textarea" placeholder="Describe your event in detail..."></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label required">Date</label>
+                    <input type="date" name="date_of_event" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">Time</label>
+                    <input type="time" name="time_of_event" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Venue</label>
+                    <input type="text" name="venue" class="form-control" placeholder="e.g., Grand Ballroom">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <input type="text" name="location" class="form-control" placeholder="City / Address">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select name="category" class="form-select">
+                        <option value="other">Select a category</option>
+                        {% for value, label in categories %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contact Information</label>
+                    <input type="text" name="contact_info" class="form-control" placeholder="contact@example.com or phone">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Banner Image URL</label>
+                <input type="url" name="image_url" class="form-control" placeholder="https://example.com/image.jpg">
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'events:manage_events' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary btn-lg">Create Event</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 30px;">
+    <div class="card-header">
+        <h2>ℹ️ Tips for Creating Events</h2>
+    </div>
+    <div class="card-body">
+        <ul style="line-height: 1.8;">
+            <li>Use a clear and descriptive event name that participants will understand</li>
+            <li>Add a compelling description to attract participants</li>
+            <li>Set the correct date and time - participants will see the countdown timer</li>
+            <li>Provide venue information so participants know where to go</li>
+            <li>Select an appropriate category for better organization</li>
+            <li>Upload a banner image to make your event more visually appealing</li>
+            <li>After creating the event, add activities and set up registrations</li>
+        </ul>
+    </div>
+</div>
+
+{% endblock %}

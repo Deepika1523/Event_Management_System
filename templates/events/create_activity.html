@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Activity | EMS{% endblock %}
+{% block page_title %}Create New Activity{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'events:organizer_dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator">/</span>
+    <a href="{% url 'events:manage_activities' %}">Activities</a>
+    <span class="breadcrumb-separator">/</span>
+    <span>Create Activity</span>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>🎯 Activity Details</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST" class="form-row full">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label required">Event</label>
+                <select name="event_id" class="form-select" required onchange="updateEventInfo()">
+                    <option value="">Select an event</option>
+                    {% for event in events %}
+                    <option value="{{ event.id }}" data-date="{{ event.date_of_event }}">
+                        {{ event.event }} ({{ event.date_of_event|date:"M d, Y" }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label required">Activity Name</label>
+                <input type="text" name="activity_name" class="form-control" placeholder="e.g., Workshop: Web Development" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-textarea" placeholder="What is this activity about? What will participants learn?"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Registration Fee</label>
+                <input type="text" name="registration_fee" class="form-control" value="Free" placeholder="e.g., Free, $50, €100">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Max Participants (Optional)</label>
+                    <input type="number" name="max_participants" class="form-control" placeholder="Leave empty for unlimited">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Starting Time</label>
+                    <input type="time" name="start_time" class="form-control">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Ending Time</label>
+                    <input type="time" name="end_time" class="form-control">
+                </div>
+                <div class="form-group" style="padding-top: 30px;">
+                    <label class="form-label" style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" name="is_team_event" onchange="toggleTeamSize()">
+                        Team Event
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group" id="team-size-group" style="display: none;">
+                <label class="form-label">Team Size</label>
+                <input type="number" name="team_size" class="form-control" min="2" placeholder="How many people per team?">
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'events:manage_activities' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary btn-lg">Create Activity</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleTeamSize() {
+        const checkbox = document.querySelector('input[name="is_team_event"]');
+        const teamSizeGroup = document.getElementById('team-size-group');
+        teamSizeGroup.style.display = checkbox.checked ? 'block' : 'none';
+    }
+
+    function updateEventInfo() {
+        const select = document.querySelector('select[name="event_id"]');
+        const option = select.options[select.selectedIndex];
+        const date = option.getAttribute('data-date');
+        if (date) {
+            // Update the start time to match event date if needed
+            console.log('Event date:', date);
+        }
+    }
+</script>
+
+{% endblock %}

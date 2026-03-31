@@ -10,7 +10,12 @@ from event.models import Event
 from django.views.generic import TemplateView
 
 def index(request):
-    return render(request, "index.html")
+    """Homepage showing all events"""
+    events = Event.objects.all().order_by('-date_of_event')
+    context = {
+        'events': events,
+    }
+    return render(request, "index.html", context)
 
 def about(request):
     return render(request, "about.html")
@@ -36,8 +41,8 @@ def event_site(request, event_id):
         "minimal": "website/event_template_minimal.html",
     }
     template_name = template_map.get(event.template_choice, template_map["classic"])
-    coordinator_login_url = f"{reverse('unified_login')}?role=coordinator"
-    participant_login_url = f"{reverse('unified_login')}?role=participant"
+    coordinator_login_url = reverse('events:coordinator_login')
+    participant_login_url = reverse('events:participant_login')
     can_create_activity = (
         request.user.is_authenticated
         and (request.user.is_superuser or event.user_id == request.user.id)

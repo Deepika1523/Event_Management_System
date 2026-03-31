@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Event Management System{% endblock %}</title>
     <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <style>
         @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap");
 
@@ -289,7 +290,7 @@
             background: rgba(18, 18, 18, 0.72);
         }
 
-        /* Sidebar styles */
+        Sidebar styles
         :root {
             --sidebar-width: 260px;
             --sidebar-bg: #0f1113; /* very dark */
@@ -450,7 +451,11 @@
                     <button class="logout" type="submit">Logout</button>
                 </form>
             {% else %}
-                <a class="logout" href="{% url 'events:unified_login' %}">Sign In</a>
+                <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                    <a class="logout" href="{% url 'events:organizer_login' %}">Organizer Sign In</a>
+                    <a class="logout" href="{% url 'events:coordinator_login' %}">Coordinator Sign In</a>
+                    <a class="logout" href="{% url 'events:participant_login' %}">Participant Sign In</a>
+                </div>
             {% endif %}
         </div>
     </aside>
@@ -471,9 +476,13 @@
                         <button type="submit" class="logout-btn">Sign Out</button>
                     </form>
                 {% else %}
-                    <div class="auth-links">
+                    <div class="auth-links" style="display: flex; gap: 12px; align-items: center;">
                         <a href="{% url 'events:signup' %}">Sign Up</a>
-                        <a href="{% url 'events:unified_login' %}" class="signup">Sign In</a>
+                        <div style="display: flex; gap: 8px;">
+                            <a href="{% url 'events:organizer_login' %}" class="signup">Organizer</a>
+                            <a href="{% url 'events:coordinator_login' %}" class="signup">Coordinator</a>
+                            <a href="{% url 'events:participant_login' %}" class="signup">Participant</a>
+                        </div>
                     </div>
                 {% endif %}
             </nav>

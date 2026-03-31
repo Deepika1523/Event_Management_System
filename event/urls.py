@@ -56,6 +56,15 @@ urlpatterns = [
     ),
     path("events/", views.event_list, name="event_create_or_list"),
     path("events/<int:event_id>/", views.event_detail, name="event_detail"),
+    # Public website views
+    path("event/<int:event_id>/", views.event_website_home, name="event_website_home"),
+    path("event/<int:event_id>/activities/", views.event_website_activities, name="event_website_activities"),
+    path("event/<int:event_id>/schedule/", views.event_website_schedule, name="event_website_schedule"),
+    path("event/<int:event_id>/gallery/", views.event_website_gallery, name="event_website_gallery"),
+    path("event/<int:event_id>/contact/", views.event_website_contact, name="event_website_contact"),
+    path("activity/<int:activity_id>/register/", views.activity_register, name="activity_register"),
+    path("create-event/", views.create_event, name="create_event"),
+    path("create-activity/", views.create_activity, name="create_activity"),
     path("user/", views.role_based_user_page, name="user"),
     path(
         "login/coordinator/",

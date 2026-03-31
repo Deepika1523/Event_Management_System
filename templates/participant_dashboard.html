@@ -1,5 +1,104 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block title %}Participant Dashboard - Event Management System{% endblock %}
+
 {% block content %}
-<h1>Participant Dashboard</h1>
-<p>Visible to organizers and coordinators.</p>
+<div class="dashboard-container" style="padding: 40px 20px; max-width: 1200px; margin: 0 auto;">
+    <!-- Welcome Section -->
+    <section class="dashboard-header" style="margin-bottom: 40px; padding: 30px; background: linear-gradient(135deg, rgba(107, 91, 149, 0.1) 0%, rgba(74, 111, 165, 0.1) 100%); border-radius: 12px; border-left: 4px solid #4a6fa5;">
+        <h1 style="margin: 0 0 10px 0; font-size: 32px; color: #2b2620;">Welcome, {{ request.user.get_full_name|default:request.user.username }}!</h1>
+        <p style="margin: 0; color: #4a4036; font-size: 16px;">Discover events, register for activities, and stay engaged with the latest updates.</p>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions" style="margin-bottom: 40px;">
+        <h2 style="margin-bottom: 20px; font-size: 20px; color: #2b2620;">Quick Actions</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+            <a href="{% url 'events:event_create_or_list' %}" style="padding: 20px; background: #4a6fa5; color: white; text-decoration: none; border-radius: 8px; text-align: center; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                <div style="font-size: 24px; margin-bottom: 10px;">🎫</div>
+                <div style="font-weight: 600; margin-bottom: 5px;">Browse Events</div>
+                <div style="font-size: 12px; opacity: 0.9;">Find and register for events</div>
+            </a>
+            
+            <a href="{% url 'events:dashboard' %}" style="padding: 20px; background: #6b5b95; color: white; text-decoration: none; border-radius: 8px; text-align: center; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                <div style="font-size: 24px; margin-bottom: 10px;">📋</div>
+                <div style="font-weight: 600; margin-bottom: 5px;">My Registrations</div>
+                <div style="font-size: 12px; opacity: 0.9;">Track your event registrations</div>
+            </a>
+            
+            <div style="padding: 20px; background: #23574f; color: white; border-radius: 8px; text-align: center;">
+                <div style="font-size: 24px; margin-bottom: 10px;">🏆</div>
+                <div style="font-weight: 600; margin-bottom: 5px;">My Achievements</div>
+                <div style="font-size: 12px; opacity: 0.9;">View your certificates & badges</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Upcoming Events -->
+    <section class="events-section" style="margin-bottom: 40px;">
+        <h2 style="margin-bottom: 20px; font-size: 20px; color: #2b2620;">Available Events</h2>
+        {% if events %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                {% for event in events %}
+                    <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.3s, box-shadow 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.12)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)';">
+                        <div style="padding: 20px; border-bottom: 1px solid #e0d5ca;">
+                            <h3 style="margin: 0 0 10px 0; color: #2b2620; font-size: 18px;">{{ event.event }}</h3>
+                            <p style="margin: 0 0 10px 0; color: #4a4036; font-size: 14px;">{{ event.tagline }}</p>
+                            <div style="display: flex; gap: 15px; font-size: 12px; color: #6a5a4a;">
+                                <span>📅 {{ event.date_of_event }}</span>
+                                <span>📍 {{ event.venue }}</span>
+                            </div>
+                        </div>
+                        <div style="padding: 15px; background: #f7f1e9;">
+                            <a href="{% url 'events:event_registration_form' event.id %}" style="display: inline-block; padding: 8px 16px; background: #4a6fa5; color: white; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 600;">Register Now</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="padding: 40px; text-align: center; background: #f7f1e9; border-radius: 8px; border: 1px dashed #d0c4b8;">
+                <p style="color: #4a4036; margin: 0;">No events available at the moment. Check back soon!</p>
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- My Registrations -->
+    <section class="registrations-section" style="margin-bottom: 40px;">
+        <h2 style="margin-bottom: 20px; font-size: 20px; color: #2b2620;">My Registrations</h2>
+        {% if can_register %}
+            <div style="padding: 20px; background: #e8f0ed; border-radius: 8px; border-left: 4px solid #2f6f66;">
+                <p style="margin: 0 0 10px 0; color: #4a4036;">You are registered for events. Track your registrations and download gate passes from individual event pages.</p>
+                <a href="{% url 'events:event_create_or_list' %}" style="display: inline-block; padding: 10px 16px; background: #2f6f66; color: white; text-decoration: none; border-radius: 6px;">View All Events</a>
+            </div>
+        {% else %}
+            <div style="padding: 20px; background: #f7f1e9; border-radius: 8px; border: 1px dashed #d0c4b8;">
+                <p style="margin: 0;">No registrations yet. Browse events and register for activities.</p>
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Announcements -->
+    <section class="announcements-section" style="padding: 20px; background: #fff8f3; border-radius: 8px; border-left: 4px solid #6b5b95;">
+        <h3 style="margin: 0 0 10px 0; color: #2b2620;">Latest Announcements</h3>
+        <p style="margin: 0; color: #4a4036; font-size: 14px;">Stay tuned for event updates and special announcements from event organizers.</p>
+    </section>
+</div>
+
+<style>
+    .dashboard-container {
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
 {% endblock %}

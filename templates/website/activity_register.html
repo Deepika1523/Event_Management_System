@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register - {{ activity.name }} | EMS{% endblock %}
+{% block page_title %}Register for Activity{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'events:event_website_home' event.id %}">{{ event.event }}</a>
+    <span class="breadcrumb-separator">/</span>
+    <a href="{% url 'events:event_website_activities' event.id %}">Activities</a>
+    <span class="breadcrumb-separator">/</span>
+    <span>{{ activity.name }}</span>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+    <!-- ACTIVITY INFO -->
+    <div class="card">
+        <div class="card-header">
+            <h2>{{ activity.name }}</h2>
+        </div>
+        <div class="card-body">
+            <div style="line-height: 1.8;">
+                <h3 style="margin-bottom: 15px;">📝 Activity Details</h3>
+                <p><strong>Event:</strong> {{ event.event }}</p>
+                <p><strong>Date:</strong> {{ event.date_of_event|date:"F d, Y" }}</p>
+                <p><strong>Venue:</strong> {{ event.venue }}</p>
+                {% if activity.start_time %}
+                <p><strong>Start Time:</strong> {{ activity.start_time|time:"H:i A" }}</p>
+                {% endif %}
+                {% if activity.end_time %}
+                <p><strong>End Time:</strong> {{ activity.end_time|time:"H:i A" }}</p>
+                {% endif %}
+                <p><strong>Fee:</strong> <span class="badge badge-success">{{ activity.registration_fee }}</span></p>
+                {% if activity.max_participants %}
+                <p><strong>Max Participants:</strong> {{ activity.max_participants }}</p>
+                {% endif %}
+                {% if activity.is_team_event %}
+                <p><strong>Team Size:</strong> {{ activity.team_size }} members</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- REGISTRATION FORM -->
+    <div class="card">
+        <div class="card-header">
+            <h2>✅ Register</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" class="form-row full">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="form-label required">Full Name</label>
+                    <input type="text" name="name" class="form-control" placeholder="Your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Email</label>
+                    <input type="email" name="email" class="form-control" placeholder="your@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Phone Number</label>
+                    <input type="tel" name="phone" class="form-control" placeholder="+1 (555) 123-4567" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">College/Organization</label>
+                    <input type="text" name="college" class="form-control" placeholder="Your college or organization">
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'events:event_website_activities' event.id %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-lg">Complete Registration</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- DESCRIPTION -->
+<div class="card" style="margin-top: 30px;">
+    <div class="card-header">
+        <h2>📖 About This Activity</h2>
+    </div>
+    <div class="card-body" style="line-height: 1.8;">
+        {{ activity.description|linebreaks|default:"No description available" }}
+    </div>
+</div>
+
+{% endblock %}

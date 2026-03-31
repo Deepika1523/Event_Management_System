@@ -1,5 +1,113 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block title %}Organizer Dashboard - Event Management System{% endblock %}
+
 {% block content %}
-<h1>Organizer Dashboard</h1>
-<p>Visible only to superadmin.</p>
+<div class="dashboard-container" style="padding: 40px 20px; max-width: 1200px; margin: 0 auto;">
+    <!-- Welcome Section -->
+    <section class="dashboard-header" style="margin-bottom: 40px; padding: 30px; background: linear-gradient(135deg, rgba(47, 111, 102, 0.1) 0%, rgba(35, 87, 79, 0.1) 100%); border-radius: 12px; border-left: 4px solid #2f6f66;">
+        <h1 style="margin: 0 0 10px 0; font-size: 32px; color: #2b2620;">Welcome, {{ request.user.get_full_name|default:request.user.username }}!</h1>
+        <p style="margin: 0; color: #4a4036; font-size: 16px;">Manage your events, coordinate teams, and deliver exceptional experiences.</p>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions" style="margin-bottom: 40px;">
+        <h2 style="margin-bottom: 20px; font-size: 20px; color: #2b2620;">Quick Actions</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+            <a href="{% url 'events:manage_events' %}" style="padding: 20px; background: #2f6f66; color: white; text-decoration: none; border-radius: 8px; text-align: center; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                <div style="font-size: 24px; margin-bottom: 10px;">📅</div>
+                <div style="font-weight: 600; margin-bottom: 5px;">Create Event</div>
+                <div style="font-size: 12px; opacity: 0.9;">Start a new event</div>
+            </a>
+            
+            <a href="{% url 'events:manage_activities' %}" style="padding: 20px; background: #4a6fa5; color: white; text-decoration: none; border-radius: 8px; text-align: center; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                <div style="font-size: 24px; margin-bottom: 10px;">🎯</div>
+                <div style="font-weight: 600; margin-bottom: 5px;">Manage Activities</div>
+                <div style="font-size: 12px; opacity: 0.9;">Create and organize activities</div>
+            </a>
+            
+            <a href="{% url 'events:event_create_or_list' %}" style="padding: 20px; background: #6b5b95; color: white; text-decoration: none; border-radius: 8px; text-align: center; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                <div style="font-size: 24px; margin-bottom: 10px;">📊</div>
+                <div style="font-weight: 600; margin-bottom: 5px;">View Events</div>
+                <div style="font-size: 12px; opacity: 0.9;">See all your events</div>
+            </a>
+        </div>
+    </section>
+
+    <!-- Events Overview -->
+    <section class="events-section" style="margin-bottom: 40px;">
+        <h2 style="margin-bottom: 20px; font-size: 20px; color: #2b2620;">Your Events</h2>
+        {% if event_activity_rows %}
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f1e7db; border-bottom: 2px solid #2b2620;">
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">Event Name</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">Date</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">Venue</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">Activities</th>
+                            <th style="padding: 12px; text-align: center; font-weight: 600;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in event_activity_rows %}
+                            <tr style="border-bottom: 1px solid #e0d5ca;">
+                                <td style="padding: 12px; font-weight: 500;">{{ row.event.event }}</td>
+                                <td style="padding: 12px;">{{ row.event.date_of_event }}</td>
+                                <td style="padding: 12px;">{{ row.event.venue }}</td>
+                                <td style="padding: 12px; font-size: 12px;">{{ row.activity_names }}</td>
+                                <td style="padding: 12px; text-align: center;">
+                                    <a href="{% url 'events:event_dashboard' row.event.id %}" style="color: #2f6f66; text-decoration: none; margin-right: 10px;">View</a>
+                                    <a href="{% url 'events:edit_event' row.event.id %}" style="color: #2f6f66; text-decoration: none;">Edit</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="padding: 40px; text-align: center; background: #f7f1e9; border-radius: 8px; border: 1px dashed #d0c4b8;">
+                <p style="color: #4a4036; margin: 0 0 15px 0;">No events yet. Create your first event to get started!</p>
+                <a href="{% url 'events:manage_events' %}" style="display: inline-block; padding: 10px 20px; background: #2f6f66; color: white; text-decoration: none; border-radius: 6px;">Create Event</a>
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Recent Participants -->
+    <section class="participants-section" style="margin-bottom: 40px;">
+        <h2 style="margin-bottom: 20px; font-size: 20px; color: #2b2620;">Team & Coordinators</h2>
+        <div style="padding: 20px; background: #f7f1e9; border-radius: 8px; border: 1px solid #d0c4b8;">
+            <p style="color: #4a4036; margin: 0 0 15px 0;">Manage event coordinators and team members for smooth execution.</p>
+            <a href="{% url 'events:manage_activities' %}" style="display: inline-block; padding: 10px 20px; background: #2f6f66; color: white; text-decoration: none; border-radius: 6px;">Manage Team</a>
+        </div>
+    </section>
+
+    <!-- Platform Info -->
+    <section class="platform-info" style="padding: 20px; background: #e8f0ed; border-radius: 8px; border-left: 4px solid #2f6f66;">
+        <h3 style="margin: 0 0 10px 0; color: #2b2620;">Need Help?</h3>
+        <p style="margin: 0; color: #4a4036; font-size: 14px;">Check out our documentation to learn how to create events, manage coordinators, and track participant engagement.</p>
+    </section>
+</div>
+
+<style>
+    .dashboard-container {
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    table tbody tr:hover {
+        background: #f7f1e9;
+    }
+</style>
 {% endblock %}

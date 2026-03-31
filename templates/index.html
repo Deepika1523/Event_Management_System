@@ -26,7 +26,7 @@
         filter: none;
         transition: none;
     }
-    }
+    
     .layout {
         width: min(1100px, 98vw);
         display: grid;
@@ -297,7 +297,9 @@
         <h2 style="margin-bottom:12px;">Welcome</h2>
         <p style="max-width:320px;margin-bottom:18px;">Sign in or create an account to access your personalized dashboard and event tools.</p>
         <div class="actions" style="width:100%;max-width:260px;margin:0 auto;">
-            <a href="{% url 'events:unified_login' %}">Sign In <span>&rarr;</span></a>
+            <a href="{% url 'events:organizer_login' %}">Organizer Sign In <span>&rarr;</span></a>
+            <a href="{% url 'events:coordinator_login' %}">Coordinator Sign In <span>&rarr;</span></a>
+            <a href="{% url 'events:participant_login' %}">Participant Sign In <span>&rarr;</span></a>
             <a href="{% url 'events:signup' %}?role=participant">Participant Signup <span>&rarr;</span></a>
             <a href="{% url 'events:signup' %}?role=coordinator">Coordinator Signup <span>&rarr;</span></a>
             <a href="{% url 'events:signup' %}?role=organizer">Organizer Signup <span>&rarr;</span></a>
