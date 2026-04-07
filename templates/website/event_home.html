@@ -1,98 +1,138 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ event.event }} | EMS{% endblock %}
-{% block page_title %}{{ event.event }}{% endblock %}
+{% block title %}{{ event.event }} | EventSync{% endblock %}
 
 {% block content %}
-<!-- HERO SECTION -->
-<div class="hero" {% if event.image_url %}style="background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('{{ event.image_url }}'); background-size: cover; background-position: center;"{% endif %}>
-    <div class="hero-content">
-        <h1>{{ event.event }}</h1>
-        <p>{{ event.description|truncatewords:30 }}</p>
-        
-        {% if days_left is not None %}
-        <div class="countdown">
-            {% if days_left > 0 %}
-                <div class="countdown-item">
-                    <div class="countdown-value">{{ days_left }}</div>
-                    <div class="countdown-label">Days Left</div>
+<div class="event-website-container" style="margin-left: 0; padding-top: 0;">
+    <!-- Immersive Hero -->
+    <section class="hero-section" style="min-height: 80vh;">
+        <div class="hero-bg" style="background-image: url('{% if event.image_url %}{{ event.image_url }}{% else %}{% static 'images/event_banner_dark.png' %}{% endif %}');"></div>
+        <div class="hero-overlay" style="background: linear-gradient(0deg, var(--bg-navy) 0%, rgba(15, 23, 42, 0.4) 100%);"></div>
+        <div class="hero-content" style="text-align: left; max-width: 1000px; padding: 0 2rem; position: relative; z-index: 10;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; color: var(--accent); margin-bottom: 1.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.875rem;">
+                <i data-lucide="sparkles" style="width: 18px; height: 18px;"></i> Featured Experience
+            </div>
+            <h1 style="font-size: 4rem; margin-bottom: 1rem; line-height: 1.1;">{{ event.event }}</h1>
+            <p style="font-size: 1.25rem; color: rgba(255,255,255,0.8); margin-bottom: 2.5rem; max-width: 700px;">
+                {{ event.tagline|default:event.description|truncatewords:25 }}
+            </p>
+            
+            <div style="display: flex; gap: 2rem; flex-wrap: wrap; margin-bottom: 3rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                        <i data-lucide="calendar"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Date</div>
+                        <div style="font-weight: 600; color: white;">{{ event.date_of_event|date:"F d, Y" }}</div>
+                    </div>
                 </div>
-            {% elif days_left == 0 %}
-                <div class="countdown-item">
-                    <div class="countdown-value" style="color: #f0ad4e;">TODAY!</div>
-                    <div class="countdown-label">Event is Today</div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--secondary);">
+                        <i data-lucide="map-pin"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Venue</div>
+                        <div style="font-weight: 600; color: white;">{{ event.venue }}</div>
+                    </div>
                 </div>
-            {% else %}
-                <div class="countdown-item">
-                    <div class="countdown-value" style="color: #f56565;">ENDED</div>
-                    <div class="countdown-label">Event has ended</div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--accent);">
+                        <i data-lucide="clock"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Time</div>
+                        <div style="font-weight: 600; color: white;">{{ event.time_of_event }}</div>
+                    </div>
                 </div>
-            {% endif %}
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+                <a href="{% url 'events:event_registration_form' event.id %}" class="btn btn-primary btn-lg" style="padding: 1.25rem 2.5rem; font-size: 1.125rem; box-shadow: var(--shadow-neon);">
+                    Reserve Your Spot <i data-lucide="ticket" style="margin-left: 0.5rem;"></i>
+                </a>
+                <a href="#about" class="btn btn-outline btn-lg" style="padding: 1.25rem 2.5rem;">
+                    Learn More
+                </a>
+            </div>
         </div>
-        {% endif %}
+    </section>
 
-        <a href="{% url 'events:event_website_activities' event.id %}" class="btn btn-primary btn-lg">
-            ✅ Register Now
-        </a>
-    </div>
-</div>
-
-<!-- EVENT INFO -->
-<div class="dashboard-grid" style="margin-bottom: 40px;">
-    <div class="stat-card">
-        <div style="font-size: 28px;">📅</div>
-        <div class="stat-value">{{ event.date_of_event|date:"M d" }}</div>
-        <div class="stat-label">{{ event.date_of_event|date:"Y" }}</div>
-    </div>
-    <div class="stat-card">
-        <div style="font-size: 28px;">⏰</div>
-        <div class="stat-value">{{ event.time_of_event|time:"H:i" }}</div>
-        <div class="stat-label">Start Time</div>
-    </div>
-    <div class="stat-card">
-        <div style="font-size: 28px;">📍</div>
-        <div class="stat-value" style="font-size: 16px; word-break: break-word;">{{ event.venue }}</div>
-        <div class="stat-label">Venue</div>
-    </div>
-    <div class="stat-card">
-        <div style="font-size: 28px;">🎯</div>
-        <div class="stat-value">{{ activities_count }}</div>
-        <div class="stat-label">Activities</div>
-    </div>
-</div>
-
-<!-- DESCRIPTION -->
-<div class="card">
-    <div class="card-header">
-        <h2>📖 About This Event</h2>
-    </div>
-    <div class="card-body" style="line-height: 1.8;">
-        {{ event.description|linebreaks }}
-    </div>
-</div>
-
-<!-- QUICK LINKS -->
-<div class="card" style="margin-top: 30px;">
-    <div class="card-header">
-        <h2>🔗 Quick Links</h2>
-    </div>
-    <div class="card-body">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
-            <a href="{% url 'events:event_website_activities' event.id %}" class="btn btn-primary" style="justify-content: center;">
-                🎯 Activities
-            </a>
-            <a href="{% url 'events:event_website_schedule' event.id %}" class="btn btn-secondary" style="justify-content: center;">
-                📅 Schedule
-            </a>
-            <a href="{% url 'events:event_website_gallery' event.id %}" class="btn btn-secondary" style="justify-content: center;">
-                📸 Gallery
-            </a>
-            <a href="{% url 'events:event_website_contact' event.id %}" class="btn btn-secondary" style="justify-content: center;">
-                📞 Contact
-            </a>
+    <!-- Main Content -->
+    <div style="max-width: 1200px; margin: -4rem auto 0 auto; padding: 0 2rem; position: relative; z-index: 20;">
+        <!-- Stats Row -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 4rem;">
+            <div class="glass-card" style="text-align: center;">
+                <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 0.25rem;">{{ activities_count }}</div>
+                <div style="font-size: 0.8125rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Activities</div>
+            </div>
+            <div class="glass-card" style="text-align: center;">
+                <div style="font-size: 2rem; font-weight: 700; color: var(--secondary); margin-bottom: 0.25rem;">--</div>
+                <div style="font-size: 0.8125rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Speakers</div>
+            </div>
+            <div class="glass-card" style="text-align: center;">
+                <div style="font-size: 2rem; font-weight: 700; color: var(--accent); margin-bottom: 0.25rem;">--</div>
+                <div style="font-size: 0.8125rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Awards</div>
+            </div>
+            <div class="glass-card" style="text-align: center;">
+                <div style="font-size: 2rem; font-weight: 700; color: white; margin-bottom: 0.25rem;">Free</div>
+                <div style="font-size: 0.8125rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Registration</div>
+            </div>
         </div>
+
+        <!-- About Section -->
+        <section id="about" style="margin-bottom: 6rem; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;">
+            <div class="glass-card" style="padding: 3rem; background: rgba(255,255,255,0.02);">
+                <h2 style="font-size: 2.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                    <i data-lucide="info" style="color: var(--primary);"></i> About the Event
+                </h2>
+                <div style="line-height: 1.8; color: var(--text-muted); font-size: 1.125rem;">
+                    {{ event.description|linebreaks }}
+                </div>
+                <div style="margin-top: 2.5rem; display: flex; gap: 2rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--primary); font-weight: 600;">
+                        <i data-lucide="check-circle" style="width: 18px;"></i> Multi-day Event
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--secondary); font-weight: 600;">
+                        <i data-lucide="check-circle" style="width: 18px;"></i> Expert Panels
+                    </div>
+                </div>
+            </div>
+            <div style="position: relative;">
+                <div style="position: absolute; inset: -2rem; background: var(--primary-gradient); filter: blur(60px); opacity: 0.1; border-radius: 50%;"></div>
+                <div class="glass-card" style="padding: 2rem; border-color: var(--primary);">
+                    <h3 style="margin-bottom: 1.5rem;">Join the Conversation</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Stay updated with real-time syncs and community discussions. Follow the hub for latest announcements.</p>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <a href="{% url 'events:event_website_activities' event.id %}" class="btn btn-outline" style="width: 100%; justify-content: space-between;">
+                            Discover Activities <i data-lucide="chevron-right" style="width: 16px;"></i>
+                        </a>
+                        <a href="{% url 'events:event_website_schedule' event.id %}" class="btn btn-outline" style="width: 100%; justify-content: space-between;">
+                            View Event Schedule <i data-lucide="chevron-right" style="width: 16px;"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section style="margin-bottom: 6rem; text-align: center; padding: 5rem 2rem; border-radius: 32px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(15, 23, 42, 0.4) 100%); border: 1px solid var(--border-glass);">
+            <h2 style="font-size: 3rem; margin-bottom: 1rem;">Don't miss the beat.</h2>
+            <p style="color: var(--text-muted); font-size: 1.25rem; margin-bottom: 2.5rem; max-width: 600px; margin-inline: auto;">Sync with the most innovative event community. Register today and get your digital pass instantly.</p>
+            <a href="{% url 'events:event_registration_form' event.id %}" class="btn btn-primary btn-lg" style="min-width: 200px; height: 3.5rem; font-size: 1.25rem; box-shadow: var(--shadow-neon);">Register Now</a>
+        </section>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const main = document.querySelector('.main-content');
+        if (sidebar) sidebar.style.display = 'none';
+        if (main) main.style.marginLeft = '0';
+    });
+</script>
 {% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/role_select.css' %}">
+{% endblock %}
+
+{% block title %}Join EventSync | Choose Your Role{% endblock %}
+
+{% block body_class %}auth-wrapper{% endblock %}
+
+{% block content %}
+<div class="auth-card role-selection">
+    <div class="role-header">
+        <h1>Join EventSync</h1>
+        <p class="lead">Choose how you want to experience events</p>
+    </div>
+
+    <div class="role-grid">
+        <!-- Organizer Card -->
+        <div class="role-card" role="button" tabindex="0">
+            <div class="role-icon organizer">
+                <i data-lucide="zap"></i>
+            </div>
+            <h3 class="role-title">Organizer</h3>
+            <p class="role-desc">Create immersive events, manage activities, and coordinate your teams with ease.</p>
+            <div class="role-actions">
+                <a href="{% url 'events:unified_login' %}?role=organizer" class="btn btn-primary btn-continue">Continue</a>
+                <a href="{% url 'events:signup' %}?role=organizer" class="btn btn-outline btn-secondary">Sign Up</a>
+            </div>
+        </div>
+
+        <!-- Coordinator Card -->
+        <div class="role-card" role="button" tabindex="0">
+            <div class="role-icon coordinator">
+                <i data-lucide="users"></i>
+            </div>
+            <h3 class="role-title">Coordinator</h3>
+            <p class="role-desc">Manage on-field activities, scan QR codes, and ensure a seamless experience for participants.</p>
+            <div class="role-actions">
+                <a href="{% url 'events:unified_login' %}?role=coordinator" class="btn btn-primary btn-continue">Continue</a>
+                <button class="btn btn-outline btn-secondary" disabled title="Coordinators require an invitation">Sign Up</button>
+            </div>
+        </div>
+
+        <!-- Participant Card -->
+        <div class="role-card" role="button" tabindex="0">
+            <div class="role-icon participant">
+                <i data-lucide="ticket"></i>
+            </div>
+            <h3 class="role-title">Participant</h3>
+            <p class="role-desc">Discover amazing events, register for activities, and get your digital certificates.</p>
+            <div class="role-actions">
+                <a href="{% url 'events:unified_login' %}?role=participant" class="btn btn-primary btn-continue">Continue</a>
+                <a href="{% url 'events:signup' %}?role=participant" class="btn btn-outline btn-secondary">Sign Up</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="auth-footer">
+        Already have an account? <a href="{% url 'events:unified_login' %}" class="link-login">Log in here</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const main = document.querySelector('.main-content');
+        if (sidebar) sidebar.style.display = 'none';
+        if (main) main.style.marginLeft = '0';
+    });
+</script>
+{% endblock %}

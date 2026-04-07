@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ activity.name }} Participants | EventSync{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Header -->
+    <header style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+            <a href="{% url 'events:coordinator_dashboard' %}" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.8rem;">
+                <i data-lucide="arrow-left" style="width: 14px;"></i> Dashboard
+            </a>
+            <a href="{% url 'events:qr_scanner_page' %}" class="btn" style="padding: 0.4rem 1rem; font-size: 0.8rem; background: rgba(34,197,94,0.1); color: var(--secondary); border: 1px solid rgba(34,197,94,0.3);">
+                <i data-lucide="scan" style="width: 14px;"></i> Launch Scanner
+            </a>
+        </div>
+        <h1 style="font-size: 2rem; color: white;">{{ activity.name }}</h1>
+        <p style="color: var(--text-muted);">{{ activity.event.event }} &mdash; Participant Management</p>
+    </header>
+
+    <!-- Stats Bar -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+        {% with total=rows|length %}
+        <div class="glass-card" style="border-left: 4px solid var(--primary); display: flex; align-items: center; gap: 1rem;">
+            <i data-lucide="users" style="color: var(--primary); width: 28px; height: 28px;"></i>
+            <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Total</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: white;">{{ total }}</div>
+            </div>
+        </div>
+        {% endwith %}
+        <div class="glass-card" style="border-left: 4px solid var(--secondary); display: flex; align-items: center; gap: 1rem;">
+            <i data-lucide="check-circle" style="color: var(--secondary); width: 28px; height: 28px;"></i>
+            <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Approved</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: white;">
+                    {% with approved=0 %}{% for row in rows %}{% if row.registration.status == "approved" %}{% with approved=approved|add:1 %}{% endwith %}{% endif %}{% endfor %}{{ rows|length }}{% endwith %}
+                </div>
+            </div>
+        </div>
+        <div class="glass-card" style="border-left: 4px solid var(--accent); display: flex; align-items: center; gap: 1rem;">
+            <i data-lucide="award" style="color: var(--accent); width: 28px; height: 28px;"></i>
+            <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Attended</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: white;">
+                    {% for row in rows %}{% if row.attendance %}{% if forloop.last %}{{ forloop.counter }}{% endif %}{% endif %}{% empty %}0{% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Participant Table -->
+    <div class="glass-card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="color: white; font-size: 1.125rem;">Participants</h2>
+            <span class="badge" style="background: rgba(99,102,241,0.1); color: var(--primary);">{{ rows|length }} registered</span>
+        </div>
+
+        {% if rows %}
+        <div style="overflow-x: auto;">
+            <table class="dark-table">
+                <thead>
+                    <tr>
+                        <th>Participant</th>
+                        <th>Registered</th>
+                        <th>Status</th>
+                        <th>Attendance</th>
+                        <th>Score</th>
+                        <th>Certificate</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600; color: white;">{{ row.registration.participant.get_full_name|default:row.registration.participant.username }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ row.registration.participant.email }}</div>
+                        </td>
+                        <td style="font-size: 0.8rem; color: var(--text-muted);">{{ row.registration.registered_at|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            {% if row.registration.status == "approved" %}
+                                <span class="badge" style="background: rgba(34,197,94,0.1); color: var(--secondary);">Approved</span>
+                            {% elif row.registration.status == "rejected" %}
+                                <span class="badge" style="background: rgba(239,68,68,0.1); color: var(--danger);">Rejected</span>
+                            {% else %}
+                                <span class="badge" style="background: rgba(245,158,11,0.1); color: var(--accent);">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.attendance %}
+                                <span class="badge" style="background: rgba(34,197,94,0.15); color: var(--secondary);">Present</span>
+                            {% else %}
+                                <span style="color: var(--text-muted); font-size: 0.8rem;">—</span>
+                            {% endif %}
+                        </td>
+                        <td style="color: {% if row.leaderboard %}white{% else %}var(--text-muted){% endif %};">
+                            {% if row.leaderboard %}{{ row.leaderboard.score }}{% else %}—{% endif %}
+                        </td>
+                        <td>
+                            {% if row.certificate %}
+                                <span class="badge" style="background: rgba(245,158,11,0.1); color: var(--accent);">Issued</span>
+                            {% else %}
+                                <span style="color: var(--text-muted); font-size: 0.8rem;">—</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right;">
+                            <div style="display: flex; gap: 0.4rem; justify-content: flex-end; flex-wrap: wrap;">
+                                {% if row.registration.status == "pending" %}
+                                <form method="post" action="{% url 'events:approve_registration' row.registration.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.path }}">
+                                    <button type="submit" class="btn" style="padding: 0.3rem 0.7rem; font-size: 0.75rem; background: rgba(34,197,94,0.15); color: var(--secondary); border: 1px solid rgba(34,197,94,0.3);">
+                                        <i data-lucide="check" style="width: 12px;"></i> Approve
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'events:reject_registration' row.registration.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.path }}">
+                                    <button type="submit" class="btn" style="padding: 0.3rem 0.7rem; font-size: 0.75rem; background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.2);" onclick="return confirm('Reject this registration?')">
+                                        <i data-lucide="x" style="width: 12px;"></i> Reject
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <!-- Issue/Update Score -->
+                                <form method="post" action="{% url 'events:update_leaderboard' %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="activity_id" value="{{ activity.id }}">
+                                    <input type="hidden" name="participant_id" value="{{ row.registration.participant.id }}">
+                                    <input type="number" name="score" placeholder="Score" style="width: 60px; padding: 0.25rem 0.5rem; border-radius: 6px; border: 1px solid var(--border-glass); background: var(--bg-card); color: white; font-size: 0.75rem;" value="{% if row.leaderboard %}{{ row.leaderboard.score }}{% endif %}">
+                                    <button type="submit" class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
+                                        <i data-lucide="trending-up" style="width: 12px;"></i>
+                                    </button>
+                                </form>
+                                {% if not row.certificate %}
+                                <form method="post" action="{% url 'events:issue_certificate' %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="activity_id" value="{{ activity.id }}">
+                                    <input type="hidden" name="participant_id" value="{{ row.registration.participant.id }}">
+                                    <button type="submit" class="btn" style="padding: 0.3rem 0.7rem; font-size: 0.75rem; background: rgba(245,158,11,0.1); color: var(--accent); border: 1px solid rgba(245,158,11,0.3);">
+                                        <i data-lucide="award" style="width: 12px;"></i> Certify
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="padding: 4rem 2rem; text-align: center; color: var(--text-muted);">
+            <i data-lucide="users" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.3;"></i>
+            <p>No participants registered yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

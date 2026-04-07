@@ -1,351 +1,257 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ event.event }} Dashboard{% endblock %}
-
-{% block body_class %}page-event-dashboard{% endblock %}
-
-{% block extra_css %}
-        body.page-event-dashboard {
-            background-image: linear-gradient(rgba(18, 18, 18, 0.45), rgba(18, 18, 18, 0.45)),
-                url("{% static 'images/luxury-golden-glow-with-soft-light-trails-and-sparkling-particles-on-dark-background_11537186.jpg!bwr800' %}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }
-        .event-shell {
-            width: min(1200px, 100%);
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
-            gap: 24px;
-        }
-
-        .card {
-            border-radius: 20px;
-            background: #ffffff;
-            border: 1px solid rgba(43, 38, 32, 0.08);
-            box-shadow: 0 24px 60px rgba(80, 62, 44, 0.16);
-            padding: 24px;
-            animation: rise 0.5s ease both;
-        }
-
-        .card h1,
-        .card h2 {
-            margin: 0 0 8px;
-            color: var(--green-900);
-        }
-
-        .card p {
-            margin: 0 0 18px;
-            color: var(--muted);
-        }
-
-        label {
-            display: block;
-            margin: 12px 0 6px;
-            color: var(--green-900);
-            font-weight: 600;
-        }
-
-        input {
-            width: 100%;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 10px 12px;
-            font-size: 0.95rem;
-            background: #ffffff;
-            color: var(--text);
-        }
-
-        input:focus {
-            outline: none;
-            border-color: rgba(47, 111, 102, 0.6);
-            box-shadow: 0 0 0 3px rgba(47, 111, 102, 0.15);
-        }
-
-        .btn {
-            margin-top: 16px;
-            width: 100%;
-            border: none;
-            border-radius: 999px;
-            padding: 11px 14px;
-            background: #2f6f66;
-            color: #fff;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 28px rgba(80, 62, 44, 0.18);
-            background: #23574f;
-        }
-
-        .message-list {
-            display: grid;
-            gap: 8px;
-            margin-bottom: 14px;
-        }
-
-        .msg {
-            border-radius: 10px;
-            padding: 10px 12px;
-            border: 1px solid;
-            font-size: 0.9rem;
-        }
-
-        .msg.success {
-            background: rgba(47, 111, 102, 0.12);
-            border-color: rgba(47, 111, 102, 0.35);
-            color: #23574f;
-        }
-
-        .msg.error {
-            background: rgba(185, 28, 28, 0.08);
-            border-color: rgba(185, 28, 28, 0.25);
-            color: #9f1239;
-        }
-
-        .table-wrap {
-            overflow-x: auto;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 760px;
-            background: #ffffff;
-        }
-
-        th,
-        td {
-            text-align: left;
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border);
-            color: var(--text);
-            vertical-align: top;
-        }
-
-        th {
-            color: var(--green-900);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            background: rgba(247, 241, 233, 0.9);
-        }
-
-        .empty {
-            margin: 0;
-            color: var(--muted);
-        }
-
-        .summary {
-            display: grid;
-            gap: 6px;
-            margin-bottom: 16px;
-        }
-
-        .summary span {
-            color: var(--muted);
-        }
-
-        @media (max-width: 950px) {
-            .event-shell {
-                grid-template-columns: 1fr;
-            }
-        }
-{% endblock %}
+{% block title %}Event Control Panel | {{ event.event }}{% endblock %}
 
 {% block content %}
-    <main class="event-shell">
-        <section class="card">
-            <h1>{{ event.event }}</h1>
-            <div class="summary">
-                <span>{{ event.description }}</span>
-                <span>{{ event.date_of_event }} at {{ event.time_of_event }}</span>
-                <span>{{ event.venue }} | {{ event.get_category_display }}</span>
-                <span>Contact: {{ event.contact_info }}</span>
+<div class="dashboard-page-header" style="background-image: url('{% if event.image_url %}{{ event.image_url }}{% else %}{% static "images/dashboard_header_dark.png" %}{% endif %}');">
+    <div class="header-content-rel">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+                <span class="badge" style="background: var(--primary); color: white; margin-bottom: 0.5rem;">Event Dashboard</span>
+                <h1 style="font-size: 3rem; color: white; margin-bottom: 0.5rem;">{{ event.event }}</h1>
+                <p style="color: rgba(255,255,255,0.7);">{{ event.date_of_event }} at {{ event.venue }}</p>
             </div>
+            <div style="display: flex; gap: 1rem;">
+                <a href="{% url 'event_site' event.id %}" class="btn btn-outline" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2);">
+                    <i data-lucide="external-link"></i> Public Site
+                </a>
+                <a href="{% url 'events:edit_event' event.id %}" class="btn btn-outline" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2);">
+                    <i data-lucide="settings"></i> Edit Event
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
-            <a class="btn" href="{% url 'events:event_activities_pdf' event.id %}">📄 Download Activities PDF</a>
-            {% if can_view_participants %}
-                <a class="btn" href="{% url 'events:export_event_excel' event.id %}">Export Excel</a>
-            {% endif %}
+<!-- Stats Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: -3rem; position: relative; z-index: 30; margin-bottom: 3rem;">
+    <div class="glass-card" style="display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 48px; height: 48px; background: rgba(99, 102, 241, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+            <i data-lucide="users"></i>
+        </div>
+        <div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Participants</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: white;">{{ event_registrations|length }}</div>
+        </div>
+    </div>
+    <div class="glass-card" style="display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 48px; height: 48px; background: rgba(34, 197, 94, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--secondary);">
+            <i data-lucide="activity"></i>
+        </div>
+        <div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Activities</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: white;">{{ activities|length }}</div>
+        </div>
+    </div>
+    <div class="glass-card" style="display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--accent);">
+            <i data-lucide="crown"></i>
+        </div>
+        <div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Coordinators</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: white;">{{ event_coordinators|length }}</div>
+        </div>
+    </div>
+</div>
 
-            {% if can_manage %}
-                <h2>Add Activity</h2>
-                <form method="post" action="{% url 'events:event_dashboard' event.id %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="add_activity">
-                    <label for="activity_name">Activity Name</label>
-                    <input id="activity_name" name="activity_name" type="text" required>
+<div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; align-items: start;">
+    
+    <!-- Left Column: Actions & Tools -->
+    <div style="display: flex; flex-direction: column; gap: 2rem;">
+        
+        <!-- Quick Actions -->
+        <section class="glass-card">
+            <h2 style="font-size: 1.25rem; color: white; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                <i data-lucide="zap" style="color: var(--primary);"></i> Control Hub
+            </h2>
+            <div style="display: grid; gap: 1rem;">
+                <a href="{% url 'events:event_activities_pdf' event.id %}" class="btn btn-outline" style="justify-content: flex-start; padding: 1rem;">
+                    <i data-lucide="file-text"></i> Export Activities PDF
+                </a>
+                {% if can_view_participants %}
+                <a href="{% url 'events:export_event_excel' event.id %}" class="btn btn-outline" style="justify-content: flex-start; padding: 1rem;">
+                    <i data-lucide="download"></i> Export Participant Excel
+                </a>
+                {% endif %}
+            </div>
+        </section>
 
-                    <label for="registration_fee">Registration Fee</label>
-                    <input id="registration_fee" name="registration_fee" type="text" required>
+        <!-- Forms Section -->
+        {% if can_manage %}
+        <section class="glass-card">
+            <h2 style="font-size: 1.25rem; color: white; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                <i data-lucide="plus-circle" style="color: var(--secondary);"></i> Add Activity
+            </h2>
+            <form method="post" action="{% url 'events:event_dashboard' event.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_activity">
+                
+                <div class="form-group">
+                    <label class="form-label">Activity Name</label>
+                    <input name="activity_name" type="text" class="form-input" placeholder="e.g. Workshop A" required>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Fee (₹)</label>
+                        <input name="registration_fee" type="text" class="form-input" placeholder="Free" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Coord. Email</label>
+                        <input name="coordinator_email" type="email" class="form-input" placeholder="email@..." required>
+                    </div>
+                </div>
 
-                    <label for="start_time">Start Time</label>
-                    <input id="start_time" name="start_time" type="time" required>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Start Time</label>
+                        <input name="start_time" type="time" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Time</label>
+                        <input name="end_time" type="time" class="form-input" required>
+                    </div>
+                </div>
 
-                    <label for="end_time">End Time</label>
-                    <input id="end_time" name="end_time" type="time" required>
-
-                    <label for="is_team_event">
-                        <input id="is_team_event" name="is_team_event" type="checkbox">
-                        Team event
+                <div class="form-group">
+                    <label class="form-label">
+                        <input name="is_team_event" type="checkbox" style="width: auto; margin-right: 0.5rem;"> Team Activity
                     </label>
-
-                    <label for="team_size">Team Size</label>
-                    <input id="team_size" name="team_size" type="number" min="2" placeholder="2">
-
-                    <label for="coordinator_email">Invite Coordinator</label>
-                    <input id="coordinator_email" name="coordinator_email" type="email" placeholder="coordinator@example.com" required>
-
-                    <button type="submit" class="btn">Create Activity</button>
-                </form>
-            {% endif %}
-
-            {% if can_invite_event_coordinator %}
-                <h2>Invite Event Coordinator</h2>
-                <form method="post" action="{% url 'events:event_dashboard' event.id %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="invite_event_coordinator">
-                    <label for="event_coordinator_email">Coordinator Email</label>
-                    <input id="event_coordinator_email" name="event_coordinator_email" type="email" placeholder="coordinator@example.com" required>
-                    <button type="submit" class="btn">Send Invite</button>
-                </form>
-            {% endif %}
-        </section>
-
-        <section class="card">
-            <h2>Activities</h2>
-            <p>Activities for this event and their coordinators.</p>
-
-            {% if messages %}
-                <div class="message-list">
-                    {% for message in messages %}
-                        <div class="msg {% if message.tags == 'error' %}error{% else %}success{% endif %}">{{ message }}</div>
-                    {% endfor %}
                 </div>
-            {% endif %}
 
-            {% if activities %}
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Activity</th>
-                                <th>Fee</th>
-                                <th>Time</th>
-                                <th>Coordinators</th>
-                                <th>Registrations</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Create Activity</button>
+            </form>
+        </section>
+        {% endif %}
+
+        {% if can_invite_event_coordinator %}
+        <section class="glass-card">
+            <h2 style="font-size: 1.25rem; color: white; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                <i data-lucide="user-plus" style="color: var(--accent);"></i> Invite Coordinator
+            </h2>
+            <form method="post" action="{% url 'events:event_dashboard' event.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="invite_event_coordinator">
+                <div class="form-group">
+                    <label class="form-label">Coordinator Email</label>
+                    <input name="event_coordinator_email" type="email" class="form-input" placeholder="coordinator@example.com" required>
+                </div>
+                <button type="submit" class="btn btn-warning" style="width: 100%;">Send Invitation</button>
+            </form>
+        </section>
+        {% endif %}
+    </div>
+
+    <!-- Right Column: Data Tables -->
+    <div style="display: flex; flex-direction: column; gap: 2rem;">
+        
+        <!-- Activities Table -->
+        <section class="glass-card" style="padding: 0; overflow: hidden;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-glass);">
+                <h2 style="font-size: 1.25rem; color: white; display: flex; align-items: center; gap: 0.75rem;">
+                    <i data-lucide="list" style="color: var(--secondary);"></i> Activity Roster
+                </h2>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="dark-table">
+                    <thead>
+                        <tr>
+                            <th>Activity</th>
+                            <th>Time</th>
+                            <th>Regs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if activities %}
                             {% for item in activities %}
-                                <tr>
-                                    <td>{{ item.activity.id }}</td>
-                                    <td>{{ item.activity.name }}</td>
-                                    <td>{{ item.activity.registration_fee }}</td>
-                                    <td>{{ item.activity.start_time }} - {{ item.activity.end_time }}</td>
-                                    <td>{{ item.coordinator_names }}</td>
-                                    <td>{{ item.registration_count }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <p class="empty">No activities created yet.</p>
-            {% endif %}
-
-            {% if can_view_participants %}
-                <h2>Event Participants</h2>
-                <p>Participants registered for this event.</p>
-
-                {% if event_registrations %}
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Participant</th>
-                                    <th>Email</th>
-                                    <th>Registered At</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for row in event_registrations %}
-                                    <tr>
-                                        <td>{{ row.participant.username }}</td>
-                                        <td>{{ row.participant.email }}</td>
-                                        <td>{{ row.registered_at }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <p class="empty">No event registrations yet.</p>
-                {% endif %}
-
-                <h2>Activity Participants</h2>
-                <p>Registrations by activity.</p>
-
-                {% if activity_registrations %}
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Participant</th>
-                                    <th>Email</th>
-                                    <th>Activity</th>
-                                    <th>Registered At</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for row in activity_registrations %}
-                                    <tr>
-                                        <td>{{ row.participant.username }}</td>
-                                        <td>{{ row.participant.email }}</td>
-                                        <td>{{ row.activity.name }}</td>
-                                        <td>{{ row.registered_at }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <p class="empty">No activity registrations yet.</p>
-                {% endif %}
-            {% endif %}
-
-            <h2>Event Coordinators</h2>
-            {% if event_coordinators %}
-                <div class="table-wrap">
-                    <table>
-                        <thead>
                             <tr>
-                                <th>Coordinator</th>
-                                <th>Added At</th>
+                                <td>
+                                    <div style="font-weight: 600; color: white;">{{ item.activity.name }}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">Coord: {{ item.coordinator_names|default:"N/A" }}</div>
+                                </td>
+                                <td>{{ item.activity.start_time|time:"H:i" }}</td>
+                                <td><span class="badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">{{ item.registration_count }}</span></td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {% for coordinator in event_coordinators %}
-                                <tr>
-                                    <td>{{ coordinator.user.username }}</td>
-                                    <td>{{ coordinator.added_at }}</td>
-                                </tr>
                             {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <p class="empty">No event coordinators assigned yet.</p>
-            {% endif %}
+                        {% else %}
+                            <tr><td colspan="3" style="text-align: center; padding: 3rem; color: var(--text-muted);">No activities added.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </section>
-    </main>
+
+        <!-- Participants Table -->
+        {% if can_view_participants %}
+        <section class="glass-card" style="padding: 0; overflow: hidden;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-glass);">
+                <h2 style="font-size: 1.25rem; color: white; display: flex; align-items: center; gap: 0.75rem;">
+                    <i data-lucide="users" style="color: var(--primary);"></i> Participants
+                </h2>
+            </div>
+            <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
+                <table class="dark-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if event_registrations %}
+                            {% for row in event_registrations %}
+                            <tr>
+                                <td>{{ row.participant.username }}</td>
+                                <td>{{ row.participant.email }}</td>
+                                <td><span class="badge badge-approved">Confirmed</span></td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="3" style="text-align: center; padding: 3rem; color: var(--text-muted);">No participants registered.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Coordinators Table -->
+        <section class="glass-card" style="padding: 0; overflow: hidden;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-glass);">
+                <h2 style="font-size: 1.25rem; color: white; display: flex; align-items: center; gap: 0.75rem;">
+                    <i data-lucide="shield-check" style="color: var(--accent);"></i> Event Coordinators
+                </h2>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="dark-table">
+                    <thead>
+                        <tr>
+                            <th>Coordinator</th>
+                            <th>Access</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if event_coordinators %}
+                            {% for coordinator in event_coordinators %}
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 600; color: white;">{{ coordinator.user.username }}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">Added {{ coordinator.added_at|date }}</div>
+                                </td>
+                                <td><span class="badge" style="background: rgba(245, 158, 11, 0.1); color: var(--accent);">Manage</span></td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="2" style="text-align: center; padding: 3rem; color: var(--text-muted);">No coordinators assigned.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+</div>
 {% endblock %}

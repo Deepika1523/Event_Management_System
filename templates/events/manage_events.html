@@ -1,500 +1,267 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Manage Events{% endblock %}
-
-{% block body_class %}page-manage-events{% endblock %}
-
-{% block extra_css %}
-        body.page-manage-events {
-            background-image: linear-gradient(rgba(18, 18, 18, 0.45), rgba(18, 18, 18, 0.45)),
-                url("{% static 'images/gold_and_black_decor-_backdrop (1).webp' %}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }
-        .event-shell {
-            width: min(1200px, 100%);
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
-            gap: 24px;
-        }
-
-        .card {
-            border-radius: 20px;
-            background: #ffffff;
-            border: 1px solid rgba(43, 38, 32, 0.08);
-            box-shadow: 0 24px 60px rgba(80, 62, 44, 0.16);
-            padding: 24px;
-            animation: rise 0.5s ease both;
-        }
-
-        .card h1,
-        .card h2 {
-            margin: 0 0 8px;
-            color: var(--green-900);
-        }
-
-        .card p {
-            margin: 0 0 18px;
-            color: var(--muted);
-        }
-
-        label {
-            display: block;
-            margin: 12px 0 6px;
-            color: var(--green-900);
-            font-weight: 600;
-        }
-
-        input,
-        textarea,
-        select {
-            width: 100%;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 10px 12px;
-            font-size: 0.95rem;
-            background: #ffffff;
-            color: var(--text);
-        }
-
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-
-        input:focus,
-        textarea:focus,
-        select:focus {
-            outline: none;
-            border-color: rgba(47, 111, 102, 0.6);
-            box-shadow: 0 0 0 3px rgba(47, 111, 102, 0.15);
-        }
-
-        .btn {
-            margin-top: 16px;
-            width: 100%;
-            border: none;
-            border-radius: 999px;
-            padding: 11px 14px;
-            background: #2f6f66;
-            color: #fff;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 28px rgba(80, 62, 44, 0.18);
-            background: #23574f;
-        }
-
-        .message-list {
-            display: grid;
-            gap: 8px;
-            margin-bottom: 14px;
-        }
-
-        .msg {
-            border-radius: 10px;
-            padding: 10px 12px;
-            border: 1px solid;
-            font-size: 0.9rem;
-        }
-
-        .msg.success {
-            background: rgba(47, 111, 102, 0.12);
-            border-color: rgba(47, 111, 102, 0.35);
-            color: #23574f;
-        }
-
-        .msg.error {
-            background: rgba(185, 28, 28, 0.08);
-            border-color: rgba(185, 28, 28, 0.25);
-            color: #9f1239;
-        }
-
-        .table-wrap {
-            overflow-x: auto;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 760px;
-            background: #ffffff;
-        }
-
-        th,
-        td {
-            text-align: left;
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border);
-            color: var(--text);
-            vertical-align: top;
-        }
-
-        th {
-            color: var(--green-900);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            background: rgba(247, 241, 233, 0.9);
-        }
-
-        .delete-btn {
-            border: 1px solid rgba(185, 28, 28, 0.35);
-            background: rgba(185, 28, 28, 0.08);
-            color: #9f1239;
-            border-radius: 999px;
-            padding: 6px 10px;
-            font-size: 0.82rem;
-            cursor: pointer;
-        }
-
-        .delete-btn:hover {
-            background: rgba(185, 28, 28, 0.14);
-        }
-
-        .empty {
-            margin: 0;
-            color: var(--muted);
-        }
-
-        .notice {
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: rgba(247, 241, 233, 0.8);
-            color: var(--muted);
-            padding: 12px;
-            margin-top: 10px;
-        }
-
-        .hint {
-            display: block;
-            margin-top: 6px;
-            color: var(--muted);
-            font-size: 0.85rem;
-        }
-
-        .ai-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 12px 0 6px;
-        }
-
-        .btn.secondary {
-            background: #f7f1e9;
-            color: var(--green-900);
-            border: 1px solid rgba(47, 111, 102, 0.2);
-        }
-
-        .btn.secondary:hover {
-            background: #efe5d9;
-        }
-
-        .ai-status {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            color: var(--muted);
-        }
-
-        .banner-preview {
-            margin-top: 12px;
-            border-radius: 12px;
-            width: 100%;
-            display: none;
-            border: 1px solid var(--border);
-        }
-
-        @media (max-width: 950px) {
-            .event-shell {
-                grid-template-columns: 1fr;
-            }
-        }
-{% endblock %}
+{% block title %}Manage Events | EventSync{% endblock %}
 
 {% block content %}
-    <main class="event-shell">
-        <section class="card">
-            <h1>Create Event</h1>
-            {% if can_create_event %}
-                <p>Add a new event with details used to generate the public event website.</p>
+<div class="dashboard-page-header" style="background-image: url('{% static 'images/dashboard_header_dark.png' %}')">
+    <div class="header-content-rel">
+        <h1 style="font-size: 2.5rem; color: white; margin-bottom: 0.5rem;">Event Management</h1>
+        <p style="color: rgba(255,255,255,0.7);">Create, edit, and monitor your events in real-time.</p>
+    </div>
+</div>
 
-                <form method="post" action="{% url 'events:manage_events' %}" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <label for="event">Event Name</label>
-                    <input id="event" name="event" type="text" required>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; align-items: start;">
+    
+    <!-- Create Event Section -->
+    <section class="glass-card">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+            <div style="width: 40px; height: 40px; background: rgba(99, 102, 241, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                <i data-lucide="plus-circle"></i>
+            </div>
+            <h2 style="font-size: 1.25rem; color: white;">Create New Event</h2>
+        </div>
 
-                    <div class="ai-toolbar">
-                        <button type="button" class="btn secondary" id="ai-generate-content">
-                            Generate Description, Tagline, Schedule, Activities, Rules
-                        </button>
-                        <button type="button" class="btn secondary" id="ai-generate-banner">
-                            Generate AI Event Banner
-                        </button>
-                    </div>
-                    <div class="ai-status" id="ai-status"></div>
+        {% if can_create_event %}
+        <form method="post" action="{% url 'events:manage_events' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Event Name *</label>
+                <input id="event" name="event" type="text" class="form-input" placeholder="e.g. Neon Nights Tech Fest" required value="{{ form.event.value|default:'' }}">
+                {% if form.event.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.event.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                    <label for="description">Event Description</label>
-                    <textarea id="description" name="description" required></textarea>
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                <button type="button" class="btn btn-outline" id="ai-generate-content" style="flex: 1; font-size: 0.75rem; padding: 0.5rem;">
+                    <i data-lucide="sparkles"></i> AI Generate Info
+                </button>
+                <button type="button" class="btn btn-outline" id="ai-generate-banner" style="flex: 1; font-size: 0.75rem; padding: 0.5rem;">
+                    <i data-lucide="image"></i> AI Banner
+                </button>
+            </div>
+            <div id="ai-status" style="font-size: 0.8rem; margin-top: -1rem; margin-bottom: 1rem; color: var(--text-muted);"></div>
 
-                    <label for="tagline">Event Tagline</label>
-                    <input id="tagline" name="tagline" type="text">
+            <div class="form-group">
+                <label class="form-label">Description *</label>
+                <textarea id="description" name="description" class="form-input" rows="4" placeholder="Tell us about the event..." required>{{ form.description.value|default:'' }}</textarea>
+                {% if form.description.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.description.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                    <label for="schedule">Event Schedule</label>
-                    <textarea id="schedule" name="schedule"></textarea>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Date *</label>
+                    <input name="date_of_event" type="date" class="form-input" required value="{{ form.date_of_event.value|default:'' }}">
+                    {% if form.date_of_event.errors %}
+                        <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.date_of_event.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Time *</label>
+                    <input name="time_of_event" type="time" class="form-input" required value="{{ form.time_of_event.value|default:'' }}">
+                    {% if form.time_of_event.errors %}
+                        <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.time_of_event.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
 
-                    <label for="activities_overview">Event Activities</label>
-                    <textarea id="activities_overview" name="activities_overview"></textarea>
+            <div class="form-group">
+                <label class="form-label">Venue & Location *</label>
+                <input name="venue" type="text" class="form-input" placeholder="e.g. Main Auditorium" required style="margin-bottom: 0.5rem;" value="{{ form.venue.value|default:'' }}">
+                {% if form.venue.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.venue.errors.0 }}</div>
+                {% endif %}
+                <input name="location" type="text" class="form-input" placeholder="Map URL or City" required value="{{ form.location.value|default:'' }}">
+                {% if form.location.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.location.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                    <label for="rules">Event Rules</label>
-                    <textarea id="rules" name="rules"></textarea>
-
-                    <label for="date_of_event">Date of Event</label>
-                    <input id="date_of_event" name="date_of_event" type="date" required>
-
-                    <label for="time_of_event">Time of Event</label>
-                    <input id="time_of_event" name="time_of_event" type="time" required>
-
-
-                    <label for="venue">Venue</label>
-                    <input id="venue" name="venue" type="text" required>
-
-                    <label for="location">Location (Map URL or coordinates)</label>
-                    <input id="location" name="location" type="text" placeholder="https://maps.google.com/..." required>
-
-                    <label for="schedule">Event Itinerary / Schedule</label>
-                    <textarea id="schedule" name="schedule"></textarea>
-
-                    <label for="past_event_history">Past Event History</label>
-                    <textarea id="past_event_history" name="past_event_history"></textarea>
-
-                    <label for="last_registration_date">Last Registration Date</label>
-                    <input id="last_registration_date" name="last_registration_date" type="date" required>
-
-                    <label for="images">Event Images/Posters (multiple)</label>
-                    <input id="images" name="images" type="file" accept="image/*" multiple>
-
-                    <label for="category">Category</label>
-                    <select id="category" name="category" required>
-                        <option value="" disabled selected>Select a category</option>
+            <div class="form-group">
+                <label class="form-label">Category & Fee *</label>
+                <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1rem;">
+                    <select name="category" class="form-input" required>
+                        <option value="" disabled selected>Select Category</option>
                         {% for value, label in category_choices %}
-                            <option value="{{ value }}">{{ label }}</option>
+                            <option value="{{ value }}" {% if form.category.value == value %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
                     </select>
+                    <input name="registration" type="text" class="form-input" placeholder="Fee (e.g. 500)" required value="{{ form.registration.value|default:'' }}">
+                </div>
+                {% if form.category.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">Category: {{ form.category.errors.0 }}</div>
+                {% endif %}
+                {% if form.registration.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">Fee: {{ form.registration.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                    <label for="registration_fees">Registration Fees</label>
-                    <input id="registration_fees" name="registration_fees" type="text" required>
+            <div class="form-group">
+                <label class="form-label">Contact Information *</label>
+                <input name="contact_info" type="text" class="form-input" placeholder="e.g. Email or Phone number" required value="{{ form.contact_info.value|default:'' }}">
+                {% if form.contact_info.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.contact_info.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                    <label for="contact_info">Contact Information</label>
-                    <input id="contact_info" name="contact_info" type="text" required>
+            <div class="form-group">
+                <label class="form-label">Registration Close Date *</label>
+                <input name="last_registration_date" type="date" class="form-input" required value="{{ form.last_registration_date.value|default:'' }}">
+                {% if form.last_registration_date.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.last_registration_date.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                    <label for="registration_form_fields">Registration Form Fields</label>
-                    <textarea id="registration_form_fields" name="registration_form_fields" placeholder="Full name*\nPhone number*\nCollege name\nDietary preference"></textarea>
-                    <span class="hint">One field per line. Add * to mark required fields. Avoid duplicates.</span>
+            <div class="form-group">
+                <label class="form-label">Image URL (or upload below)</label>
+                <input id="image_url" name="image_url" type="url" class="form-input" placeholder="https://..." value="{{ form.image_url.value|default:'' }}">
+                {% if form.image_url.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.image_url.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                    <label for="image">Event Image (upload)</label>
-                    <input id="image" name="image" type="file" accept="image/*">
+            <div class="form-group">
+                <label class="form-label">Upload Banner(s)</label>
+                <input name="images" type="file" class="form-input" accept="image/*" multiple>
+                <small style="color: var(--text-muted); font-size: 0.7rem;">You can select multiple images.</small>
+            </div>
 
-                    <label for="image_url">Event Image URL</label>
-                    <input id="image_url" name="image_url" type="url" placeholder="https://example.com/image.jpg">
-                    <span class="hint">Provide a file upload or an image URL (or both).</span>
-                    <img class="banner-preview" id="banner-preview" alt="AI banner preview">
 
-                    <label for="template_choice">Website Template</label>
-                    <select id="template_choice" name="template_choice" required>
-                        <option value="" disabled selected>Select a template</option>
-                        {% for value, label in template_choices %}
-                            <option value="{{ value }}">{{ label }}</option>
-                        {% endfor %}
-                    </select>
+             <div class="form-group">
+                <label class="form-label">Upload QR Code</label>
+                <input name="images" type="file" class="form-input" accept="image/*" multiple>
+                <small style="color: var(--text-muted); font-size: 0.7rem;">QR Code</small>
+            </div>
 
-                    <button type="submit" class="btn">Create Event</button>
-                </form>
-            {% else %}
-                <p>Event creation is restricted by role.</p>
-                <div class="notice">Only users with Organizer role can create events.</div>
-            {% endif %}
-        </section>
 
-        <section class="card">
-            <h2>Your Events</h2>
-            <p>Manage event pages, dashboards, exports, and edits.</p>
-
-            {% if messages %}
-                <div class="message-list">
-                    {% for message in messages %}
-                        <div class="msg {% if message.tags == 'error' %}error{% else %}success{% endif %}">{{ message }}</div>
+            <div class="form-group">
+                <label class="form-label">Website Template *</label>
+                <select name="template_choice" class="form-input" required>
+                    {% for value, label in template_choices %}
+                        <option value="{{ value }}" {% if form.template_choice.value == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
-                </div>
-            {% endif %}
+                </select>
+                {% if form.template_choice.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.template_choice.errors.0 }}</div>
+                {% endif %}
+            </div>
 
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; height: 3.5rem;">
+                <i data-lucide="zap"></i> Create Launch Event
+            </button>
+        </form>
+        {% else %}
+        <div style="padding: 2rem; text-align: center; color: var(--text-muted); border: 1px dashed var(--border-glass); border-radius: var(--radius-md);">
+            <i data-lucide="lock" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <p>Access Restricted. Only Organizers can create events.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Your Events Section -->
+    <section class="glass-card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="font-size: 1.25rem; color: white; display: flex; align-items: center; gap: 0.75rem;">
+                <i data-lucide="layers" style="color: var(--secondary);"></i> Active Events
+            </h2>
+            <span class="badge" style="background: rgba(34, 197, 94, 0.1); color: var(--secondary);">{{ events|length }} Live</span>
+        </div>
+
+        <div style="max-height: 800px; overflow-y: auto;">
             {% if events %}
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Event</th>
-                                <th>Date</th>
-                                <th>Website</th>
-                                <th>Dashboard</th>
-                                <th>Edit</th>
-                                <th>Export</th>
-                                <th>Delete</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for event in events %}
-                                <tr>
-                                    <td>{{ event.id }}</td>
-                                    <td>{{ event.event }}</td>
-                                    <td>{{ event.date_of_event }}</td>
-                                    <td><a href="{% url 'event_site' event.id %}">Open</a></td>
-                                    <td>
-                                        {% if request.user.is_superuser %}
-                                            <a href="{% url 'events:event_dashboard' event.id %}">Open</a>
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
-                                    <td><a href="{% url 'events:edit_event' event.id %}">Edit</a></td>
-                                    <td><a href="{% url 'events:export_event_excel' event.id %}">Excel</a></td>
-                                    <td>
-                                        <form method="post" action="{% url 'events:delete_event' event.id %}">
-                                            {% csrf_token %}
-                                            <button class="delete-btn" type="submit">Delete</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+            <table class="dark-table">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Quick Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600; color: white; margin-bottom: 0.25rem;">{{ event.event }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ event.date_of_event }}</div>
+                        </td>
+                        <td>
+                            <span class="badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">Global</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                <a href="{% url 'event_site' event.id %}" class="btn btn-outline" style="padding: 0.4rem; border-radius: 8px;" title="View Site">
+                                    <i data-lucide="external-link" style="width: 16px; height: 16px;"></i>
+                                </a>
+                                <a href="{% url 'events:edit_event' event.id %}" class="btn btn-outline" style="padding: 0.4rem; border-radius: 8px;" title="Edit">
+                                    <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
+                                </a>
+                                <form method="post" action="{% url 'events:delete_event' event.id %}" style="display: inline;" onsubmit="return confirm('Delete this event?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline" style="padding: 0.4rem; border-radius: 8px; color: var(--danger); border-color: rgba(239, 68, 68, 0.2);" title="Delete">
+                                        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             {% else %}
-                <p class="empty">No events created yet.</p>
+            <div style="padding: 4rem 2rem; text-align: center; color: var(--text-muted);">
+                <i data-lucide="calendar-x" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.3;"></i>
+                <p>No events found. Start by creating one!</p>
+            </div>
             {% endif %}
-        </section>
-    </main>
+        </div>
+    </section>
 
-    <script>
-        const aiStatus = document.getElementById("ai-status");
-        const bannerPreview = document.getElementById("banner-preview");
+</div>
 
-        const setStatus = (message, isError = false) => {
-            aiStatus.textContent = message;
-            aiStatus.style.color = isError ? "#9f1239" : "";
-        };
+<script>
+    // AI Content Generation Logic (Simplified for Redesign)
+    const setStatus = (msg, isError) => {
+        const el = document.getElementById('ai-status');
+        el.innerText = msg;
+        el.style.color = isError ? 'var(--danger)' : 'var(--primary)';
+    };
 
-        const getCookie = (name) => {
-            const cookies = document.cookie ? document.cookie.split(";") : [];
-            for (const cookie of cookies) {
-                const trimmed = cookie.trim();
-                if (trimmed.startsWith(`${name}=`)) {
-                    return decodeURIComponent(trimmed.substring(name.length + 1));
-                }
-            }
-            return "";
-        };
+    document.getElementById('ai-generate-content').addEventListener('click', async () => {
+        const title = document.getElementById('event').value;
+        if (!title) return setStatus('Enter event name first', true);
+        
+        setStatus('Syncing with AI...', false);
+        try {
+            const resp = await fetch("{% url 'events:ai_generate_event_content' %}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+                body: JSON.stringify({ event: title, category: 'General' })
+            });
+            const data = await resp.json();
+            document.getElementById('description').value = data.description || '';
+            setStatus('AI Info Generated!', false);
+        } catch (e) { setStatus('AI generation failed', true); }
+    });
 
-        const joinLines = (value) => {
-            if (Array.isArray(value)) {
-                return value.join("\n");
-            }
-            return value || "";
-        };
-
-        document.getElementById("ai-generate-content").addEventListener("click", async () => {
-            const title = document.getElementById("event").value.trim();
-            const category = document.getElementById("category").value.trim();
-            const venue = document.getElementById("venue").value.trim();
-            const dateOfEvent = document.getElementById("date_of_event").value.trim();
-
-            if (!title || !category) {
-                setStatus("Please enter an event name and category first.", true);
-                return;
-            }
-
-            setStatus("Generating content with AI...");
-
-            try {
-                const response = await fetch("{% url 'events:ai_generate_event_content' %}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRFToken": getCookie("csrftoken"),
-                    },
-                    body: JSON.stringify({
-                        event: title,
-                        category,
-                        venue,
-                        date_of_event: dateOfEvent,
-                    }),
-                });
-
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.error || "AI generation failed.");
-                }
-
-                document.getElementById("description").value = data.description || "";
-                document.getElementById("tagline").value = data.tagline || "";
-                document.getElementById("schedule").value = joinLines(data.schedule);
-                document.getElementById("activities_overview").value = joinLines(data.activities);
-                document.getElementById("rules").value = joinLines(data.rules);
-
-                setStatus("AI content ready. Review and edit as needed.");
-            } catch (error) {
-                setStatus(error.message, true);
-            }
-        });
-
-        document.getElementById("ai-generate-banner").addEventListener("click", async () => {
-            const title = document.getElementById("event").value.trim();
-            const category = document.getElementById("category").value.trim();
-
-            if (!title || !category) {
-                setStatus("Please enter an event name and category first.", true);
-                return;
-            }
-
-            setStatus("Generating banner image...");
-
-            try {
-                const response = await fetch("{% url 'events:ai_generate_event_banner' %}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRFToken": getCookie("csrftoken"),
-                    },
-                    body: JSON.stringify({
-                        event: title,
-                        category,
-                    }),
-                });
-
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.error || "AI banner generation failed.");
-                }
-
-                if (data.image_url) {
-                    document.getElementById("image_url").value = data.image_url;
-                    bannerPreview.src = data.image_url;
-                    bannerPreview.style.display = "block";
-                }
-
-                setStatus("AI banner generated. Review and edit as needed.");
-            } catch (error) {
-                setStatus(error.message, true);
-            }
-        });
-    </script>
+    document.getElementById('ai-generate-banner').addEventListener('click', async () => {
+        const title = document.getElementById('event').value;
+        if (!title) return setStatus('Enter event name first', true);
+        
+        setStatus('Painting with AI...', false);
+        try {
+            const resp = await fetch("{% url 'events:ai_generate_event_banner' %}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+                body: JSON.stringify({ event: title, category: 'General' })
+            });
+            const data = await resp.json();
+            document.getElementById('image_url').value = data.image_url || '';
+            setStatus('AI Banner Ready!', false);
+        } catch (e) { setStatus('AI banner failed', true); }
+    });
+</script>
 {% endblock %}

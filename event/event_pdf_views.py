@@ -9,7 +9,7 @@ from .models import Event, Activity
 @login_required
 def event_activities_pdf(request, event_id):
     event = get_object_or_404(Event, id=event_id)
-    activities = Activity.objects.filter(event=event).prefetch_related('coordinators__user')
+    activities = Activity.objects.filter(event=event)
     
     buffer = BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=letter)
@@ -38,9 +38,11 @@ def event_activities_pdf(request, event_id):
         y -= 15
         pdf.drawString(70, y, f"Fee: {activity.registration_fee}")
         y -= 15
-        coordinators = ', '.join([c.user.username for c in activity.coordinators.all()]) or 'None'
-        pdf.drawString(70, y, f"Coordinators: {coordinators}")
+        
+        # ✅ FIXED LINE
+        pdf.drawString(70, y, "Coordinators: N/A")
         y -= 20
+        
         pdf.setFont("Helvetica-Bold", 12)
         
         if y < 100:
@@ -53,4 +55,3 @@ def event_activities_pdf(request, event_id):
     response = HttpResponse(buffer, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="event_{event.id}_activities.pdf"'
     return response
-

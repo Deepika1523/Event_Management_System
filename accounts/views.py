@@ -3,8 +3,47 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from .models import OrganizerProfile
 
+def role_selection(request):
+    """
+    Dedicated role selection screen shown after landing.
+    Saves the picked role in session so login/signup can prefill it.
+    """
+
+    roles = [
+        ("organizer","Organizer","Design and publish events, manage activities, invite coordinators.","indigo","#4f46e5","#4338ca","rocket"),
+        ("coordinator","Coordinator","Run on-ground ops, scan QR codes, validate payments, update leaderboards.","green","#16a34a","#15803d","badge-check"),
+        ("participant","Participant","Discover events, register for activities, download passes and certificates.","blue","#2563eb","#1d4ed8","ticket")
+    ]
+
+    if request.method == "POST":
+        role = request.POST.get("role")
+        next_action = request.POST.get("next_action", "login")
+
+        if role not in {"organizer", "coordinator", "participant"}:
+            messages.error(request, "Please choose a valid role.")
+            return redirect("accounts:role_selection")
+
+        request.session["selected_role"] = role
+
+        target = "events:unified_login"
+        if next_action == "signup":
+            target = "events:signup"
+
+        return redirect(f"{reverse(target)}?role={role}")
+
+    selected_role = request.session.get("selected_role", "")
+
+    return render(
+        request,
+        "accounts/role_selection.html",
+        {
+            "selected_role": selected_role,
+            "roles": roles   
+        },
+    )
 
 def organizer_signup(request):
     """Handle organizer signup"""
@@ -60,6 +99,14 @@ def organizer_login(request):
         password = request.POST.get('password')
 
         user = authenticate(request, username=username, password=password)
+        if user is None:
+            # fallback: allow login using email address
+            from django.contrib.auth import get_user_model
+            UserModel = get_user_model()
+            candidate = UserModel.objects.filter(email__iexact=(username or '').strip()).first()
+            if candidate:
+                user = authenticate(request, username=candidate.username, password=password)
+
         if user is not None:
             login(request, user)
             messages.success(request, f"Welcome back, {user.first_name or user.username}!")
@@ -115,6 +162,14 @@ def participant_login(request):
         password = request.POST.get('password')
 
         user = authenticate(request, username=username, password=password)
+        if user is None:
+            # fallback: allow login using email address
+            from django.contrib.auth import get_user_model
+            UserModel = get_user_model()
+            candidate = UserModel.objects.filter(email__iexact=(username or '').strip()).first()
+            if candidate:
+                user = authenticate(request, username=candidate.username, password=password)
+
         if user is not None:
             login(request, user)
             messages.success(request, f"Welcome back, {user.first_name or user.username}!")

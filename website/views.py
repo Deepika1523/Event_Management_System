@@ -2,7 +2,7 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, get_user_model
 def unified_login(request):
     error_message = None
     selected_role = request.GET.get("role", "")
@@ -12,6 +12,12 @@ def unified_login(request):
         username = request.POST.get("username", "")
         password = request.POST.get("password", "")
         user = authenticate(request, username=username, password=password)
+        if user is None:
+            # fallback: allow login using email address
+            UserModel = get_user_model()
+            candidate = UserModel.objects.filter(email__iexact=(username or '').strip()).first()
+            if candidate:
+                user = authenticate(request, username=candidate.username, password=password)
         if user is not None:
             login(request, user)
             # Redirect based on role

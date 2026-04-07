@@ -29,6 +29,16 @@ class EventRegistration(models.Model):
 
 
 class ActivityRegistration(models.Model):
+	STATUS_PENDING = "pending"
+	STATUS_APPROVED = "approved"
+	STATUS_REJECTED = "rejected"
+
+	STATUS_CHOICES = [
+		(STATUS_PENDING, "Pending"),
+		(STATUS_APPROVED, "Approved"),
+		(STATUS_REJECTED, "Rejected"),
+	]
+
 	participant = models.ForeignKey(
 		settings.AUTH_USER_MODEL,
 		on_delete=models.CASCADE,
@@ -38,6 +48,11 @@ class ActivityRegistration(models.Model):
 		Activity,
 		on_delete=models.CASCADE,
 		related_name="activity_registrations",
+	)
+	status = models.CharField(
+		max_length=20,
+		choices=STATUS_CHOICES,
+		default=STATUS_PENDING,
 	)
 	qr_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
 	registered_at = models.DateTimeField(auto_now_add=True)

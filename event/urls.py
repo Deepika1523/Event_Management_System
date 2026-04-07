@@ -32,6 +32,9 @@ urlpatterns = [
         views.export_event_excel,
         name="export_event_excel",
     ),
+    path("events/<int:event_id>/report.pdf", views.event_report_pdf, name="event_report_pdf"),
+    path("registrations/<int:registration_id>/summary.pdf", views.registration_summary_pdf, name="registration_summary_pdf"),
+    path("reports/export/", views.export_role_reports_excel, name="export_role_reports_excel"),
     path("manage-events/delete/<int:event_id>/", views.delete_event, name="delete_event"),
     path(
         "invites/activities/accept/<uuid:token>/",
@@ -63,8 +66,6 @@ urlpatterns = [
     path("event/<int:event_id>/gallery/", views.event_website_gallery, name="event_website_gallery"),
     path("event/<int:event_id>/contact/", views.event_website_contact, name="event_website_contact"),
     path("activity/<int:activity_id>/register/", views.activity_register, name="activity_register"),
-    path("create-event/", views.create_event, name="create_event"),
-    path("create-activity/", views.create_activity, name="create_activity"),
     path("user/", views.role_based_user_page, name="user"),
     path(
         "login/coordinator/",
@@ -95,4 +96,16 @@ urlpatterns = [
     path("coordinator-dashboard/", views.coordinator_dashboard, name="coordinator_dashboard"),
     path("participant-dashboard/", views.participant_dashboard, name="participant_dashboard"),
     path("events/<int:event_id>/activities.pdf/", event_pdf_views.event_activities_pdf, name="event_activities_pdf"),
+    path("invite-coordinator/", views.invite_coordinator, name="invite_coordinator"),
+    # Coordinator: approve/reject registrations
+    path("registrations/<int:registration_id>/approve/", views.approve_registration, name="approve_registration"),
+    path("registrations/<int:registration_id>/reject/", views.reject_registration, name="reject_registration"),
+    # Coordinator: QR scanner page (camera UI)
+    path("coordinator/scanner/", views.qr_scanner_page, name="qr_scanner_page"),
+    # Coordinator: participant list per activity
+    path("activities/<int:activity_id>/participants/", views.activity_participants, name="activity_participants"),
+    # Participant: download certificate PDF
+    path("certificate/<uuid:certificate_id>/download/", views.download_certificate, name="download_certificate"),
+    # Participant: activity gate pass PDF (approved only)
+    path("activity-gate-pass/<int:registration_id>/", views.generate_activity_gate_pass, name="generate_activity_gate_pass"),
 ]

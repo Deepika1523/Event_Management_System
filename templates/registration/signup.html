@@ -1,83 +1,110 @@
-{% extends "registration/auth_base.html" %}
+{% extends "base.html" %}
+{% load static %}
 
-{% block title %}Sign Up{% endblock %}
+{% block title %}Sign Up | EventSync{% endblock %}
 
-{% block intro_eyebrow %}Event Management System{% endblock %}
-{% block intro_heading %}Create a calm, role-first workspace.{% endblock %}
-{% block intro_text %}Pick your user type, complete your profile, and enter a refined event workflow in seconds.{% endblock %}
-{% block intro_bullets %}
-    <li>Coordinator, organizer, and participant access from one signup.</li>
-    <li>Clean layout with a neon night palette.</li>
-    <li>Responsive structure tuned for desktop and mobile.</li>
-{% endblock %}
+{% block body_class %}auth-wrapper{% endblock %}
 
-{% block form_title %}Create account{% endblock %}
-{% block form_subtitle %}Fill in your details to continue.{% endblock %}
-
-{% block form_content %}
-    <form method="post">
-        {% csrf_token %}
-        <label for="id_username">Username</label>
-        <input id="id_username" type="text" name="username" required value="{{ username|default:'' }}" autofocus>
-
-        <label for="id_email">Email</label>
-        <input id="id_email" type="email" name="email" required value="{{ email|default:'' }}">
-
-        <label for="id_role">User type</label>
-        <select id="id_role" name="role" required>
-            {% for key, label in roles %}
-                <option value="{{ key }}" {% if selected_role == key %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-        </select>
-
-        <div id="coordinator-role-field" style="display: none;">
-            <label for="id_coordinator_role">Coordinator type</label>
-            <select id="id_coordinator_role" name="coordinator_role">
-                <option value="" disabled selected>Select coordinator role</option>
-                {% for key, label in coordinator_roles %}
-                    <option value="{{ key }}" {% if selected_coordinator_role == key %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
+{% block content %}
+<div class="auth-card">
+    <div class="glass-card" style="padding: 2.5rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div class="brand-icon" style="width: 48px; height: 48px; margin: 0 auto 1rem auto;">
+                <i data-lucide="zap" style="color: white; width: 28px; height: 28px;"></i>
+            </div>
+            <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem; color: white;">{{ selected_role|title }} Signup</h2>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Create your account to join EventSync</p>
         </div>
 
-        <label for="id_password1">Password</label>
-        <input id="id_password1" type="password" name="password1" required>
-
-        <label for="id_password2">Confirm password</label>
-        <input id="id_password2" type="password" name="password2" required>
-
-        <button type="submit">Create account</button>
-    </form>
-
-    {% if errors %}
-        <div class="errors">
-            <strong>Please fix the following:</strong>
-            <ul>
+        {% if errors %}
+        <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--danger); border-radius: 8px; color: #FCA5A5; font-size: 0.875rem;">
+            <ul style="list-style: none; padding: 0;">
                 {% for error in errors %}
-                    <li>{{ error }}</li>
+                <li><i data-lucide="alert-circle" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i> {{ error }}</li>
                 {% endfor %}
             </ul>
         </div>
-    {% endif %}
+        {% endif %}
 
-    <script>
-        const roleSelect = document.getElementById("id_role");
-        const coordinatorField = document.getElementById("coordinator-role-field");
-        const coordinatorSelect = document.getElementById("id_coordinator_role");
+        <form method="post" id="signupForm">
+            {% csrf_token %}
+            <input type="hidden" name="role" value="{{ selected_role }}">
 
-        const toggleCoordinatorField = () => {
-            const isCoordinator = roleSelect.value === "coordinator";
-            coordinatorField.style.display = isCoordinator ? "block" : "none";
-            coordinatorSelect.required = isCoordinator;
-        };
+            <div class="form-group">
+                <label class="form-label" for="username">Username</label>
+                <div style="position: relative;">
+                    <i data-lucide="user" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);"></i>
+                    <input type="text" name="username" id="username" class="form-input" style="padding-left: 3rem;" placeholder="johndoe" required value="{{ username|default:'' }}">
+                </div>
+            </div>
 
-        roleSelect.addEventListener("change", toggleCoordinatorField);
-        toggleCoordinatorField();
-    </script>
+            <div class="form-group">
+                <label class="form-label" for="email">Email Address</label>
+                <div style="position: relative;">
+                    <i data-lucide="mail" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);"></i>
+                    <input type="email" name="email" id="email" class="form-input" style="padding-left: 3rem;" placeholder="name@example.com" required value="{{ email|default:'' }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password1">Password</label>
+                <div style="position: relative;">
+                    <i data-lucide="lock" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);"></i>
+                    <input type="password" name="password1" id="password1" class="form-input" style="padding-left: 3rem; padding-right: 3rem;" placeholder="••••••••" required>
+                    <button type="button" onclick="togglePassword('password1')" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0;">
+                        <i data-lucide="eye" id="eye-password1"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password2">Confirm Password</label>
+                <div style="position: relative;">
+                    <i data-lucide="lock-highlight" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);"></i>
+                    <input type="password" name="password2" id="password2" class="form-input" style="padding-left: 3rem; padding-right: 3rem;" placeholder="••••••••" required>
+                    <button type="button" onclick="togglePassword('password2')" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0;">
+                        <i data-lucide="eye" id="eye-password2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; height: 3rem;">
+                Create Account <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 2rem; font-size: 0.875rem; color: var(--text-muted);">
+            Already have an account? <a href="{% url 'events:unified_login' %}?role={{ selected_role }}" style="color: var(--primary); text-decoration: none; font-weight: 600;">Log in</a>
+        </div>
+        
+        <div style="text-align: center; margin-top: 1rem;">
+            <a href="{% url 'events:signup' %}" style="font-size: 0.75rem; color: var(--text-muted); text-decoration: none;">&larr; Choose a different role</a>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
-{% block after_form %}
-    <div class="helper">
-        Already registered? Return to the home page to sign in.
-    </div>
+{% block extra_js %}
+<script>
+    function togglePassword(id) {
+        const input = document.getElementById(id);
+        const icon = document.getElementById('eye-' + id);
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.setAttribute('data-lucide', 'eye-off');
+        } else {
+            input.type = 'password';
+            icon.setAttribute('data-lucide', 'eye');
+        }
+        lucide.createIcons();
+    }
+    
+    // Hide sidebar on auth pages
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const main = document.querySelector('.main-content');
+        if (sidebar) sidebar.style.display = 'none';
+        if (main) main.style.marginLeft = '0';
+    });
+</script>
 {% endblock %}

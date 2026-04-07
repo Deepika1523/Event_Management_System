@@ -1,163 +1,156 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Edit Event{% endblock %}
-
-{% block body_class %}page-edit-event{% endblock %}
-
-{% block extra_css %}
-        body.page-edit-event {
-            background-image: linear-gradient(rgba(18, 18, 18, 0.45), rgba(18, 18, 18, 0.45)),
-                url("{% static 'images/gold_and_black_decor-_backdrop (1).webp' %}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }
-        .event-shell {
-            width: min(1100px, 100%);
-            display: grid;
-            gap: 24px;
-        }
-
-        .card {
-            border-radius: 20px;
-            background: #ffffff;
-            border: 1px solid rgba(43, 38, 32, 0.08);
-            box-shadow: 0 24px 60px rgba(80, 62, 44, 0.16);
-            padding: 24px;
-            animation: rise 0.5s ease both;
-        }
-
-        .card h1 {
-            margin: 0 0 8px;
-            color: var(--green-900);
-        }
-
-        label {
-            display: block;
-            margin: 12px 0 6px;
-            color: var(--green-900);
-            font-weight: 600;
-        }
-
-        input,
-        textarea,
-        select {
-            width: 100%;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 10px 12px;
-            font-size: 0.95rem;
-            background: #ffffff;
-            color: var(--text);
-        }
-
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-
-        input:focus,
-        textarea:focus,
-        select:focus {
-            outline: none;
-            border-color: rgba(47, 111, 102, 0.6);
-            box-shadow: 0 0 0 3px rgba(47, 111, 102, 0.15);
-        }
-
-        .btn {
-            margin-top: 16px;
-            width: 100%;
-            border: none;
-            border-radius: 999px;
-            padding: 11px 14px;
-            background: #2f6f66;
-            color: #fff;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 28px rgba(80, 62, 44, 0.18);
-            background: #23574f;
-        }
-
-        .hint {
-            display: block;
-            margin-top: 6px;
-            color: var(--muted);
-            font-size: 0.85rem;
-        }
-{% endblock %}
+{% block title %}Edit Event | {{ event.event }} | EventSync{% endblock %}
 
 {% block content %}
-    <main class="event-shell">
-        <section class="card">
-            <h1>Edit Event</h1>
-            <form method="post" action="{% url 'events:edit_event' event.id %}" enctype="multipart/form-data">
-                {% csrf_token %}
-                <label for="event">Event Name</label>
-                <input id="event" name="event" type="text" value="{{ event.event }}" required>
+<div class="dashboard-page-header" style="background-image: url('{% if event.image_url %}{{ event.image_url }}{% else %}{% static "images/dashboard_header_dark.png" %}{% endif %}');">
+    <div class="header-content-rel">
+        <h1 style="font-size: 2.5rem; color: white; margin-bottom: 0.5rem;">Update Event Settings</h1>
+        <p style="color: rgba(255,255,255,0.7);">Modify details for {{ event.event }}.</p>
+    </div>
+</div>
 
-                <label for="description">Event Description</label>
-                <textarea id="description" name="description" required>{{ event.description }}</textarea>
+<div style="max-width: 800px; margin: 0 auto; margin-top: -3rem; position: relative; z-index: 30;">
+    <section class="glass-card">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+            <div style="width: 48px; height: 48px; background: rgba(99, 102, 241, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                <i data-lucide="edit-3"></i>
+            </div>
+            <div>
+                <h2 style="font-size: 1.5rem; color: white;">Edit Core Details</h2>
+                <p style="font-size: 0.875rem; color: var(--text-muted);">Update your event's public information.</p>
+            </div>
+        </div>
 
-                <label for="tagline">Event Tagline</label>
-                <input id="tagline" name="tagline" type="text" value="{{ event.tagline }}">
+        <form method="post" action="{% url 'events:edit_event' event.id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Event Name *</label>
+                <input id="event" name="event" type="text" class="form-input" value="{{ form.event.value|default:event.event }}" required>
+                {% if form.event.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.event.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                <label for="schedule">Event Schedule</label>
-                <textarea id="schedule" name="schedule">{{ event.schedule }}</textarea>
+            <div class="form-group">
+                <label class="form-label">Description *</label>
+                <textarea id="description" name="description" class="form-input" rows="5" required>{{ form.description.value|default:event.description }}</textarea>
+                {% if form.description.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.description.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                <label for="activities_overview">Event Activities</label>
-                <textarea id="activities_overview" name="activities_overview">{{ event.activities_overview }}</textarea>
+            <div class="form-group">
+                <label class="form-label">Event Tagline</label>
+                <input id="tagline" name="tagline" type="text" class="form-input" value="{{ form.tagline.value|default:event.tagline }}">
+                {% if form.tagline.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.tagline.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                <label for="rules">Event Rules</label>
-                <textarea id="rules" name="rules">{{ event.rules }}</textarea>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label">Date of Event *</label>
+                    <input name="date_of_event" type="date" class="form-input" value="{{ form.date_of_event.value|default:event.date_of_event|date:'Y-m-d' }}" required>
+                    {% if form.date_of_event.errors %}
+                        <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.date_of_event.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Time of Event *</label>
+                    <input name="time_of_event" type="time" class="form-input" value="{{ form.time_of_event.value|default:event.time_of_event|time:'H:i' }}" required>
+                    {% if form.time_of_event.errors %}
+                        <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.time_of_event.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
 
-                <label for="date_of_event">Date of Event</label>
-                <input id="date_of_event" name="date_of_event" type="date" value="{{ event.date_of_event|date:'Y-m-d' }}" required>
+            <div class="form-group">
+                <label class="form-label">Venue / Meeting Point *</label>
+                <input name="venue" type="text" class="form-input" value="{{ form.venue.value|default:event.venue }}" required>
+                {% if form.venue.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.venue.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                <label for="time_of_event">Time of Event</label>
-                <input id="time_of_event" name="time_of_event" type="time" value="{{ event.time_of_event|time:'H:i' }}" required>
+            <div class="form-group">
+                <label class="form-label">Location (URL or City) *</label>
+                <input name="location" type="text" class="form-input" value="{{ form.location.value|default:event.location }}" required>
+                {% if form.location.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.location.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                <label for="venue">Venue</label>
-                <input id="venue" name="venue" type="text" value="{{ event.venue }}" required>
-
-                <label for="category">Category</label>
-                <select id="category" name="category" required>
+            <div class="form-group">
+                <label class="form-label">Category *</label>
+                <select name="category" class="form-input" required>
                     {% for value, label in category_choices %}
-                        <option value="{{ value }}" {% if event.category == value %}selected{% endif %}>{{ label }}</option>
+                        <option value="{{ value }}" {% if form.category.value == value or event.category == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
+                {% if form.category.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.category.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                <label for="registration_fees">Registration Fees</label>
-                <input id="registration_fees" name="registration_fees" type="text" value="{{ event.registration }}" required>
+            <div class="form-group">
+                <label class="form-label">Registration Fee (₹) *</label>
+                <input name="registration" type="text" class="form-input" value="{{ form.registration.value|default:event.registration }}" required>
+                {% if form.registration.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.registration.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                <label for="contact_info">Contact Information</label>
-                <input id="contact_info" name="contact_info" type="text" value="{{ event.contact_info }}" required>
+            <div class="form-group">
+                <label class="form-label">Contact Information *</label>
+                <input name="contact_info" type="text" class="form-input" value="{{ form.contact_info.value|default:event.contact_info }}" required>
+                {% if form.contact_info.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.contact_info.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                <label for="registration_form_fields">Registration Form Fields</label>
-                <textarea id="registration_form_fields" name="registration_form_fields">{{ event.registration_form_fields }}</textarea>
-                <span class="hint">One field per line. Add * to mark required fields. Avoid duplicates.</span>
+            <div class="form-group">
+                <label class="form-label">Registration Close Date *</label>
+                <input name="last_registration_date" type="date" class="form-input" value="{{ form.last_registration_date.value|default:event.last_registration_date|date:'Y-m-d' }}" required>
+                {% if form.last_registration_date.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.last_registration_date.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                <label for="image">Event Image (upload)</label>
-                <input id="image" name="image" type="file" accept="image/*">
+            <div class="form-group">
+                <label class="form-label">Banner Image URL</label>
+                <input id="image_url" name="image_url" type="url" class="form-input" value="{{ form.image_url.value|default:event.image_url }}" placeholder="https://...">
+                {% if form.image_url.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.image_url.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                <label for="image_url">Event Image URL</label>
-                <input id="image_url" name="image_url" type="url" value="{{ event.image_url }}" placeholder="https://example.com/image.jpg">
+            <div class="form-group">
+                <label class="form-label">Replace Banner (Optional)</label>
+                <input name="image" type="file" class="form-input" accept="image/*">
+            </div>
 
-                <label for="template_choice">Website Template</label>
-                <select id="template_choice" name="template_choice" required>
+            <div class="form-group">
+                <label class="form-label">Website Template Style *</label>
+                <select name="template_choice" class="form-input" required>
                     {% for value, label in template_choices %}
-                        <option value="{{ value }}" {% if event.template_choice == value %}selected{% endif %}>{{ label }}</option>
+                        <option value="{{ value }}" {% if form.template_choice.value == value or event.template_choice == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
+                {% if form.template_choice.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.template_choice.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-                <button type="submit" class="btn">Save Changes</button>
-            </form>
-        </section>
-    </main>
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <a href="{% url 'events:event_dashboard' event.id %}" class="btn btn-outline" style="flex: 1; height: 3.5rem;">Cancel Request</a>
+                <button type="submit" class="btn btn-primary" style="flex: 2; height: 3.5rem; font-size: 1.125rem;">
+                    <i data-lucide="save"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </section>
+</div>
 {% endblock %}

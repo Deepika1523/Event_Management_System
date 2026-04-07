@@ -1,598 +1,240 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Dashboard{% endblock %}
-{% block body_class %}page-dashboard{% endblock %}
-{% block extra_css %}
-body.page-dashboard {
-    background-image: linear-gradient(rgba(18, 18, 18, 0.65), rgba(18, 18, 18, 0.65)), url('{% static 'images/luxury-golden-glow-with-soft-light-trails-and-sparkling-particles-on-dark-background_11537186.jpg!bwr800' %}');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
-.dashboard-navbar {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 36px 0 36px;
-    background: transparent;
-    min-height: 64px;
-}
-.dashboard-navbar .logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.5rem;
-    color: #ffd700;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-}
-.dashboard-navbar .user-info {
-    color: #fffbe6;
-    font-size: 1.1rem;
-    font-weight: 500;
-}
-.dashboard-layout {
-    display: block;
-    min-height: 80vh;
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 18px;
-}
-.dashboard-main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-    margin-top: 32px;
-}
-.dashboard-shell {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-}
-.summary-cards {
-    display: flex;
-    gap: 24px;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
-}
-.summary-card {
-    flex: 1 1 180px;
-    min-width: 180px;
-    max-width: 320px;
-    background: rgba(255,255,255,0.10);
-    border-radius: 18px;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.13);
-    padding: 24px 18px 18px 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    border: 1px solid rgba(255,255,255,0.13);
-    backdrop-filter: blur(8px);
-    position: relative;
-}
-.summary-card .summary-title {
-    color: #ffd700;
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-.summary-card .summary-value {
-    color: #fffbe6;
-    font-size: 2.1rem;
-    font-weight: 700;
-    margin-bottom: 0;
-}
-.summary-card .summary-icon {
-    position: absolute;
-    top: 18px;
-    right: 18px;
-    font-size: 2.2rem;
-    color: #ffd70044;
-}
-.card {
-    border-radius: 24px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.13);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-    padding: 32px 28px;
-    animation: rise 0.45s ease both;
-    backdrop-filter: blur(12px);
-}
-.card h1, .card h2 {
-    margin: 0 0 12px;
-    color: #ffd700;
-    font-family: 'Playfair Display', serif;
-    font-weight: 600;
-}
-.card p {
-    margin: 0 0 18px;
-    color: #f8fafc;
-}
-.message-list {
-    display: grid;
-    gap: 8px;
-    margin-bottom: 14px;
-}
-.msg {
-    border-radius: 10px;
-    padding: 10px 12px;
-    border: 1px solid;
-    font-size: 0.95rem;
-    font-weight: 500;
-}
-.msg.success {
-    background: rgba(47, 111, 102, 0.12);
-    border-color: rgba(47, 111, 102, 0.35);
-    color: #ffd700;
-}
-.msg.error {
-    background: rgba(185, 28, 28, 0.08);
-    border-color: rgba(185, 28, 28, 0.25);
-    color: #ff4d4f;
-}
-.msg.info {
-    background: rgba(37, 99, 235, 0.1);
-    border-color: rgba(37, 99, 235, 0.25);
-    color: #1d4ed8;
-}
-.table-wrap {
-    overflow-x: auto;
-    border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.13);
-    background: rgba(18,18,18,0.55);
-    margin-bottom: 8px;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 760px;
-    background: transparent;
-}
-th, td {
-    text-align: left;
-    padding: 12px 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.10);
-    color: #f8fafc;
-    vertical-align: middle;
-    font-size: 1rem;
-}
-th {
-    color: #ffd700;
-    font-size: 0.92rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    background: rgba(18, 18, 18, 0.72);
-}
-tr:nth-child(even) td {
-    background: rgba(255, 215, 0, 0.03);
-}
-tr:hover td {
-    background: rgba(255, 215, 0, 0.07);
-}
-.btn {
-    border: none;
-    border-radius: 999px;
-    padding: 8px 18px;
-    background: #ffd700;
-    color: #2b2620;
-    font-weight: 700;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background 0.18s, color 0.18s, box-shadow 0.18s;
-    box-shadow: 0 2px 8px rgba(255,215,0,0.08);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-.btn:hover {
-    background: #ffb300;
-    color: #fffbe6;
-    box-shadow: 0 4px 16px rgba(255,215,0,0.18);
-}
-.btn[disabled] {
-    opacity: 0.45;
-    cursor: not-allowed;
-}
-.icon-btn {
-    background: none;
-    border: none;
-    color: #ffd700;
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 0 6px;
-    transition: color 0.18s;
-}
-.icon-btn:hover {
-    color: #ffb300;
-}
-.badge {
-    display: inline-block;
-    padding: 4px 14px;
-    border-radius: 999px;
-    font-size: 0.92rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    margin-right: 4px;
-}
-.badge-paid {
-    background: rgba(47, 111, 102, 0.18);
-    color: #ffd700;
-    border: 1px solid #ffd700;
-}
-.badge-pending {
-    background: rgba(255, 215, 0, 0.10);
-    color: #ffd700;
-    border: 1px solid #ffd700;
-}
-.badge-rejected {
-    background: rgba(185, 28, 28, 0.10);
-    color: #ff4d4f;
-    border: 1px solid #ff4d4f;
-}
-.empty {
-    margin: 0;
-    color: #ffd700;
-    opacity: 0.7;
-}
-@media (max-width: 1100px) {
-    .summary-cards { flex-direction: column; gap: 18px; }
-    .dashboard-main { margin: 0; }
-}
-{% endblock %}
+
+{% block title %}Event Dashboard | EventSync{% endblock %}
 
 {% block content %}
-<div class="dashboard-navbar">
-    <div class="logo">Event Management</div>
-    <div class="user-info">Welcome, {{ user.get_full_name|default:user.username }}</div>
-</div>
-<div class="dashboard-layout">
-    <main class="dashboard-main">
-        <div class="dashboard-shell">
-            <!-- Summary Cards -->
-            <div class="summary-cards">
-                <div class="summary-card">
-                    <div class="summary-title">Total Events</div>
-                    <div class="summary-value">{{ total_events }}</div>
-                    <span class="summary-icon">&#127881;</span>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-title">Participants</div>
-                    <div class="summary-value">{{ total_participants }}</div>
-                    <span class="summary-icon">&#128101;</span>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-title">Payments</div>
-                    <div class="summary-value">₹{{ total_payments }}</div>
-                    <span class="summary-icon">&#128179;</span>
-                </div>
+<div class="dashboard-container">
+    <!-- Summary Header -->
+    <header class="dashboard-header" style="background-image: url('{% static 'images/dashboard_header_dark.png' %}');">
+        <div class="header-overlay"></div>
+        <div class="header-content">
+            <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: white;">Analytics Hub</h1>
+            <p style="color: rgba(255,255,255,0.8); font-size: 1.125rem;">Real-time overview of registrations, participants, and payments.</p>
+        </div>
+    </header>
+
+    <!-- Summary Stats -->
+    <section style="margin-top: -3rem; position: relative; z-index: 10; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+        <div class="glass-card" style="display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid var(--primary);">
+            <div style="width: 48px; height: 48px; background: rgba(99, 102, 241, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                <i data-lucide="calendar"></i>
             </div>
-            <!-- ...existing card/table sections, but update all buttons, badges, and '-' to use icons/buttons as described above... -->
-            <!-- The rest of the dashboard content remains, but with improved classes and icons as in the previous patch. -->
-            <!-- Main dashboard content restored below -->
-            <section class="card">
-                <h1>Dashboard</h1>
-                <p>Basic event overview and registrations.</p>
-                {% if can_check_payments %}
-                    <p><a href="{% url 'payment_status' %}" class="btn">Open payment status</a></p>
-                {% endif %}
-                {% if messages %}
-                    <div class="message-list">
-                        {% for message in messages %}
-                            <div class="msg {% if message.tags == 'error' %}error{% elif message.tags == 'info' %}info{% else %}success{% endif %}">{{ message }}</div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </section>
-            <section class="card">
-                <h2>Registered Events</h2>
-                {% if can_view_participant_map %}
-                    <p>Organizer view: participants and their participated events.</p>
-                {% else %}
-                    <p>Your registered events.</p>
-                {% endif %}
-                {% if registered_events %}
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    {% if can_view_participant_map %}
-                                        <th>Participant</th>
-                                    {% endif %}
-                                    <th>Event</th>
-                                    <th>Date of Event</th>
-                                    <th>Time of Event</th>
-                                    <th>Registered At</th>
-                                    {% if can_register %}
-                                        <th>Gate Pass</th>
-                                    {% endif %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for row in registered_events %}
-                                    <tr>
-                                        {% if can_view_participant_map %}
-                                            <td>{{ row.participant.username }}</td>
-                                        {% endif %}
-                                        <td>
-                                            {% if can_view_event_dashboard %}
-                                                {{ row.event.event }}
-                                            {% else %}
-                                                Restricted
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ row.event.date_of_event }}</td>
-                                        <td>{{ row.event.time_of_event }}</td>
-                                        <td>{{ row.registered_at }}</td>
-                                        {% if can_register %}
-                                            <td>
-                                                <a href="{% url 'events:generate_gate_pass' row.id %}" class="btn">Download</a>
-                                            </td>
-                                        {% endif %}
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <p class="empty">No registered events to show.</p>
-                {% endif %}
-            </section>
-            <section class="card">
-                <h2>Activities</h2>
-                <p>Register for specific activities inside events.</p>
-                {% if activities %}
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Event</th>
-                                    <th>Activity</th>
-                                    <th>Fee</th>
-                                    <th>Team</th>
-                                    <th>Action</th>
-                                    <th>Certificate</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for activity in activities %}
-                                    <tr>
-                                        <td>{{ activity.id }}</td>
-                                        <td>{{ activity.event.event }}</td>
-                                        <td>{{ activity.name }}</td>
-                                        <td>{{ activity.registration_fee }}</td>
-                                        <td>
-                                            {% if activity.is_team_event %}
-                                                Team of {% if activity.team_size %}{{ activity.team_size }}{% else %}2+{% endif %}
-                                            {% else %}
-                                                Solo
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if can_register %}
-                                                {% if activity.is_team_event %}
-                                                    {% if activity.id in participant_team_activity_ids %}
-                                                        <button type="button" class="btn" disabled>Team Registered</button>
-                                                    {% else %}
-                                                        <form method="post" action="{% url 'events:dashboard' %}">
-                                                            {% csrf_token %}
-                                                            <input type="hidden" name="action" value="register_team">
-                                                            <input type="hidden" name="activity_id" value="{{ activity.id }}">
-                                                            <input type="text" name="team_name" placeholder="Team name" required>
-                                                            <textarea name="member_names" placeholder="Team member names (one per line)" rows="2"></textarea>
-                                                            <button type="submit" class="btn">Register Team</button>
-                                                        </form>
-                                                    {% endif %}
-                                                {% else %}
-                                                    {% if activity.id in participant_registered_activity_ids %}
-                                                        <button type="button" class="btn" disabled>Registered</button>
-                                                    {% else %}
-                                                        <form method="post" action="{% url 'events:dashboard' %}">
-                                                            {% csrf_token %}
-                                                            <input type="hidden" name="action" value="register_activity">
-                                                            <input type="hidden" name="activity_id" value="{{ activity.id }}">
-                                                            <button type="submit" class="btn">Register</button>
-                                                        </form>
-                                                    {% endif %}
-                                                {% endif %}
-                                            {% else %}
-                                                -
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if can_register and activity.id in participant_certificate_activity_ids %}
-                                                <a href="{% url 'participant_certificate' activity.id %}" class="btn">Download</a>
-                                            {% else %}
-                                                -
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <p class="empty">No activities available.</p>
-                {% endif %}
-            </section>
-            {% if can_export_events %}
-                <section class="card">
-                    <h2>Event Exports</h2>
-                    <p>Download Excel sheets with activity and participant details.</p>
-                    {% if export_events %}
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Event</th>
-                                        <th>Date</th>
-                                        <th>Export</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for event in export_events %}
-                                        <tr>
-                                            <td>{{ event.event }}</td>
-                                            <td>{{ event.date_of_event }}</td>
-                                            <td><a href="{% url 'events:export_event_excel' event.id %}" class="btn">Download Excel</a></td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <p class="empty">No events available for export.</p>
-                    {% endif %}
-                </section>
-            {% endif %}
-            {% if can_view_event_dashboard %}
-                <section class="card">
-                    <h2>Event Activity Overview</h2>
-                    <p>Admin view: events with their activities.</p>
-                    {% if event_activity_rows %}
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Event</th>
-                                        <th>Activities</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for row in event_activity_rows %}
-                                        <tr>
-                                            <td>{{ row.event.event }}</td>
-                                            <td>{{ row.activity_names }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <p class="empty">No events available.</p>
-                    {% endif %}
-                </section>
-            {% endif %}
+            <div>
+                <div style="font-size: 0.8125rem; color: var(--text-muted); text-transform: uppercase;">Total Events</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: white;">{{ total_events }}</div>
+            </div>
+        </div>
+        <div class="glass-card" style="display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid var(--secondary);">
+            <div style="width: 48px; height: 48px; background: rgba(34, 197, 94, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--secondary);">
+                <i data-lucide="users"></i>
+            </div>
+            <div>
+                <div style="font-size: 0.8125rem; color: var(--text-muted); text-transform: uppercase;">Participants</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: white;">{{ total_participants }}</div>
+            </div>
+        </div>
+        <div class="glass-card" style="display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid var(--accent);">
+            <div style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--accent);">
+                <i data-lucide="credit-card"></i>
+            </div>
+            <div>
+                <div style="font-size: 0.8125rem; color: var(--text-muted); text-transform: uppercase;">Revenue</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: white;">₹{{ total_payments }}</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Registered Events -->
+    <section class="glass-card" style="margin-bottom: 2rem; padding: 0; overflow: hidden;">
+        <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="font-size: 1.25rem; color: white; display: flex; align-items: center; gap: 0.75rem;">
+                <i data-lucide="clipboard-check" style="color: var(--primary);"></i> Registered Events
+            </h2>
             {% if can_check_payments %}
-                <section class="card">
-                    <h2>Activity Registrations</h2>
-                    <p>Coordinator view: confirm payment for activity registrations.</p>
-                    {% if activity_registrations %}
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Participant</th>
-                                        <th>Event</th>
-                                        <th>Activity</th>
-                                        <th>Registered At</th>
-                                        <th>Payment Status</th>
-                                        <th>Checked By</th>
-                                        <th>Checked At</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in activity_registrations %}
-                                        <tr>
-                                            <td>{{ item.registration.participant.username }}</td>
-                                            <td>{{ item.registration.activity.event.event }}</td>
-                                            <td>{{ item.registration.activity.name }}</td>
-                                            <td>{{ item.registration.registered_at }}</td>
-                                            <td>{{ item.payment_status }}</td>
-                                            <td>{% if item.checked_by %}{{ item.checked_by.username }}{% else %}-{% endif %}</td>
-                                            <td>{% if item.checked_at %}{{ item.checked_at }}{% else %}-{% endif %}</td>
-                                            <td>
-                                                {% if item.payment_status == "confirmed" %}
-                                                    <button type="button" class="btn" disabled>Confirmed</button>
-                                                {% else %}
-                                                    <form method="post" action="{% url 'events:dashboard' %}">
-                                                        {% csrf_token %}
-                                                        <input type="hidden" name="action" value="check_payment">
-                                                        <input type="hidden" name="registration_id" value="{{ item.registration.id }}">
-                                                        <button type="submit" class="btn">Mark Paid</button>
-                                                    </form>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <p class="empty">No activity registrations found.</p>
-                    {% endif %}
-                </section>
-            {% endif %}
-            {% if coordinator_rows %}
-                <section class="card">
-                    <h2>Coordinator Tools</h2>
-                    <p>Mark attendance, update leaderboard, and issue certificates.</p>
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Participant</th>
-                                    <th>Event</th>
-                                    <th>Activity</th>
-                                    <th>QR Token</th>
-                                    <th>Attendance</th>
-                                    <th>Leaderboard</th>
-                                    <th>Certificate</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in coordinator_rows %}
-                                    <tr>
-                                        <td>{{ item.registration.participant.username }}</td>
-                                        <td>{{ item.registration.activity.event.event }}</td>
-                                        <td>{{ item.registration.activity.name }}</td>
-                                        <td>{{ item.registration.qr_token }}</td>
-                                        <td>
-                                            {% if item.attendance %}
-                                                {{ item.attendance.status }}
-                                            {% else %}
-                                                <form method="post" action="{% url 'events:scan_attendance' %}">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="qr_token" value="{{ item.registration.qr_token }}">
-                                                    <button type="submit" class="btn">Mark Present</button>
-                                                </form>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <form method="post" action="{% url 'events:update_leaderboard' %}">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="activity_id" value="{{ item.registration.activity.id }}">
-                                                <input type="hidden" name="participant_id" value="{{ item.registration.participant.id }}">
-                                                <input type="number" name="score" value="{% if item.leaderboard %}{{ item.leaderboard.score }}{% else %}0{% endif %}" style="width: 90px;">
-                                                <button type="submit" class="btn">Save</button>
-                                            </form>
-                                        </td>
-                                        <td>
-                                            {% if item.certificate %}
-                                                Issued
-                                            {% else %}
-                                                <form method="post" action="{% url 'events:issue_certificate' %}">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="activity_id" value="{{ item.registration.activity.id }}">
-                                                    <input type="hidden" name="participant_id" value="{{ item.registration.participant.id }}">
-                                                    <button type="submit" class="btn">Issue</button>
-                                                </form>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
+                <a href="{% url 'payment_status' %}" class="btn btn-outline" style="font-size: 0.8125rem;">Payment Status</a>
             {% endif %}
         </div>
+        
+        {% if registered_events %}
+        <div style="overflow-x: auto;">
+            <table class="dark-table">
+                <thead>
+                    <tr>
+                        {% if can_view_participant_map %}<th>Participant</th>{% endif %}
+                        <th>Event</th>
+                        <th>Date & Time</th>
+                        <th>Registered At</th>
+                        {% if can_register %}<th style="text-align: right;">Action</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in registered_events %}
+                    <tr>
+                        {% if can_view_participant_map %}<td>{{ row.participant.username }}</td>{% endif %}
+                        <td><div style="font-weight: 600; color: white;">{{ row.event.event }}</div></td>
+                        <td>
+                            <div style="font-size: 0.875rem;">{{ row.event.date_of_event }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ row.event.time_of_event }}</div>
+                        </td>
+                        <td><div style="font-size: 0.875rem;">{{ row.registered_at }}</div></td>
+                        {% if can_register %}
+                        <td style="text-align: right;">
+                            <a href="{% url 'events:generate_gate_pass' row.id %}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">
+                                <i data-lucide="download"></i> Gate Pass
+                            </a>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-    </main>
+        {% else %}
+        <div style="padding: 3rem; text-align: center; color: var(--text-muted);">No registered events found.</div>
+        {% endif %}
+    </section>
+
+    <!-- Activities Hub -->
+    <section class="glass-card" style="margin-bottom: 2rem; padding: 0; overflow: hidden;">
+        <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-glass);">
+            <h2 style="font-size: 1.25rem; color: white; display: flex; align-items: center; gap: 0.75rem;">
+                <i data-lucide="activity" style="color: var(--secondary);"></i> Activity Hub
+            </h2>
+        </div>
+        
+        {% if activities %}
+        <div style="overflow-x: auto;">
+            <table class="dark-table">
+                <thead>
+                    <tr>
+                        <th>Activity</th>
+                        <th>Event</th>
+                        <th>Type</th>
+                        <th>Fee</th>
+                        <th style="text-align: right;">Registration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for activity in activities %}
+                    <tr>
+                        <td><div style="font-weight: 600; color: white;">{{ activity.name }}</div></td>
+                        <td>{{ activity.event.event }}</td>
+                        <td>
+                            {% if activity.is_team_event %}
+                                <span class="badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">Team ({{ activity.team_size|default:"2+" }})</span>
+                            {% else %}
+                                <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-muted);">Solo</span>
+                            {% endif %}
+                        </td>
+                        <td>₹{{ activity.registration_fee }}</td>
+                        <td style="text-align: right;">
+                            {% if can_register %}
+                                {% if activity.is_team_event %}
+                                    {% if activity.id in participant_team_activity_ids %}
+                                        <button class="btn btn-outline" disabled style="opacity: 0.5;">Team Joined</button>
+                                    {% else %}
+                                        <button class="btn btn-primary" onclick="showTeamModal('{{ activity.id }}', '{{ activity.name }}')" style="padding: 0.5rem 1rem; font-size: 0.75rem;">Join Team</button>
+                                    {% endif %}
+                                {% else %}
+                                    {% if activity.id in participant_registered_activity_ids %}
+                                        <button class="btn btn-outline" disabled style="opacity: 0.5;">Registered</button>
+                                    {% else %}
+                                        <form method="post" action="{% url 'events:dashboard' %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="register_activity">
+                                            <input type="hidden" name="activity_id" value="{{ activity.id }}">
+                                            <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.75rem;">Register</button>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
+                                {% if activity.id in participant_certificate_activity_ids %}
+                                    <a href="{% url 'participant_certificate' activity.id %}" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.75rem; margin-left: 0.5rem;">
+                                        <i data-lucide="award"></i> Cert
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: var(--text-muted);">--</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="padding: 3rem; text-align: center; color: var(--text-muted);">No activities available.</div>
+        {% endif %}
+    </section>
+
+    <!-- Coordinator / Admin Specific Sections -->
+    {% if can_export_events %}
+    <section class="glass-card" style="margin-bottom: 2rem; padding: 0; overflow: hidden;">
+        <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-glass);">
+            <h2 style="font-size: 1.25rem; color: white; display: flex; align-items: center; gap: 0.75rem;">
+                <i data-lucide="file-spreadsheed" style="color: var(--accent);"></i> Data Exports
+            </h2>
+        </div>
+        <div style="overflow-x: auto;">
+            <table class="dark-table">
+                <thead>
+                    <tr>
+                        <th>Event Name</th>
+                        <th>Date</th>
+                        <th style="text-align: right;">Export</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in export_events %}
+                    <tr>
+                        <td>{{ event.event }}</td>
+                        <td>{{ event.date_of_event }}</td>
+                        <td style="text-align: right;">
+                            <a href="{% url 'events:export_event_excel' event.id %}" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.75rem;">
+                                <i data-lucide="download-cloud"></i> Excel
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+
 </div>
-<!-- Material Icons CDN for icons -->
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<!-- Simple Modal for Team Registration -->
+<div id="teamModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; padding: 2rem;">
+    <div class="glass-card" style="max-width: 500px; width: 100%; position: relative;">
+        <button onclick="hideTeamModal()" style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
+        <h2 id="modalTitle" style="margin-bottom: 1.5rem; color: white;">Team Registration</h2>
+        <form method="post" action="{% url 'events:dashboard' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="register_team">
+            <input type="hidden" name="activity_id" id="modalActivityId">
+            <div class="form-group">
+                <label class="form-label">Team Name</label>
+                <input type="text" name="team_name" class="form-input" required placeholder="e.g. Neon Avengers">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Member Names</label>
+                <textarea name="member_names" class="form-input" rows="4" placeholder="One name per line..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 3rem; margin-top: 1rem;">Confirm Registration</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function showTeamModal(id, name) {
+        document.getElementById('modalActivityId').value = id;
+        document.getElementById('modalTitle').innerText = 'Register for ' + name;
+        document.getElementById('teamModal').style.display = 'flex';
+        lucide.createIcons();
+    }
+    function hideTeamModal() {
+        document.getElementById('teamModal').style.display = 'none';
+    }
+</script>
 {% endblock %}

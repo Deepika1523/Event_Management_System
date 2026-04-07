@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ event.event }} | EventSync{% endblock %}
+
+{% block content %}
+
+{% if event.image_url %}
+
+<div class="dashboard-page-header" style="background-image: url('{{ event.image_url }}'); height: 400px;">
+{% else %}
+<div class="dashboard-page-header" style="background-image: url('{% static "images/event_banner_dark.png" %}'); height: 400px;">
+{% endif %}
+
+```
+<div class="header-content-rel">
+    <span class="badge" style="background: var(--primary); color: white; margin-bottom: 1rem;">
+        {{ event.category|upper }}
+    </span>
+
+    <h1 style="font-size: 4rem; color: white; margin-bottom: 1rem; text-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+        {{ event.event }}
+    </h1>
+
+    <div style="display: flex; gap: 2rem; color: rgba(255,255,255,0.9); font-weight: 500;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="calendar"></i> {{ event.date_of_event }}
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="clock"></i> {{ event.time_of_event }}
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="map-pin"></i> {{ event.venue }}
+        </div>
+    </div>
+</div>
+```
+
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-top: -4rem; position: relative; z-index: 20;">
+
+```
+<!-- Main Info -->
+<div style="display: flex; flex-direction: column; gap: 2rem;">
+    <section class="glass-card">
+        <h2 style="font-size: 1.5rem; color: white; margin-bottom: 1.5rem;">
+            <i data-lucide="info"></i> About This Event
+        </h2>
+        <p style="color: var(--text-muted); line-height: 1.8;">
+            {{ event.description|linebreaks }}
+        </p>
+    </section>
+
+    {% if event.activities_overview %}
+    <section class="glass-card">
+        <h2 style="font-size: 1.5rem; color: white; margin-bottom: 1.5rem;">
+            <i data-lucide="activity"></i> Featured Activities
+        </h2>
+        <p style="color: var(--text-muted);">
+            {{ event.activities_overview|linebreaks }}
+        </p>
+    </section>
+    {% endif %}
+
+    {% if event.rules %}
+    <section class="glass-card">
+        <h2 style="font-size: 1.5rem; color: white; margin-bottom: 1.5rem;">
+            <i data-lucide="shield-alert"></i> Guidelines & Rules
+        </h2>
+        <p style="color: var(--text-muted);">
+            {{ event.rules|linebreaks }}
+        </p>
+    </section>
+    {% endif %}
+</div>
+
+<!-- Sidebar -->
+<div style="display: flex; flex-direction: column; gap: 2rem;">
+    <section class="glass-card">
+        <div style="text-align: center; margin-bottom: 1rem;">
+            <div style="font-size: 0.875rem; color: var(--text-muted);">Registration Fee</div>
+            <div style="font-size: 2rem; font-weight: bold; color: white;">₹{{ event.registration }}</div>
+        </div>
+
+        {% if is_registered %}
+            <button class="btn" style="width:100%; background:rgba(255,255,255,0.03); color:var(--text-muted); cursor:default;" disabled>Already Registered</button>
+        {% else %}
+            <a href="{% url 'events:event_registration_form' event.id %}" class="btn btn-primary" style="width: 100%;">Register Now</a>
+        {% endif %}
+    </section>
+
+    <section class="glass-card">
+        <h3 style="color: white;">Organizer</h3>
+        <p style="color: var(--text-muted);">{{ event.user.username }}</p>
+    </section>
+</div>
+```
+
+</div>
+
+{% endblock %}

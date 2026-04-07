@@ -1,51 +1,102 @@
-{% extends "registration/auth_base.html" %}
+{% extends "base.html" %}
+{% load static %}
 
-{% block title %}Sign In{% endblock %}
+{% block title %}Sign In | EventSync{% endblock %}
 
-{% block intro_eyebrow %}Event Management System{% endblock %}
-{% block intro_heading %}Sign in to your event workspace.{% endblock %}
-{% block intro_text %}Access the tools you need to manage and experience events with clarity.{% endblock %}
-{% block intro_bullets %}
-    <li>Unified access for every role.</li>
-    <li>Apple-inspired spacing and hierarchy.</li>
-    <li>Responsive layout for every screen.</li>
-{% endblock %}
+{% block body_class %}auth-wrapper{% endblock %}
 
-{% block form_title %}Sign In{% endblock %}
-{% block form_subtitle %}Select your role and enter credentials{% endblock %}
+{% block content %}
+<div class="auth-card">
+    <div class="glass-card" style="padding: 2.5rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div class="brand-icon" style="width: 48px; height: 48px; margin: 0 auto 1rem auto;">
+                <i data-lucide="zap" style="color: white; width: 28px; height: 28px;"></i>
+            </div>
+            <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem; color: white;">Sign In</h2>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Access your event workspace</p>
+        </div>
 
-{% block form_content %}
-    <form method="post">
-        {% csrf_token %}
-        
-        <label for="id_role">User Role</label>
-        <select id="id_role" name="role" required>
-            <option value="">-- Select your role --</option>
-            <option value="coordinator" {% if selected_role == "coordinator" %}selected{% endif %}>Coordinator</option>
-            <option value="organizer" {% if selected_role == "organizer" %}selected{% endif %}>Organizer</option>
-            <option value="participant" {% if selected_role == "participant" %}selected{% endif %}>Participant</option>
-        </select>
+        {% if error_message %}
+        <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--danger); border-radius: 8px; color: #FCA5A5; font-size: 0.875rem;">
+            <i data-lucide="alert-circle" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i> {{ error_message }}
+        </div>
+        {% endif %}
 
-        <label for="id_username">Username</label>
-        <input id="id_username" type="text" name="username" required autofocus value="{{ username|default:'' }}">
+        {% if form.errors %}
+        <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--danger); border-radius: 8px; color: #FCA5A5; font-size: 0.875rem;">
+            <i data-lucide="alert-circle" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i> Invalid username or password.
+        </div>
+        {% endif %}
 
-        <label for="id_password">Password</label>
-        <input id="id_password" type="password" name="password" required>
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label" for="id_role">User Role</label>
+                <div style="position: relative;">
+                    <i data-lucide="shield" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);"></i>
+                    <select id="id_role" name="role" class="form-input" style="padding-left: 3rem; appearance: none; cursor: pointer;" required>
+                        <option value="">-- Select your role --</option>
+                        <option value="coordinator" {% if selected_role == "coordinator" %}selected{% endif %}>Coordinator</option>
+                        <option value="organizer" {% if selected_role == "organizer" %}selected{% endif %}>Organizer</option>
+                        <option value="participant" {% if selected_role == "participant" %}selected{% endif %}>Participant</option>
+                    </select>
+                    <i data-lucide="chevron-down" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted); pointer-events: none;"></i>
+                </div>
+            </div>
 
-        <button type="submit">Sign In</button>
-    </form>
+            <div class="form-group">
+                <label class="form-label" for="id_username">Username</label>
+                <div style="position: relative;">
+                    <i data-lucide="user" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);"></i>
+                    <input type="text" name="username" id="id_username" class="form-input" style="padding-left: 3rem;" placeholder="Your username" required autofocus value="{{ username|default:'' }}">
+                </div>
+            </div>
 
-    {% if error_message %}
-        <div class="errors">{{ error_message }}</div>
-    {% endif %}
+            <div class="form-group">
+                <label class="form-label" for="id_password">Password</label>
+                <div style="position: relative;">
+                    <i data-lucide="lock" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);"></i>
+                    <input type="password" name="password" id="id_password" class="form-input" style="padding-left: 3rem; padding-right: 3rem;" placeholder="••••••••" required>
+                    <button type="button" onclick="togglePassword('id_password')" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0;">
+                        <i data-lucide="eye" id="eye-id_password"></i>
+                    </button>
+                </div>
+            </div>
 
-    {% if form.errors %}
-        <div class="errors">Invalid username or password. Please try again.</div>
-    {% endif %}
-{% endblock %}
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; height: 3rem;">
+                Sign In <i data-lucide="log-in" style="width: 18px; height: 18px;"></i>
+            </button>
+        </form>
 
-{% block after_form %}
-    <div class="helper">
-        Don't have an account? <a href="{% url 'events:signup' %}" style="color: #2f6f66; text-decoration: none;">Sign up here</a>.
+        <div style="text-align: center; margin-top: 2rem; font-size: 0.875rem; color: var(--text-muted);">
+            Don't have an account? <a href="{% url 'events:signup' %}" style="color: var(--primary); text-decoration: none; font-weight: 600;">Sign up</a>
+        </div>
     </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function togglePassword(id) {
+        const input = document.getElementById(id);
+        const icon = document.getElementById('eye-' + id);
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.setAttribute('data-lucide', 'eye-off');
+        } else {
+            input.type = 'password';
+            icon.setAttribute('data-lucide', 'eye');
+        }
+        lucide.createIcons();
+    }
+    
+    // Hide sidebar on auth pages
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const main = document.querySelector('.main-content');
+        if (sidebar) sidebar.style.display = 'none';
+        if (main) main.style.marginLeft = '0';
+    });
+</script>
 {% endblock %}

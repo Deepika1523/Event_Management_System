@@ -60,9 +60,13 @@ class Event(models.Model):
 class Activity(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="activities")
     name = models.CharField(max_length=200)
+    prize = models.CharField(max_length=200, blank=True)
     description = models.TextField(blank=True)
+    rules = models.TextField(blank=True)
+    eligibility = models.TextField(blank=True)
     registration_fee = models.CharField(max_length=200, blank=True, default="Free")
     max_participants = models.PositiveIntegerField(null=True, blank=True)
+    date = models.DateField(null=True, blank=True)
     start_time = models.TimeField(null=True, blank=True)
     end_time = models.TimeField(null=True, blank=True)
     is_team_event = models.BooleanField(default=False)

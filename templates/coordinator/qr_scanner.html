@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}QR Scanner | EventSync{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="dashboard-header" style="background: linear-gradient(135deg, #0f172a 0%, #1a2a1a 100%); position: relative; padding: 3rem 2rem; border-radius: var(--radius-lg); margin-bottom: 2rem;">
+        <div style="position: relative; z-index: 10;">
+            <h1 style="font-size: 2.5rem; color: white; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                <i data-lucide="scan" style="color: var(--secondary); width: 40px; height: 40px;"></i>
+                QR Entry Scanner
+            </h1>
+            <p style="color: rgba(255,255,255,0.7);">Scan participant QR codes to verify and mark attendance in real-time.</p>
+        </div>
+    </header>
+
+    <!-- Scanner UI -->
+    <div style="max-width: 640px; margin: 0 auto;">
+
+        <!-- Camera Scanner -->
+        <div class="glass-card" style="padding: 2rem; text-align: center; margin-bottom: 2rem;">
+            <h2 style="color: white; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; justify-content: center;">
+                <i data-lucide="camera" style="color: var(--secondary);"></i> Camera Scanner
+            </h2>
+            <div id="reader" style="width: 100%; border-radius: var(--radius-md); overflow: hidden; border: 2px solid rgba(34,197,94,0.3); background: #000;"></div>
+            <div id="scan-result" style="margin-top: 1.5rem; font-size: 1rem; color: var(--text-muted);">Point the camera at a participant's QR code...</div>
+            <button id="start-scan" class="btn btn-primary" style="margin-top: 1rem; padding: 0.75rem 2rem;">
+                <i data-lucide="zap"></i> Start Camera
+            </button>
+            <button id="stop-scan" class="btn btn-outline" style="margin-top: 1rem; padding: 0.75rem 2rem; display: none;">
+                <i data-lucide="x"></i> Stop Camera
+            </button>
+        </div>
+
+        <!-- Manual Token Entry -->
+        <div class="glass-card" style="padding: 2rem;">
+            <h2 style="color: white; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                <i data-lucide="keyboard" style="color: var(--primary);"></i> Manual Token Entry
+            </h2>
+            <form method="POST" action="{% url 'events:scan_attendance' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label">QR Token</label>
+                    <input id="qr_token_input" name="qr_token" type="text" class="form-input" placeholder="Paste or scan token here..." required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                    <i data-lucide="check-circle"></i> Mark Attendance
+                </button>
+            </form>
+        </div>
+
+        <!-- Status Feed -->
+        <div id="scan-feed" style="margin-top: 2rem;"></div>
+
+    </div>
+</div>
+
+<!-- HTML5-QRCode library -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+const csrfToken = "{{ csrf_token }}";
+const scanUrl = "{% url 'events:scan_attendance' %}";
+const resultEl = document.getElementById('scan-result');
+const feedEl = document.getElementById('scan-feed');
+const startBtn = document.getElementById('start-scan');
+const stopBtn = document.getElementById('stop-scan');
+let html5QrCode = null;
+let scanning = false;
+
+function addFeedItem(message, isSuccess) {
+    const item = document.createElement('div');
+    item.className = 'glass-card';
+    item.style.cssText = `padding: 1rem 1.5rem; margin-bottom: 0.75rem; border-left: 4px solid ${isSuccess ? 'var(--secondary)' : 'var(--danger)'}; display: flex; align-items: center; gap: 1rem;`;
+    item.innerHTML = `<i data-lucide="${isSuccess ? 'check-circle' : 'x-circle'}" style="color: ${isSuccess ? 'var(--secondary)' : 'var(--danger)'}; flex-shrink:0;"></i>
+        <div>
+            <div style="color: white; font-size: 0.875rem;">${message}</div>
+            <div style="color: var(--text-muted); font-size: 0.75rem;">${new Date().toLocaleTimeString()}</div>
+        </div>`;
+    feedEl.insertBefore(item, feedEl.firstChild);
+    lucide.createIcons();
+}
+
+async function handleQRCode(decodedText) {
+    // Extract UUID token from ACT-REG-...|TOKEN-<uuid>|...
+    const tokenMatch = decodedText.match(/TOKEN-([a-f0-9\-]{36})/i);
+    const token = tokenMatch ? tokenMatch[1] : decodedText.trim();
+
+    resultEl.innerHTML = `<span style="color: var(--primary);">Processing: <code style="font-size:0.75rem;">${token.substring(0,20)}...</code></span>`;
+
+    try {
+        const resp = await fetch(scanUrl, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken},
+            body: `qr_token=${encodeURIComponent(token)}`
+        });
+        if (resp.ok || resp.redirected) {
+            addFeedItem(`✓ Attendance marked for token: ${token.substring(0,12)}...`, true);
+            resultEl.innerHTML = `<span style="color: var(--secondary); font-weight: 600;">✓ Entry Confirmed!</span>`;
+        } else {
+            addFeedItem(`✗ Failed for token: ${token.substring(0,12)}...`, false);
+            resultEl.innerHTML = `<span style="color: var(--danger);">✗ Invalid or already scanned.</span>`;
+        }
+    } catch(e) {
+        addFeedItem(`Network error: ${e.message}`, false);
+    }
+}
+
+startBtn.addEventListener('click', () => {
+    if (scanning) return;
+    html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+            if (!scanning) { scanning = true; handleQRCode(decodedText).then(() => { scanning = false; }); }
+        },
+        () => {}
+    ).then(() => {
+        startBtn.style.display = 'none';
+        stopBtn.style.display = 'inline-flex';
+    }).catch(err => {
+        resultEl.innerHTML = `<span style="color: var(--danger);">Camera error: ${err}</span>`;
+    });
+});
+
+stopBtn.addEventListener('click', () => {
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            stopBtn.style.display = 'none';
+            startBtn.style.display = 'inline-flex';
+            scanning = false;
+            resultEl.innerHTML = 'Camera stopped. Use manual entry or restart.';
+        });
+    }
+});
+</script>
+{% endblock %}

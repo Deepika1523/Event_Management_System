@@ -1,52 +1,70 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Register for {{ activity.name }}{% endblock %}
-
-{% block body_class %}page-activity-registration{% endblock %}
+{% block title %}Activity Registration | {{ activity.name }}{% endblock %}
 
 {% block content %}
-<main class="register-shell">
-    <section class="card">
-        <h1>Register for {{ activity.name }}</h1>
-        <p>{{ activity.event.description }}</p>
+<div class="dashboard-page-header" style="background-image: url('{% static "images/event_banner_dark.png" %}');">
+    <div class="header-content-rel">
+        <span class="badge" style="background: var(--secondary); color: var(--bg-deep); margin-bottom: 1rem;">Activity Enrollment</span>
+        <h1 style="font-size: 3rem; color: white; margin-bottom: 0.5rem;">{{ activity.name }}</h1>
+        <p style="color: rgba(255,255,255,0.7);">Register to participate in this activity.</p>
+    </div>
+</div>
 
-        {% if messages %}
-            <div class="message-list">
-                {% for message in messages %}
-                    <div class="msg {% if message.tags == 'error' %}error{% else %}success{% endif %}">{{ message }}</div>
-                {% endfor %}
+<div style="max-width: 600px; margin: 0 auto; margin-top: -3rem; position: relative; z-index: 30;">
+    <section class="glass-card">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+            <div style="width: 48px; height: 48px; background: rgba(34, 197, 94, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--secondary);">
+                <i data-lucide="user-plus"></i>
             </div>
-        {% endif %}
+            <div>
+                <h2 style="font-size: 1.5rem; color: white;">Participant Registration</h2>
+                <p style="font-size: 0.875rem; color: var(--text-muted);">Please fill in the required details.</p>
+            </div>
+        </div>
 
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
+            
             {% if fields %}
                 {% for field in fields %}
-                    <label for="field_{{ field.id }}">{{ field.label }}{% if field.required %} *{% endif %}</label>
-                    {% if field.field_type == 'text' or field.field_type == 'email' or field.field_type == 'phone' or field.field_type == 'number' %}
-                        <input id="field_{{ field.id }}" name="field_{{ field.id }}" type="{{ field.field_type }}" {% if field.required %}required{% endif %}>
-                    {% elif field.field_type == 'textarea' %}
-                        <textarea id="field_{{ field.id }}" name="field_{{ field.id }}" {% if field.required %}required{% endif %}></textarea>
+                <div class="form-group">
+                    <label class="form-label">{{ field.label }}{% if field.required %} *{% endif %}</label>
+                    
+                    {% if field.field_type == 'textarea' %}
+                        <textarea name="field_{{ field.id }}" class="form-input" rows="3" {% if field.required %}required{% endif %}></textarea>
                     {% elif field.field_type == 'file' %}
-                        <input id="field_{{ field.id }}" name="field_{{ field.id }}" type="file" {% if field.required %}required{% endif %}>
-                    {% elif field.field_type == 'team_members' %}
-                        <input id="field_{{ field.id }}" name="field_{{ field.id }}" type="text" placeholder="Enter team members (comma separated)" {% if field.required %}required{% endif %}>
-                    {% elif field.field_type == 'custom' %}
-                        <input id="field_{{ field.id }}" name="field_{{ field.id }}" type="text" {% if field.required %}required{% endif %}>
+                        <input name="field_{{ field.id }}" type="file" class="form-input" {% if field.required %}required{% endif %}>
                     {% else %}
-                        <input id="field_{{ field.id }}" name="field_{{ field.id }}" type="text" {% if field.required %}required{% endif %}>
+                        <input name="field_{{ field.id }}" type="{{ field.field_type|default:'text' }}" class="form-input" {% if field.required %}required{% endif %}>
                     {% endif %}
+                </div>
                 {% endfor %}
             {% else %}
-                <p>No extra form fields are required for this activity.</p>
+                <div style="padding: 1rem; background: rgba(255,255,255,0.05); border-radius: var(--radius-md); margin-bottom: 1.5rem; border: 1px solid var(--border-glass);">
+                    <p style="font-size: 0.875rem; color: var(--text-muted);">No additional information required for this activity.</p>
+                </div>
             {% endif %}
-            <label for="payment_qr">Upload Payment QR Code Screenshot *</label>
-            <input id="payment_qr" name="payment_qr" type="file" accept="image/*" required>
 
-            <button type="submit" class="btn">Submit Registration + Payment Proof</button>
+            <div class="form-group">
+                <label class="form-label">Payment Proof (QR Code Screenshot) *</label>
+                <div style="padding: 1.5rem; border: 2px dashed var(--border-glass); border-radius: var(--radius-md); text-align: center; background: rgba(255,255,255,0.02);">
+                    <input name="payment_qr" type="file" accept="image/*" class="form-input" required style="border: none; background: transparent;">
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Upload the transaction screenshot.</p>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 3.5rem; font-size: 1.125rem; margin-top: 1rem;">
+                <i data-lucide="check-circle"></i> Confirm Registration
+            </button>
         </form>
     </section>
-</main>
 
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="{% url 'events:dashboard' %}" style="color: var(--text-muted); font-size: 0.875rem; text-decoration: none;">
+            <i data-lucide="arrow-left" style="width: 14px; height: 14px; vertical-align: middle;"></i> Return to Dashboard
+        </a>
+    </div>
+</div>
 {% endblock %}

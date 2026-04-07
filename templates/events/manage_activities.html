@@ -1,302 +1,152 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Manage Activities{% endblock %}
-
-{% block body_class %}page-manage-activities{% endblock %}
-
-{% block extra_css %}
-        body.page-manage-activities {
-            background-image: linear-gradient(rgba(18, 18, 18, 0.45), rgba(18, 18, 18, 0.45)),
-                url("{% static 'images/download (1).jpg' %}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }
-        .activity-shell {
-            width: min(1200px, 100%);
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
-            gap: 24px;
-        }
-
-        .card {
-            border-radius: 20px;
-            background: #ffffff;
-            border: 1px solid rgba(43, 38, 32, 0.08);
-            box-shadow: 0 24px 60px rgba(80, 62, 44, 0.16);
-            padding: 24px;
-            animation: rise 0.5s ease both;
-        }
-
-        .card h1,
-        .card h2 {
-            margin: 0 0 8px;
-            color: var(--green-900);
-        }
-
-        .card p {
-            margin: 0 0 18px;
-            color: var(--muted);
-        }
-
-        label {
-            display: block;
-            margin: 12px 0 6px;
-            color: var(--green-900);
-            font-weight: 600;
-        }
-
-        input,
-        select {
-            width: 100%;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 10px 12px;
-            font-size: 0.95rem;
-            background: #ffffff;
-            color: var(--text);
-        }
-
-        input:focus,
-        select:focus {
-            outline: none;
-            border-color: rgba(47, 111, 102, 0.6);
-            box-shadow: 0 0 0 3px rgba(47, 111, 102, 0.15);
-        }
-
-        .btn {
-            margin-top: 16px;
-            width: 100%;
-            border: none;
-            border-radius: 999px;
-            padding: 11px 14px;
-            background: #2f6f66;
-            color: #fff;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 28px rgba(80, 62, 44, 0.18);
-            background: #23574f;
-        }
-
-        .message-list {
-            display: grid;
-            gap: 8px;
-            margin-bottom: 14px;
-        }
-
-        .msg {
-            border-radius: 10px;
-            padding: 10px 12px;
-            border: 1px solid;
-            font-size: 0.9rem;
-        }
-
-        .msg.success {
-            background: rgba(47, 111, 102, 0.12);
-            border-color: rgba(47, 111, 102, 0.35);
-            color: #23574f;
-        }
-
-        .msg.error {
-            background: rgba(185, 28, 28, 0.08);
-            border-color: rgba(185, 28, 28, 0.25);
-            color: #9f1239;
-        }
-
-        .table-wrap {
-            overflow-x: auto;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 760px;
-            background: #ffffff;
-        }
-
-        th,
-        td {
-            text-align: left;
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border);
-            color: var(--text);
-            vertical-align: top;
-        }
-
-        th {
-            color: var(--green-900);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            background: rgba(247, 241, 233, 0.9);
-        }
-
-        .empty {
-            margin: 0;
-            color: var(--muted);
-        }
-
-        .notice {
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: rgba(247, 241, 233, 0.8);
-            color: var(--muted);
-            padding: 12px;
-            margin-top: 10px;
-        }
-
-        @media (max-width: 950px) {
-            .activity-shell {
-                grid-template-columns: 1fr;
-            }
-        }
-{% endblock %}
+{% block title %}Manage Activities | EventSync{% endblock %}
 
 {% block content %}
-    <main class="activity-shell">
-        <section class="card">
-            <h1>Create Activity</h1>
-            {% if can_manage %}
-                <p>Add activities for an event and assign a coordinator.</p>
+<div class="dashboard-page-header" style="background-image: url('{% static 'images/dashboard_header_dark.png' %}');">
+    <div class="header-content-rel">
+        <h1 style="font-size: 2.5rem; color: white; margin-bottom: 0.5rem;">Activity Management</h1>
+        <p style="color: rgba(255,255,255,0.7);">Create and coordinate activities for your live events.</p>
+    </div>
+</div>
 
-                <form method="post" action="{% url 'events:manage_activities' %}">
-                    {% csrf_token %}
-                    <label for="event_id">Event</label>
-                    <select id="event_id" name="event_id" required>
-                        <option value="" disabled selected>Select an event</option>
-                        {% for event in events %}
-                            <option value="{{ event.id }}" {% if selected_event_id == event.id|stringformat:"s" %}selected{% endif %}>
-                                {% if can_view_event_names %}
-                                    {{ event.event }} ({{ event.date_of_event }})
-                                {% else %}
-                                    Event #{{ event.id }} ({{ event.date_of_event }})
-                                {% endif %}
-                            </option>
-                        {% endfor %}
-                    </select>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; align-items: start;">
+    
+    <!-- Create Activity Section -->
+    <section class="glass-card">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+            <div style="width: 40px; height: 40px; background: rgba(34, 197, 94, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--secondary);">
+                <i data-lucide="plus"></i>
+            </div>
+            <h2 style="font-size: 1.25rem; color: white;">Create Activity</h2>
+        </div>
 
-                    <label for="activity_name">Activity Name</label>
-                    <input id="activity_name" name="activity_name" type="text" required>
-
-                    <label for="description">Description</label>
-                    <textarea id="description" name="description" required></textarea>
-
-                    <label for="rules">Rules</label>
-                    <textarea id="rules" name="rules"></textarea>
-
-                    <label for="eligibility">Eligibility</label>
-                    <input id="eligibility" name="eligibility" type="text">
-
-                    <label for="date">Date</label>
-                    <input id="date" name="date" type="date" required>
-
-                    <label for="start_time">Start Time</label>
-                    <input id="start_time" name="start_time" type="time" required>
-
-                    <label for="end_time">End Time</label>
-                    <input id="end_time" name="end_time" type="time" required>
-
-
-                    <label for="registration_fee">Registration Fee</label>
-                    <input id="registration_fee" name="registration_fee" type="text" required>
-
-                    <label for="prize">Prize</label>
-                    <input id="prize" name="prize" type="text">
-
-                    <label for="max_participants">Max Participants</label>
-                    <input id="max_participants" name="max_participants" type="number" min="1">
-
-                    <label for="is_team_event">
-                        <input id="is_team_event" name="is_team_event" type="checkbox">
-                        Team event
-                    </label>
-
-                    <label for="team_size">Team Size (if team event)</label>
-                    <input id="team_size" name="team_size" type="number" min="2" placeholder="2">
-
-                    <label for="coordinator_email">Invite Coordinator</label>
-                    <input id="coordinator_email" name="coordinator_email" type="email" placeholder="coordinator@example.com" required>
-
-                    <label for="registration_form">Registration Form (attach file)</label>
-                    <input id="registration_form" name="registration_form" type="file" accept=".pdf,.doc,.docx,.jpg,.png">
-
-                    <label for="qr_code">QR Code (attach file)</label>
-                    <input id="qr_code" name="qr_code" type="file" accept=".pdf,.doc,.docx,.jpg,.png">
-
-                    <label for="registration_form_fields">Custom Registration Fields<br><span style="font-weight:400;font-size:0.95em;">(One per line, use * for required. Example: Full Name*, Email*, College, Team Members)</span></label>
-                    <textarea id="registration_form_fields" name="registration_form_fields" rows="4" placeholder="Full Name*\nEmail*\nPhone\nCollege\nTeam Members (if team event)"></textarea>
-
-                    <button type="submit" class="btn">Create Activity</button>
-                </form>
-            {% else %}
-                <p>Activity creation is restricted by role.</p>
-                <div class="notice">Only organizers and authorized coordinators can create activities.</div>
-            {% endif %}
-        </section>
-
-        <section class="card">
-            <h2>Activities</h2>
-            <p>Activities for your events and the assigned coordinators.</p>
-
-            {% if messages %}
-                <div class="message-list">
-                    {% for message in messages %}
-                        <div class="msg {% if message.tags == 'error' %}error{% else %}success{% endif %}">{{ message }}</div>
+        {% if can_manage %}
+        <form method="post" action="{% url 'events:manage_activities' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Parent Event</label>
+                <select id="event_id" name="event_id" class="form-input" required>
+                    <option value="" disabled selected>Select an event</option>
+                    {% for event in events %}
+                        <option value="{{ event.id }}" {% if selected_event_id == event.id|stringformat:"s" %}selected{% endif %}>
+                            {{ event.event }} ({{ event.date_of_event }})
+                        </option>
                     {% endfor %}
-                </div>
-            {% endif %}
+                </select>
+            </div>
 
-            {% if activities %}
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Event</th>
-                                <th>Activity</th>
-                                <th>Fee</th>
-                                <th>Time</th>
-                                <th>Coordinators</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in activities %}
-                                <tr>
-                                    <td>{{ item.activity.id }}</td>
-                                    <td>
-                                        {% if can_view_event_names %}
-                                            {{ item.activity.event.event }}
-                                        {% else %}
-                                            Event #{{ item.activity.event.id }}
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ item.activity.name }}</td>
-                                    <td>{{ item.activity.registration_fee }}</td>
-                                    <td>{{ item.activity.start_time }} - {{ item.activity.end_time }}</td>
-                                    <td>
-                                        {{ item.coordinator_names }}
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'events:event_activities_pdf' item.activity.event.id %}" class="btn" style="padding: 5px 10px; font-size: 0.8rem;">Event PDF</a>
-                                        <a href="#" class="btn" style="padding: 5px 10px; font-size: 0.8rem;">Activity PDF</a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            <div class="form-group">
+                <label class="form-label">Activity Name</label>
+                <input id="activity_name" name="activity_name" type="text" class="form-input" placeholder="e.g. Coding Marathon" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea id="description" name="description" class="form-input" rows="3" placeholder="What happens here?" required></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input name="date" type="date" class="form-input" required>
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Team Size</label>
+                    <input name="team_size" type="number" min="1" class="form-input" placeholder="Solo = 1">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Start Time</label>
+                    <input name="start_time" type="time" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">End Time</label>
+                    <input name="end_time" type="time" class="form-input" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Registration Fee (₹)</label>
+                <input name="registration_fee" type="text" class="form-input" placeholder="e.g. 200" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Coordinator Invitation</label>
+                <input name="coordinator_email" type="email" class="form-input" placeholder="Enter email to invite..." required>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">An invite will be sent to the coordinator.</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Is Team Event?</label>
+                <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary);">
+                    <input id="is_team_event" name="is_team_event" type="checkbox" style="width: auto;"> 
+                    <span style="font-size: 0.875rem;">Yes, this is a team activity</span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; height: 3.5rem;">
+                <i data-lucide="zap"></i> Add Activity
+            </button>
+        </form>
+        {% else %}
+        <div style="padding: 2rem; text-align: center; color: var(--text-muted); border: 1px dashed var(--border-glass); border-radius: var(--radius-md);">
+            <i data-lucide="lock" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <p>Access Restricted. Only authorized users can manage activities.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Activity List Section -->
+    <section class="glass-card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="font-size: 1.25rem; color: white; display: flex; align-items: center; gap: 0.75rem;">
+                <i data-lucide="list" style="color: var(--primary);"></i> Active Activities
+            </h2>
+            <span class="badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">{{ activities|length }} Items</span>
+        </div>
+
+        <div style="max-height: 800px; overflow-y: auto;">
+            {% if activities %}
+            <table class="dark-table">
+                <thead>
+                    <tr>
+                        <th>Activity</th>
+                        <th>Coordinators</th>
+                        <th style="text-align: right;">View</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in activities %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600; color: white; margin-bottom: 0.25rem;">{{ item.name }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ item.event.event }}</div>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.875rem;">{{ item.coordinator_names|default:"No Coordinators" }}</div>
+                        </td>
+                        <td style="text-align: right;">
+                            <a href="{% url 'events:event_activities_pdf' item.event.id %}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;" title="Download PDF">
+                                <i data-lucide="file-text" style="width: 14px; height: 14px;"></i> PDF
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             {% else %}
-                <p class="empty">No activities created yet.</p>
+            <div style="padding: 4rem 2rem; text-align: center; color: var(--text-muted);">
+                <i data-lucide="activity-x" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.3;"></i>
+                <p>No activities yet. Start by adding one!</p>
+            </div>
             {% endif %}
-        </section>
-    </main>
+        </div>
+    </section>
+
+</div>
 {% endblock %}

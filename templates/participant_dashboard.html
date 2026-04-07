@@ -1,104 +1,218 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Participant Dashboard - Event Management System{% endblock %}
+{% block title %}Participant Dashboard | EventSync{% endblock %}
 
 {% block content %}
-<div class="dashboard-container" style="padding: 40px 20px; max-width: 1200px; margin: 0 auto;">
-    <!-- Welcome Section -->
-    <section class="dashboard-header" style="margin-bottom: 40px; padding: 30px; background: linear-gradient(135deg, rgba(107, 91, 149, 0.1) 0%, rgba(74, 111, 165, 0.1) 100%); border-radius: 12px; border-left: 4px solid #4a6fa5;">
-        <h1 style="margin: 0 0 10px 0; font-size: 32px; color: #2b2620;">Welcome, {{ request.user.get_full_name|default:request.user.username }}!</h1>
-        <p style="margin: 0; color: #4a4036; font-size: 16px;">Discover events, register for activities, and stay engaged with the latest updates.</p>
-    </section>
+<div class="dashboard-container">
+    <!-- Welcome Header -->
+    <header class="dashboard-header" style="background-image: url('{% static 'images/dashboard_header_dark.png' %}'); position: relative; padding: 4rem 2rem; overflow: hidden; border-radius: var(--radius-lg); margin-bottom: 2rem;">
+        <div class="header-overlay" style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15, 23, 42, 0.4), var(--bg-deep)); z-index: 1;"></div>
+        <div class="header-content" style="position: relative; z-index: 10;">
+            <h1 style="font-size: 3rem; margin-bottom: 0.5rem; color: white;">Welcome, {{ request.user.get_full_name|default:request.user.username }}!</h1>
+            <p style="color: rgba(255,255,255,0.8); font-size: 1.125rem;">Explore upcoming events and manage your event syncs.</p>
+        </div>
+    </header>
 
-    <!-- Quick Actions -->
-    <section class="quick-actions" style="margin-bottom: 40px;">
-        <h2 style="margin-bottom: 20px; font-size: 20px; color: #2b2620;">Quick Actions</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
-            <a href="{% url 'events:event_create_or_list' %}" style="padding: 20px; background: #4a6fa5; color: white; text-decoration: none; border-radius: 8px; text-align: center; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
-                <div style="font-size: 24px; margin-bottom: 10px;">🎫</div>
-                <div style="font-weight: 600; margin-bottom: 5px;">Browse Events</div>
-                <div style="font-size: 12px; opacity: 0.9;">Find and register for events</div>
-            </a>
-            
-            <a href="{% url 'events:dashboard' %}" style="padding: 20px; background: #6b5b95; color: white; text-decoration: none; border-radius: 8px; text-align: center; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
-                <div style="font-size: 24px; margin-bottom: 10px;">📋</div>
-                <div style="font-weight: 600; margin-bottom: 5px;">My Registrations</div>
-                <div style="font-size: 12px; opacity: 0.9;">Track your event registrations</div>
-            </a>
-            
-            <div style="padding: 20px; background: #23574f; color: white; border-radius: 8px; text-align: center;">
-                <div style="font-size: 24px; margin-bottom: 10px;">🏆</div>
-                <div style="font-weight: 600; margin-bottom: 5px;">My Achievements</div>
-                <div style="font-size: 12px; opacity: 0.9;">View your certificates & badges</div>
+    <!-- Quick Stats -->
+    <section style="margin-top: -3rem; position: relative; z-index: 20; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+        <div class="glass-card" style="display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid var(--primary);">
+            <div style="width: 48px; height: 48px; background: rgba(99, 102, 241, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                <i data-lucide="ticket"></i>
+            </div>
+            <div>
+                <div style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Joined Events</div>
+                <div style="font-size: 1.75rem; font-weight: 700; color: white;">{{ joined_events|length }}</div>
+            </div>
+        </div>
+        <div class="glass-card" style="display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid var(--secondary);">
+            <div style="width: 48px; height: 48px; background: rgba(34, 197, 94, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--secondary);">
+                <i data-lucide="zap"></i>
+            </div>
+            <div>
+                <div style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">New Available</div>
+                <div style="font-size: 1.75rem; font-weight: 700; color: white;">{{ recommended_events|length }}</div>
+            </div>
+        </div>
+        <div class="glass-card" style="display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid var(--accent);">
+            <div style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--accent);">
+                <i data-lucide="star"></i>
+            </div>
+            <div>
+                <div style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Global Rank</div>
+                <div style="font-size: 1.75rem; font-weight: 700; color: white;">--</div>
             </div>
         </div>
     </section>
 
-    <!-- Upcoming Events -->
-    <section class="events-section" style="margin-bottom: 40px;">
-        <h2 style="margin-bottom: 20px; font-size: 20px; color: #2b2620;">Available Events</h2>
-        {% if events %}
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
-                {% for event in events %}
-                    <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.3s, box-shadow 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.12)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)';">
-                        <div style="padding: 20px; border-bottom: 1px solid #e0d5ca;">
-                            <h3 style="margin: 0 0 10px 0; color: #2b2620; font-size: 18px;">{{ event.event }}</h3>
-                            <p style="margin: 0 0 10px 0; color: #4a4036; font-size: 14px;">{{ event.tagline }}</p>
-                            <div style="display: flex; gap: 15px; font-size: 12px; color: #6a5a4a;">
-                                <span>📅 {{ event.date_of_event }}</span>
-                                <span>📍 {{ event.venue }}</span>
+    <!-- Discovery Section -->
+    <section style="margin-bottom: 4rem;">
+        <div class="glass-card" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(15, 23, 42, 0) 100%); border: 1px solid rgba(99, 102, 241, 0.2); padding: 2.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2rem;">
+            <div style="max-width: 600px;">
+                <h2 style="font-size: 2rem; color: white; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;">
+                    <i data-lucide="sparkles" style="color: var(--primary);"></i> Discover New Hubs
+                </h2>
+                <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.6;">Browse through the most immersive tech-fests, workshops, and concerts. Find your next experience and sync up today!</p>
+            </div>
+            <a href="{% url 'events:event_create_or_list' %}" class="btn btn-primary" style="padding: 1.25rem 2.5rem; font-size: 1.1rem; box-shadow: var(--shadow-glow);">
+                Explore All Events
+            </a>
+        </div>
+    </section>
+
+    <!-- Recommended for You -->
+    <section style="margin-bottom: 4rem;">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i data-lucide="calendar-heart" style="color: var(--primary);"></i> Recommended for You
+            </h2>
+            {% if recommended_events %}
+                <a href="{% url 'events:event_create_or_list' %}" class="btn btn-outline" style="font-size: 0.875rem; padding: 0.5rem 1rem;">View All</a>
+            {% endif %}
+        </div>
+
+        {% if recommended_events %}
+            <div class="dashboard-grid">
+                {% for event in recommended_events %}
+                    <div class="glass-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; height: 100%;">
+                        <div style="height: 180px; position: relative;">
+                            {% if event.image_url %}
+                                <img src="{{ event.image_url }}" alt="{{ event.event }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div style="width: 100%; height: 100%; background: var(--primary-gradient); opacity: 0.1;"></div>
+                            {% endif %}
+                            <div style="position: absolute; top: 1rem; right: 1rem;">
+                                <span class="badge" style="background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); border: 1px solid var(--border-glass);">{{ event.get_category_display }}</span>
                             </div>
                         </div>
-                        <div style="padding: 15px; background: #f7f1e9;">
-                            <a href="{% url 'events:event_registration_form' event.id %}" style="display: inline-block; padding: 8px 16px; background: #4a6fa5; color: white; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 600;">Register Now</a>
+                        <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
+                            <h3 style="font-size: 1.25rem; color: white; margin-bottom: 0.5rem;">{{ event.event }}</h3>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                                <span style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="calendar" style="width: 14px;"></i> {{ event.date_of_event }}</span>
+                                <span style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="user" style="width: 14px;"></i> By {{ event.user.get_full_name|default:event.user.username }}</span>
+                            </div>
+                            <div style="margin-top: auto;">
+                                <a href="{% url 'events:event_detail' event.id %}" class="btn btn-primary" style="width: 100%;">Register Now</a>
+                            </div>
                         </div>
                     </div>
                 {% endfor %}
             </div>
         {% else %}
-            <div style="padding: 40px; text-align: center; background: #f7f1e9; border-radius: 8px; border: 1px dashed #d0c4b8;">
-                <p style="color: #4a4036; margin: 0;">No events available at the moment. Check back soon!</p>
+            <div class="glass-card" style="text-align: center; padding: 4rem 2rem; border: 1px dashed var(--border-glass);">
+                <i data-lucide="smile" style="width: 48px; height: 48px; margin-bottom: 1rem; color: var(--text-muted); opacity: 0.5;"></i>
+                <h3 style="color: white; margin-bottom: 0.5rem;">No new events right now</h3>
+                <p style="color: var(--text-muted);">You've explored all the latest hubs. Check back soon!</p>
             </div>
         {% endif %}
     </section>
 
-    <!-- My Registrations -->
-    <section class="registrations-section" style="margin-bottom: 40px;">
-        <h2 style="margin-bottom: 20px; font-size: 20px; color: #2b2620;">My Registrations</h2>
-        {% if can_register %}
-            <div style="padding: 20px; background: #e8f0ed; border-radius: 8px; border-left: 4px solid #2f6f66;">
-                <p style="margin: 0 0 10px 0; color: #4a4036;">You are registered for events. Track your registrations and download gate passes from individual event pages.</p>
-                <a href="{% url 'events:event_create_or_list' %}" style="display: inline-block; padding: 10px 16px; background: #2f6f66; color: white; text-decoration: none; border-radius: 6px;">View All Events</a>
+    <!-- Joined Events -->
+    <section>
+        <div class="section-header">
+            <h2 class="section-title">
+                <i data-lucide="ticket" style="color: var(--secondary);"></i> My Syncs
+            </h2>
+        </div>
+
+        {% if joined_events %}
+            <div class="dashboard-grid">
+                {% for event in joined_events %}
+                    <div class="glass-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; height: 100%; border-color: rgba(34, 197, 94, 0.2);">
+                        <div style="height: 180px; position: relative; filter: saturate(0.8);">
+                            {% if event.image_url %}
+                                <img src="{{ event.image_url }}" alt="{{ event.event }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div style="width: 100%; height: 100%; background: var(--primary-gradient); opacity: 0.1;"></div>
+                            {% endif %}
+                            <div style="position: absolute; inset: 0; background: linear-gradient(to top, var(--bg-deep), transparent);"></div>
+                            <div style="position: absolute; top: 1rem; right: 1rem;">
+                                <span class="badge" style="background: var(--secondary); color: var(--bg-deep);">Joined</span>
+                            </div>
+                        </div>
+                        <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column; margin-top: -2rem; position: relative; z-index: 10;">
+                            <h3 style="font-size: 1.25rem; color: white; margin-bottom: 0.5rem;">{{ event.event }}</h3>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                                <span style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="map-pin" style="width: 14px;"></i> {{ event.venue }}</span>
+                                <span style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="clock" style="width: 14px;"></i> {{ event.time_of_event }}</span>
+                            </div>
+                            <div style="margin-top: auto;">
+                                <a href="{% url 'events:event_detail' event.id %}" class="btn btn-outline" style="width: 100%; color: var(--secondary); border-color: var(--secondary);">Continue Explorer</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
         {% else %}
-            <div style="padding: 20px; background: #f7f1e9; border-radius: 8px; border: 1px dashed #d0c4b8;">
-                <p style="margin: 0;">No registrations yet. Browse events and register for activities.</p>
+            <div class="glass-card" style="text-align: center; padding: 4rem 2rem; border: 1px dashed var(--border-glass);">
+                <i data-lucide="ticket" style="width: 48px; height: 48px; margin-bottom: 1rem; color: var(--text-muted); opacity: 0.5;"></i>
+                <h3 style="color: white; margin-bottom: 0.5rem;">You haven't joined any events yet</h3>
+                <p style="color: var(--text-muted); margin-bottom: 2rem;">Discover something new and start your journey today.</p>
+                <a href="{% url 'events:event_create_or_list' %}" class="btn btn-primary">Discover Events</a>
             </div>
         {% endif %}
     </section>
 
-    <!-- Announcements -->
-    <section class="announcements-section" style="padding: 20px; background: #fff8f3; border-radius: 8px; border-left: 4px solid #6b5b95;">
-        <h3 style="margin: 0 0 10px 0; color: #2b2620;">Latest Announcements</h3>
-        <p style="margin: 0; color: #4a4036; font-size: 14px;">Stay tuned for event updates and special announcements from event organizers.</p>
-    </section>
-</div>
+    <!-- Registered Activities -->
+    <section>
+        <div class="section-header">
+            <h2 class="section-title">
+                <i data-lucide="activity" style="color: var(--accent);"></i> Activity Registrations
+            </h2>
+        </div>
 
-<style>
-    .dashboard-container {
-        animation: fadeIn 0.5s ease-in;
-    }
-    
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-</style>
+        {% if activity_rows %}
+            <div class="glass-card" style="padding: 0; overflow: hidden;">
+                <div style="overflow-x: auto;">
+                    <table class="dark-table">
+                        <thead>
+                            <tr>
+                                <th>Activity</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Credentials</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in activity_rows %}
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 600; color: white;">{{ row.registration.activity.name }}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ row.registration.activity.event.event }}</div>
+                                </td>
+                                <td>
+                                    {% if row.registration.status == "approved" %}
+                                        <span class="badge" style="background: rgba(34,197,94,0.1); color: var(--secondary);">Approved</span>
+                                    {% elif row.registration.status == "rejected" %}
+                                        <span class="badge" style="background: rgba(239,68,68,0.1); color: var(--danger);">Rejected</span>
+                                    {% else %}
+                                        <span class="badge" style="background: rgba(245,158,11,0.1); color: var(--accent);">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align: right;">
+                                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                        {% if row.registration.status == "approved" %}
+                                            <a target="_blank" href="{% url 'events:generate_activity_gate_pass' row.registration.id %}" class="btn" style="padding: 0.4rem 1rem; font-size: 0.75rem; background: rgba(34,197,94,0.1); color: var(--secondary);">Get Gate Pass</a>
+                                        {% endif %}
+                                        {% if row.attendance and row.certificate %}
+                                            <a target="_blank" href="{% url 'events:download_certificate' row.certificate.certificate_id %}" class="btn" style="padding: 0.4rem 1rem; font-size: 0.75rem; background: rgba(245,158,11,0.1); color: var(--accent);">Get Certificate</a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% else %}
+            <div class="glass-card" style="text-align: center; padding: 4rem 2rem; border: 1px dashed var(--border-glass);">
+                <i data-lucide="clipboard-x" style="width: 48px; height: 48px; margin-bottom: 1rem; color: var(--text-muted); opacity: 0.5;"></i>
+                <h3 style="color: white; margin-bottom: 0.5rem;">No activity registrations</h3>
+                <p style="color: var(--text-muted); margin-bottom: 2rem;">You have not registered for any activities yet.</p>
+                <a href="{% url 'events:event_create_or_list' %}" class="btn btn-outline" style="border-color: var(--border-glass);">Find Activities</a>
+            </div>
+        {% endif %}
+    </section>
+
+</div>
 {% endblock %}

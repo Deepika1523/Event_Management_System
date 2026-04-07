@@ -4,492 +4,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Event Management System{% endblock %}</title>
-    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    <title>{% block title %}EventSync | Create & Experience Events{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom Style -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <style>
-        @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap");
-
-        :root {
-            --green-900: #2b2620;
-            --green-800: #4a4036;
-            --green-700: #23574f;
-            --beige-100: #f7f1e9;
-            --beige-200: #f1e7db;
-            --white: #ffffff;
-            --text: #2b2620;
-            --muted: rgba(74, 64, 54, 0.7);
-            --border: rgba(43, 38, 32, 0.16);
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: "Manrope", "Segoe UI", sans-serif;
-            color: var(--text);
-            background: url('{% static "images/event_bg.jpg" %}') no-repeat center center fixed;
-            background-size: cover;
-            display: flex;
-            flex-direction: column;
-            padding: 0;
-        }
-
-        header {
-            background: transparent;
-            border-bottom: 1px solid rgba(43, 38, 32, 0.08);
-            padding: 16px 20px;
-            backdrop-filter: blur(8px);
-        }
-
-        body[class*="page-"] header {
-            background: rgba(18, 18, 18, 0.55);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-        }
-
-        .header-content {
-            width: min(1200px, 100%);
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-            color: var(--green-900);
-            font-weight: 700;
-            font-size: 1.1rem;
-            transition: opacity 0.2s ease;
-        }
-
-        body[class*="page-"] .logo {
-            color: #f8fafc;
-        }
-
-        .logo:hover {
-            opacity: 0.8;
-        }
-
-        .logo-icon {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, #2f6f66, #1f4d46);
-            border-radius: 6px;
-        }
-
-        .nav-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .top-link {
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            color: var(--green-900);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.6);
-            transition: all 0.2s ease;
-        }
-
-        body[class*="page-"] .top-link {
-            color: #f8fafc;
-            border-color: rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.12);
-        }
-
-        .top-link:hover {
-            background: rgba(47, 111, 102, 0.12);
-            border-color: rgba(47, 111, 102, 0.35);
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 8px 12px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.6);
-            border: 1px solid var(--border);
-        }
-
-        body[class*="page-"] .user-info {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        .user-name {
-            color: var(--green-900);
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        body[class*="page-"] .user-name {
-            color: #f8fafc;
-        }
-
-        .logout-btn {
-            padding: 8px 16px;
-            background: #2f6f66;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 0.9rem;
-        }
-
-        .logout-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(80, 62, 44, 0.25);
-            background: #23574f;
-        }
-
-        .auth-links {
-            display: flex;
-            gap: 12px;
-        }
-
-        .auth-links a {
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            color: var(--green-900);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.6);
-            transition: all 0.2s ease;
-        }
-
-        body[class*="page-"] .auth-links a {
-            color: #f8fafc;
-            border-color: rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.12);
-        }
-
-        .auth-links a:hover {
-            background: rgba(47, 111, 102, 0.12);
-            border-color: rgba(47, 111, 102, 0.35);
-        }
-
-        .auth-links .signup {
-            background: #2f6f66;
-            color: white;
-            border: none;
-        }
-
-        .auth-links .signup:hover {
-            background: #23574f;
-        }
-
-        main {
-            flex: 1;
-            display: grid;
-            place-items: center;
-            padding: 40px 20px;
-        }
-
-        @keyframes rise {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        body[class*="page-"] .card,
-        body[class*="page-"] .panel,
-        body[class*="page-"] .form-card,
-        body[class*="page-"] .hero,
-        body[class*="page-"] .intro {
-            background: rgba(18, 18, 18, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-            color: #f8fafc;
-        }
-
-        body[class*="page-"] .card h1,
-        body[class*="page-"] .card h2,
-        body[class*="page-"] .panel h2,
-        body[class*="page-"] .hero h1,
-        body[class*="page-"] .form-card h2 {
-            color: #f8fafc;
-        }
-
-        body[class*="page-"] .card p,
-        body[class*="page-"] .panel p,
-        body[class*="page-"] .hero p,
-        body[class*="page-"] .form-card p {
-            color: rgba(248, 250, 252, 0.82);
-        }
-
-        body[class*="page-"] {
-            color: #f8fafc;
-        }
-
-        body[class*="page-"] h1,
-        body[class*="page-"] h2,
-        body[class*="page-"] h3,
-        body[class*="page-"] h4,
-        body[class*="page-"] h5,
-        body[class*="page-"] h6 {
-            color: #f8fafc;
-        }
-
-        body[class*="page-"] p,
-        body[class*="page-"] span,
-        body[class*="page-"] small,
-        body[class*="page-"] label,
-        body[class*="page-"] li,
-        body[class*="page-"] a,
-        body[class*="page-"] td,
-        body[class*="page-"] th {
-            color: rgba(248, 250, 252, 0.9);
-        }
-
-        body[class*="page-"] a {
-            text-underline-offset: 3px;
-        }
-
-        body[class*="page-"] ul,
-        body[class*="page-"] li,
-        body[class*="page-"] .role-pill {
-            color: rgba(248, 250, 252, 0.86);
-        }
-
-        body[class*="page-"] .table-wrap,
-        body[class*="page-"] table {
-            background: rgba(18, 18, 18, 0.6);
-            border-color: rgba(255, 255, 255, 0.18);
-        }
-
-        body[class*="page-"] th,
-        body[class*="page-"] td {
-            color: rgba(248, 250, 252, 0.9);
-            border-bottom-color: rgba(255, 255, 255, 0.12);
-        }
-
-        body[class*="page-"] th {
-            background: rgba(18, 18, 18, 0.72);
-        }
-
-        Sidebar styles
-        :root {
-            --sidebar-width: 260px;
-            --sidebar-bg: #0f1113; /* very dark */
-            --sidebar-contrast: #0b0c0d;
-            --gold: #f5c34a;
-            --gold-glow: rgba(245, 195, 74, 0.22);
-            --muted-light: rgba(255,255,255,0.85);
-        }
-
-        aside.sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: var(--sidebar-width);
-            height: 100vh;
-            background: linear-gradient(180deg, var(--sidebar-bg), var(--sidebar-contrast));
-            color: var(--muted-light);
-            padding: 28px 18px;
-            flex-direction: column;
-            gap: 18px;
-            box-shadow: 4px 0 30px rgba(2,2,2,0.6);
-            z-index: 9999;
-            display: none; /* hidden by default */
-        }
-
-        body.authenticated aside.sidebar {
-            display: flex; /* show when authenticated */
-        }
-
-        aside.sidebar .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        aside.sidebar .brand .logo-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            background: linear-gradient(135deg,#2f6f66,#1f4d46);
-        }
-
-        aside.sidebar h3 {
-            margin: 6px 0 8px 0;
-            color: var(--gold);
-            font-size: 1.05rem;
-            letter-spacing: 0.2px;
-            font-weight: 700;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.6);
-        }
-
-        aside.sidebar nav { flex: 1 1 auto; overflow: auto; }
-
-        aside.sidebar .menu { list-style: none; padding: 0; margin: 6px 0 0 0; display: flex; flex-direction: column; gap: 6px; }
-
-        aside.sidebar .menu a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 14px;
-            border-radius: 10px;
-            color: var(--muted-light);
-            text-decoration: none;
-            font-size: 1.05rem; /* increased for readability */
-            font-weight: 600;
-            transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
-        }
-
-        aside.sidebar .menu a .icon { width: 18px; height: 18px; opacity: 0.88; }
-
-        aside.sidebar .menu a:hover {
-            background: rgba(255,255,255,0.04);
-            box-shadow: 0 6px 22px var(--gold-glow);
-            transform: translateY(-2px);
-            color: var(--gold);
-        }
-
-        aside.sidebar .menu a.active,
-        aside.sidebar .menu a.active:hover {
-            background: linear-gradient(90deg, rgba(245,195,74,0.08), rgba(245,195,74,0.03));
-            color: var(--gold);
-            box-shadow: 0 8px 30px var(--gold-glow);
-        }
-
-        aside.sidebar .spacer { flex: 1 1 auto; }
-
-        aside.sidebar .logout-wrap { margin-top: 12px; }
-
-        aside.sidebar .logout {
-            display:flex;
-            width:100%;
-            align-items:center;
-            justify-content:center;
-            padding: 12px 14px;
-            border-radius: 10px;
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.06);
-            color: var(--muted-light);
-            text-decoration:none;
-            font-weight:700;
-            transition: all 0.16s ease;
-        }
-
-        aside.sidebar .logout:hover {
-            color: var(--gold);
-            box-shadow: 0 10px 28px var(--gold-glow);
-            transform: translateY(-2px);
-            border-color: rgba(245,195,74,0.22);
-        }
-
-        /* Shift header and main to accommodate fixed sidebar (only when authenticated) */
-        body.authenticated header,
-        body.authenticated main {
-            margin-left: var(--sidebar-width);
-        }
-
-        @media (max-width: 920px) {
-            body.authenticated aside.sidebar { transform: translateX(-10px); width: 220px; }
-            body.authenticated header,
-            body.authenticated main { margin-left: 220px; }
-        }
-
-        @media (max-width: 720px) {
-            body.authenticated aside.sidebar { position: relative; width: 100%; height: auto; flex-direction: row; padding: 12px; gap: 8px; }
-            body.authenticated aside.sidebar nav { order: 2; }
-            body.authenticated header,
-            body.authenticated main { margin-left: 0; }
-        }
-
-        {% block extra_css %}{% endblock %}
-    </style>
+    {% block extra_css %}{% endblock %}
 </head>
-<body class="{% if request.user.is_authenticated %}authenticated{% endif %} {% block body_class %}{% endblock %}">
-    <aside class="sidebar" aria-label="Main sidebar">
-        <div class="brand">
-            <div class="logo-icon"></div>
-            <div>
-                <div style="font-weight:700;color:var(--gold);font-size:1.05rem;">Event Manager</div>
-                <div style="font-size:0.82rem;color:rgba(255,255,255,0.62);">Admin Dashboard</div>
+<body class="{% block body_class %}{% endblock %}">
+    
+    <div class="app-container">
+        <!-- Sidebar Navigation (Only for authenticated users or specific pages) -->
+        {% if request.user.is_authenticated %}
+        <aside class="sidebar" id="sidebar">
+            <a href="/" class="sidebar-brand">
+                <div class="brand-icon">
+                    <i data-lucide="zap" style="color: white; width: 24px; height: 24px;"></i>
+                </div>
+                <span class="brand-font" style="font-size: 1.5rem; font-weight: 800;">EventSync</span>
+            </a>
+
+            <nav class="nav-menu">
+                <li class="nav-item">
+                    <a href="{% url 'events:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <i data-lucide="layout-dashboard"></i> Dashboard
+                    </a>
+                </li>
+                {% if request.user.is_staff or request.user.organizer %}
+                <li class="nav-item">
+                    <a href="{% url 'events:manage_events' %}" class="nav-link {% if 'manage-events' in request.path %}active{% endif %}">
+                        <i data-lucide="calendar"></i> Manage Events
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'events:manage_activities' %}" class="nav-link {% if 'manage-activities' in request.path %}active{% endif %}">
+                        <i data-lucide="compass"></i> Activities
+                    </a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a href="{% url 'events:event_create_or_list' %}" class="nav-link">
+                        <i data-lucide="search"></i> Browse Events
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'notification-index' %}" class="nav-link">
+                        <i data-lucide="bell"></i> Notifications
+                    </a>
+                </li>
+                <li class="nav-item" style="margin-top: 2rem;">
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-link" style="background: none; border: none; width: 100%; cursor: pointer;">
+                            <i data-lucide="log-out"></i> Logout
+                        </button>
+                    </form>
+                </li>
+            </nav>
+        </aside>
+        {% endif %}
+
+        <!-- Main Content Area -->
+        <main class="main-content" {% if not request.user.is_authenticated %}style="margin-left: 0;"{% endif %}>
+            <!-- Top Header (Breadcrumbs/User Info) -->
+            <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; position: relative; z-index: 50;">
+                <div class="breadcrumb">
+                    {% block breadcrumb %}{% endblock %}
+                </div>
+                
+                {% if request.user.is_authenticated %}
+                <div class="user-profile" style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); border-radius: 999px;">
+                    <span style="font-weight: 500; font-size: 0.875rem;">{{ request.user.username }}</span>
+                    <div style="width: 32px; height: 32px; background: var(--primary-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700;">{{ request.user.username|first|upper }}</div>
+                </div>
+                <form method="post" action="{% url 'logout' %}" style="margin-left: 0.75rem;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline" style="padding: 0.45rem 0.6rem; border-radius: 8px;">Logout</button>
+                </form>
+                {% else %}
+                <div class="auth-actions" style="display: flex; gap: 1rem;">
+                    <a href="{% url 'events:unified_login' %}" class="btn btn-outline">Log In</a>
+                    <a href="{% url 'events:signup' %}" class="btn btn-primary">Sign Up</a>
+                </div>
+                {% endif %}
+            </header>
+
+            {% if messages %}
+            <div class="messages-container" style="margin-bottom: 2rem;">
+                {% for message in messages %}
+                <div class="glass-card" style="padding: 1rem; margin-bottom: 1rem; border-left: 4px solid {% if message.tags == 'success' %} #22C55E{% else %}#EF4444{% endif %}; background: rgba(255,255,255,0.05);">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- AI Chatbot UI (Floating Bottom Right) -->
+    <div class="chatbot-container">
+        <div class="chatbot-toggle" onclick="toggleChat()">
+            <i data-lucide="message-square" style="color: white;"></i>
+        </div>
+        <div class="chatbot-window" id="chatWindow">
+            <div class="chatbot-header">
+                <div class="brand-icon" style="width: 24px; height: 24px; border-radius: 4px;">
+                    <i data-lucide="sparkles" style="width: 14px; height: 14px; color: white;"></i>
+                </div>
+                <span style="font-weight: 700; color: white; font-size: 0.875rem;">EventSync AI</span>
+                <button onclick="toggleChat()" style="margin-left: auto; background: none; border: none; color: white; cursor: pointer;">
+                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
+            <div class="chatbot-messages">
+                <div class="msg msg-bot">Hi! I'm your EventSync assistant. How can I help you today?</div>
+                <div class="msg msg-bot">Try asking: <br>• "When is the next tech fest?"<br>• "How do I register?"</div>
+            </div>
+            <div class="chatbot-input-area">
+                <input type="text" class="form-input" placeholder="Type your question..." style="font-size: 0.8rem; padding: 0.5rem 0.75rem;">
+                <button class="btn btn-primary" style="padding: 0.5rem; border-radius: 8px;">
+                    <i data-lucide="send" style="width: 14px; height: 14px;"></i>
+                </button>
             </div>
         </div>
-        <h3>Navigation</h3>
-        <nav>
-            <ul class="menu">
-                <li><a href="{% url 'events:dashboard' %}" class="active"><span class="icon">🏠</span> Dashboard</a></li>
-                <li><a href="{% url 'events:manage_events' %}"><span class="icon">📅</span> Events</a></li>
-                <li><a href="{% url 'events:manage_activities' %}"><span class="icon">🧭</span> Activities</a></li>
-                <li><a href="{% url 'events:participant_dashboard' %}"><span class="icon">👥</span> Participants</a></li>
-                <li><a href="{% url 'payment_status' %}"><span class="icon">💳</span> Payments</a></li>
-                <li><a href="{% url 'notification-index' %}"><span class="icon">🔔</span> Notifications</a></li>
-                <li><a href="{% url 'website-index' %}"><span class="icon">⚙️</span> Settings</a></li>
-            </ul>
-        </nav>
-        <div class="spacer"></div>
-        <div class="logout-wrap">
-            {% if request.user.is_authenticated %}
-                <form method="post" action="{% url 'logout' %}">{% csrf_token %}
-                    <button class="logout" type="submit">Logout</button>
-                </form>
-            {% else %}
-                <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
-                    <a class="logout" href="{% url 'events:organizer_login' %}">Organizer Sign In</a>
-                    <a class="logout" href="{% url 'events:coordinator_login' %}">Coordinator Sign In</a>
-                    <a class="logout" href="{% url 'events:participant_login' %}">Participant Sign In</a>
-                </div>
-            {% endif %}
-        </div>
-    </aside>
-    <header>
-        <div class="header-content">
-            <a href="/" class="logo">
-                <div class="logo-icon"></div>
-                Event Manager
-            </a>
-            <nav class="nav-right">
-                <a href="{% url 'events:dashboard' %}" class="top-link">Dashboard</a>
-                {% if request.user.is_authenticated %}
-                    <div class="user-info">
-                        <span class="user-name">{{ request.user.username }}</span>
-                    </div>
-                    <form method="post" action="{% url 'logout' %}" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="logout-btn">Sign Out</button>
-                    </form>
-                {% else %}
-                    <div class="auth-links" style="display: flex; gap: 12px; align-items: center;">
-                        <a href="{% url 'events:signup' %}">Sign Up</a>
-                        <div style="display: flex; gap: 8px;">
-                            <a href="{% url 'events:organizer_login' %}" class="signup">Organizer</a>
-                            <a href="{% url 'events:coordinator_login' %}" class="signup">Coordinator</a>
-                            <a href="{% url 'events:participant_login' %}" class="signup">Participant</a>
-                        </div>
-                    </div>
-                {% endif %}
-            </nav>
-        </div>
-    </header>
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Chatbot Toggle Logic
+        function toggleChat() {
+            const chat = document.getElementById('chatWindow');
+            if (chat.style.display === 'flex') {
+                chat.style.display = 'none';
+            } else {
+                chat.style.display = 'flex';
+            }
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

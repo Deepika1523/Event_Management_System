@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Choose Your Role | EventSync{% endblock %}
+{% block body_class %}auth-wrapper{% endblock %}
+
+{% block content %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/role_select.css' %}">
+{% endblock %}
+
+<div class="auth-card role-selection">
+
+    <div class="role-header">
+        <p style="text-transform: uppercase; letter-spacing: 0.15em; color: var(--muted); font-weight: 700; font-size: 0.85rem; margin:0 0 0.5rem 0;">Step 1 · Select your role</p>
+        <h1>Who are you today?</h1>
+    </div>
+
+    <div class="role-grid">
+
+        {% for role in roles %}
+        {% with key=role.0 title=role.1 desc=role.2 base=role.3 tint=role.4 icon=role.6 %}
+
+        <div class="role-card" tabindex="0" role="button">
+            <div class="role-icon {% if key == 'organizer' %}organizer{% elif key == 'coordinator' %}coordinator{% else %}participant{% endif %}">
+                <i data-lucide="{% if key == 'organizer' %}zap{% elif key == 'coordinator' %}users{% else %}ticket{% endif %}"></i>
+            </div>
+            <h3 class="role-title">{{ title }}</h3>
+            <p class="role-desc">{{ desc }}</p>
+            <div class="role-actions">
+                <a href="{% url 'events:unified_login' %}?role={{ key }}" class="btn btn-primary">Continue</a>
+                {% if key == 'coordinator' %}
+                <button class="btn btn-outline" disabled title="Coordinators require an invitation">Sign Up</button>
+                {% else %}
+                <a href="{% url 'events:signup' %}?role={{ key }}" class="btn btn-outline">Sign Up</a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% endwith %}
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}
