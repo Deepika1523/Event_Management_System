@@ -21,6 +21,16 @@ class Event(models.Model):
     ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    # Event status: upcoming / ongoing / completed
+    STATUS_UPCOMING = 'upcoming'
+    STATUS_ONGOING = 'ongoing'
+    STATUS_COMPLETED = 'completed'
+    STATUS_CHOICES = [
+        (STATUS_UPCOMING, 'Upcoming'),
+        (STATUS_ONGOING, 'Ongoing'),
+        (STATUS_COMPLETED, 'Completed'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_UPCOMING)
     event = models.CharField(max_length=200)
     activity = models.CharField(max_length=200)
     description = models.TextField(blank=True)

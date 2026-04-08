@@ -31,7 +31,7 @@
         <form method="post">
             {% csrf_token %}
             
-            <input type="hidden" name="role" value="participant">
+            <!-- Participant login hidden; visit role selection instead -->
 
             <div class="form-group">
                 <label class="form-label" for="id_username">Username</label>
@@ -58,7 +58,7 @@
         </form>
 
         <div style="text-align: center; margin-top: 2rem; font-size: 0.875rem; color: var(--text-muted);">
-            Don't have an account? <a href="{% url 'events:signup' %}?role=participant" style="color: var(--primary); text-decoration: none; font-weight: 600;">Sign up</a>
+            Participant access is hidden. <a href="{% url 'accounts:role_selection' %}" style="color: var(--primary); text-decoration: none; font-weight: 600;">Choose a role</a>
         </div>
     </div>
 </div>

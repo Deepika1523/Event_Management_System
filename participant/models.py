@@ -17,6 +17,14 @@ class EventRegistration(models.Model):
 		on_delete=models.CASCADE,
 		related_name="event_registrations",
 	)
+	# Participation type: individual or team (kept for compatibility with older schema)
+	PARTICIPATION_INDIVIDUAL = 'individual'
+	PARTICIPATION_TEAM = 'team'
+	PARTICIPATION_CHOICES = [
+		(PARTICIPATION_INDIVIDUAL, 'Individual'),
+		(PARTICIPATION_TEAM, 'Team'),
+	]
+	participation_type = models.CharField(max_length=32, choices=PARTICIPATION_CHOICES, default=PARTICIPATION_INDIVIDUAL)
 	form_data = models.JSONField(blank=True, null=True)
 	registered_at = models.DateTimeField(auto_now_add=True)
 

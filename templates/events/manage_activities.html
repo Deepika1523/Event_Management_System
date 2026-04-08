@@ -76,9 +76,9 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Coordinator Invitation</label>
-                <input name="coordinator_email" type="email" class="form-input" placeholder="Enter email to invite..." required>
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">An invite will be sent to the coordinator.</p>
+                <label class="form-label">Coordinator Emails</label>
+                <textarea name="coordinator_emails" class="form-input" rows="4" placeholder="Enter one or more emails, separated by commas or new lines" required>{{ form_data.coordinator_emails }}</textarea>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Enter multiple emails separated by commas, semicolons, or new lines. An invite will be sent to each address.</p>
             </div>
 
             <div class="form-group">

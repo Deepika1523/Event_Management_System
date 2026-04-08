@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Step 4: Add Coordinators</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" name="add_another">Add Another Coordinator</button>
+    <button type="submit">Next Step</button>
+</form>
+{% if coordinators %}
+    <h3>Added Coordinators:</h3>
+    <ul>
+        {% for coordinator in coordinators %}
+            <li>{{ coordinator.name }} ({{ coordinator.email }})</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% endblock %}

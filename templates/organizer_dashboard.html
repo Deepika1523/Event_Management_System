@@ -31,7 +31,7 @@
             </div>
             <div>
                 <div style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase;">Total Syncs</div>
-                <div style="font-size: 1.75rem; font-weight: 700; color: white;">--</div>
+                <div style="font-size: 1.75rem; font-weight: 700; color: white;">{{ analytics.visitor_count|default:'--' }}</div>
             </div>
         </div>
         <div class="glass-card" style="display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid var(--accent);">
@@ -39,7 +39,7 @@
                 <i data-lucide="bar-chart-3"></i>
             </div>
             <div>
-                <div style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase;">Growth Rate</div>
+                <div style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase;">Visitors</div>
                 <div style="font-size: 1.75rem; font-weight: 700; color: white;">--</div>
             </div>
         </div>

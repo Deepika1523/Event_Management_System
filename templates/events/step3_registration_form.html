@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Step 3: Registration Form Builder</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" name="add_another">Add Another Field</button>
+    <button type="submit">Next Step</button>
+</form>
+{% if fields %}
+    <h3>Added Fields:</h3>
+    <ul>
+        {% for field in fields %}
+            <li>{{ field.label }} ({{ field.field_type }})</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% endblock %}

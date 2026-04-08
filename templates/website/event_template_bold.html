@@ -6,161 +6,146 @@
 {% block body_class %}page-event-bold{% endblock %}
 
 {% block extra_css %}
-        body.page-event-bold {
-            background: radial-gradient(circle at top, #f7f1e9 0%, #e7d9c8 55%, #cbb69a 100%);
-        }
-        .event-shell {
-            width: min(1200px, 100%);
-            display: grid;
-            gap: 24px;
-        }
-
-        .banner {
-            border-radius: 28px;
-            background: linear-gradient(135deg, #2f6f66, #1f4d46);
-            color: #ffffff;
-            padding: 32px;
-            display: grid;
-            gap: 16px;
-            box-shadow: 0 26px 60px rgba(47, 111, 102, 0.25);
+    <style>
+        :root{
+            --bg: linear-gradient(180deg,#0f1724 0%, #071123 100%);
+            --card-glass: rgba(255,255,255,0.04);
+            --muted: #94a3b8;
+            --primary-1: #7c3aed;
+            --primary-2: #06b6d4;
+            --accent: linear-gradient(90deg,var(--primary-1),var(--primary-2));
+            --tile-bg: rgba(255,255,255,0.02);
+            --text: #e6eef8;
         }
 
-        .eyebrow {
-            text-transform: uppercase;
-            letter-spacing: 0.28em;
-            font-size: 0.72rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
+        body.page-event-bold{ background: var(--bg); color: var(--text); }
+        .event-shell{ width: min(1200px,100%); margin: 2rem auto; padding: 0 1rem; display:grid; gap:24px; }
 
-        .banner h1 {
-            margin: 0;
-            font-size: clamp(2.2rem, 4vw, 3.2rem);
-        }
+        /* Top actions */
+        .event-top{ display:flex; justify-content:space-between; align-items:center; gap:16px; }
+        .event-actions{ margin-left:auto; display:flex; gap:12px; align-items:center; }
+        .pill{ padding:8px 14px; border-radius:999px; font-weight:600; text-decoration:none; color:inherit; display:inline-flex; align-items:center; gap:8px; }
+        .pill.primary{ background:var(--accent); color:white; box-shadow: 0 8px 28px rgba(124,58,237,0.14); }
+        .pill.ghost{ background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--text); }
 
-        .banner p {
-            margin: 0;
-            color: rgba(255, 255, 255, 0.85);
-            line-height: 1.7;
-        }
+        /* Header card */
+        .event-header{ display:grid; grid-template-columns: 1fr 360px; gap:24px; align-items:center; padding:24px; border-radius:20px; background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow: 0 20px 50px rgba(2,6,23,0.6); border:1px solid rgba(255,255,255,0.03); }
+        .event-meta{ display:flex; flex-direction:column; gap:12px; }
+        .eyebrow{ text-transform:uppercase; letter-spacing:0.18em; font-size:0.8rem; color:var(--muted); }
+        .event-title{ margin:0; font-size:clamp(1.6rem,3.2vw,2.6rem); font-weight:800; color: #fff; }
+        .event-sub{ margin:0; color: rgba(230,238,248,0.85); line-height:1.4; }
 
-        .banner img {
-            width: 100%;
-            border-radius: 20px;
-            border: 4px solid rgba(255, 255, 255, 0.35);
-        }
+        .event-image{ width:100%; height:220px; object-fit:cover; border-radius:14px; border:3px solid rgba(255,255,255,0.04); box-shadow: 0 18px 40px rgba(2,6,23,0.5); }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-        }
+        /* Details grid */
+        .details-grid{ display:grid; grid-template-columns: repeat(5, 1fr); gap:16px; }
+        .detail-card{ background: var(--tile-bg); padding:16px; border-radius:12px; border:1px solid rgba(255,255,255,0.03); transition: transform .18s, box-shadow .18s; }
+        .detail-card:hover{ transform: translateY(-6px); box-shadow: 0 12px 30px rgba(2,6,23,0.6); }
+        .detail-label{ font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; }
+        .detail-value{ font-weight:700; color:#fff; margin-top:6px; }
 
-        .event-links {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
+        /* Glass content area */
+        .glass-card{ background: rgba(255,255,255,0.02); border-radius:12px; padding:16px; border:1px solid rgba(255,255,255,0.03); }
 
-        .event-link {
-            text-decoration: none;
-            padding: 10px 16px;
-            border-radius: 999px;
-            background: #1f4d46;
-            color: #ffffff;
-            font-weight: 600;
-        }
+        /* Prevent ugly text selection highlight */
+        ::selection{ background: rgba(124,58,237,0.18); color: #fff; }
 
-        .event-link:hover {
-            background: #163c36;
+        /* Responsive */
+        @media (max-width:1100px){ .event-header{ grid-template-columns:1fr 300px; } .details-grid{ grid-template-columns: repeat(3,1fr);} }
+        @media (max-width:720px){ .event-header{ grid-template-columns:1fr; } .event-image{ height:180px;} .details-grid{ grid-template-columns: repeat(2,1fr);} .event-actions{ flex-wrap:wrap; justify-content:flex-end; }
         }
-
-        .tile {
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 16px;
-            border: 1px solid rgba(43, 38, 32, 0.08);
-            box-shadow: 0 16px 40px rgba(80, 62, 44, 0.12);
-        }
-
-        .tile strong {
-            display: block;
-            color: var(--green-900);
-        }
-
-        .tile span {
-            color: var(--muted);
-        }
+        @media (max-width:420px){ .details-grid{ grid-template-columns:1fr; } }
+    </style>
 {% endblock %}
 
 {% block content %}
     <main class="event-shell">
-        <section class="banner">
-            <div class="event-links">
-                <a class="event-link" href="{{ coordinator_login_url }}">Coordinator Login</a>
-                <a class="event-link" href="{{ participant_login_url }}">Participant Login</a>
-                <a class="event-link" href="{% url 'events:event_registration_form' event.id %}">Register</a>
+        <div class="event-top">
+            <div class="left-area">
+                <!-- could be breadcrumbs or small meta -->
+            </div>
+            <div class="event-actions">
+                <a class="pill ghost" href="{{ coordinator_login_url }}">Coordinator Login</a>
+                <a class="pill ghost" href="{{ participant_login_url }}">Participant Login</a>
+                {% if event.status != 'completed' %}
+                    <a class="pill primary" href="{% url 'events:event_registration_form' event.id %}">Register</a>
+                {% else %}
+                    <button class="pill ghost" disabled style="opacity:0.6;">Registration Closed</button>
+                {% endif %}
                 {% if can_create_activity %}
-                    <a class="event-link" href="{% if request.user.is_superuser %}{{ admin_activity_url }}{% else %}{{ organizer_activity_url }}{% endif %}">Create Activity</a>
+                    <a class="pill ghost" href="{% if request.user.is_superuser %}{{ admin_activity_url }}{% else %}{{ organizer_activity_url }}{% endif %}">Create Activity</a>
                 {% endif %}
             </div>
-        </section>
-        <section class="banner">
-            <div>
-                <p class="eyebrow">{{ event.get_category_display }}</p>
-                <h1>{{ event.event }}</h1>
+        </div>
+
+        <section class="event-header">
+            <div class="event-meta">
+                <div class="eyebrow">{{ event.get_category_display }}</div>
+                <h1 class="event-title">{{ event.event }}</h1>
                 {% if event.tagline %}
-                    <p><strong>{{ event.tagline }}</strong></p>
+                    <div class="event-sub"><strong>{{ event.tagline }}</strong></div>
                 {% endif %}
-                <p>{{ event.description }}</p>
+                <p class="event-sub">{{ event.description|linebreaksbr }}</p>
+                <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+                        <a class="pill ghost" href="#details">Details</a>
+                        <a class="pill ghost" href="#activities">Activities</a>
+                        <div style="margin-left:12px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:0.85rem;color:var(--muted)">
+                            Status: <strong style="color:white;margin-left:6px; text-transform:capitalize;">{{ event.get_status_display }}</strong>
+                        </div>
+                    </div>
             </div>
-            {% if event.image %}
-                <img src="{{ event.image.url }}" alt="{{ event.event }}">
-            {% elif event.image_url %}
-                <img src="{{ event.image_url }}" alt="{{ event.event }}">
-            {% endif %}
+            <div>
+                {% if event.image %}
+                    <img src="{{ event.image.url }}" alt="{{ event.event }}" class="event-image">
+                {% elif event.image_url %}
+                    <img src="{{ event.image_url }}" alt="{{ event.event }}" class="event-image">
+                {% else %}
+                    <div class="event-image" style="display:flex;align-items:center;justify-content:center;color:var(--muted);">No image</div>
+                {% endif %}
+            </div>
         </section>
 
-        <section class="grid">
-            <div class="tile">
-                <strong>Date</strong>
-                <span>{{ event.date_of_event }}</span>
+        <section id="details" class="details-grid">
+            <div class="detail-card">
+                <div class="detail-label">Date</div>
+                <div class="detail-value">{{ event.date_of_event }}</div>
             </div>
-            <div class="tile">
-                <strong>Time</strong>
-                <span>{{ event.time_of_event }}</span>
+            <div class="detail-card">
+                <div class="detail-label">Time</div>
+                <div class="detail-value">{{ event.time_of_event }}</div>
             </div>
-            <div class="tile">
-                <strong>Venue</strong>
-                <span>{{ event.venue }}</span>
+            <div class="detail-card">
+                <div class="detail-label">Venue</div>
+                <div class="detail-value">{{ event.venue }}</div>
             </div>
-            <div class="tile">
-                <strong>Registration Fee</strong>
-                <span>{{ event.registration }}</span>
+            <div class="detail-card">
+                <div class="detail-label">Registration Fee</div>
+                <div class="detail-value">{{ event.registration }}</div>
             </div>
-            <div class="tile">
-                <strong>Contact</strong>
-                <span>{{ event.contact_info }}</span>
+            <div class="detail-card">
+                <div class="detail-label">Contact</div>
+                <div class="detail-value">{{ event.contact_info }}</div>
             </div>
         </section>
 
         {% if event.schedule or event.activities_overview or event.rules %}
-            <section class="grid">
+            <section id="activities" style="display:grid;gap:12px;">
                 {% if event.schedule %}
-                    <div class="tile">
+                    <div class="glass-card">
                         <strong>Schedule</strong>
-                        <span>{{ event.schedule|linebreaks }}</span>
+                        <div style="margin-top:6px;color:var(--muted);">{{ event.schedule|linebreaks }}</div>
                     </div>
                 {% endif %}
                 {% if event.activities_overview %}
-                    <div class="tile">
+                    <div class="glass-card">
                         <strong>Activities</strong>
-                        <span>{{ event.activities_overview|linebreaks }}</span>
+                        <div style="margin-top:6px;color:var(--muted);">{{ event.activities_overview|linebreaks }}</div>
                     </div>
                 {% endif %}
                 {% if event.rules %}
-                    <div class="tile">
+                    <div class="glass-card">
                         <strong>Rules</strong>
-                        <span>{{ event.rules|linebreaks }}</span>
+                        <div style="margin-top:6px;color:var(--muted);">{{ event.rules|linebreaks }}</div>
                     </div>
                 {% endif %}
             </section>

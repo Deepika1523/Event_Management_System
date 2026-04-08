@@ -22,8 +22,8 @@
         {% with key=role.0 title=role.1 desc=role.2 base=role.3 tint=role.4 icon=role.6 %}
 
         <div class="role-card" tabindex="0" role="button">
-            <div class="role-icon {% if key == 'organizer' %}organizer{% elif key == 'coordinator' %}coordinator{% else %}participant{% endif %}">
-                <i data-lucide="{% if key == 'organizer' %}zap{% elif key == 'coordinator' %}users{% else %}ticket{% endif %}"></i>
+            <div class="role-icon {% if key == 'organizer' %}organizer{% elif key == 'coordinator' %}coordinator{% endif %}">
+                <i data-lucide="{% if key == 'organizer' %}zap{% elif key == 'coordinator' %}users{% endif %}"></i>
             </div>
             <h3 class="role-title">{{ title }}</h3>
             <p class="role-desc">{{ desc }}</p>

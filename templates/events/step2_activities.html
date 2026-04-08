@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Step 2: Add Activities</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" name="add_another">Add Another Activity</button>
+    <button type="submit">Next Step</button>
+</form>
+{% if activities %}
+    <h3>Added Activities:</h3>
+    <ul>
+        {% for activity in activities %}
+            <li>{{ activity.name }} ({{ activity.type }}, {{ activity.date }})</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% endblock %}

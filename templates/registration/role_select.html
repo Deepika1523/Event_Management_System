@@ -43,18 +43,7 @@
             </div>
         </div>
 
-        <!-- Participant Card -->
-        <div class="role-card" role="button" tabindex="0">
-            <div class="role-icon participant">
-                <i data-lucide="ticket"></i>
-            </div>
-            <h3 class="role-title">Participant</h3>
-            <p class="role-desc">Discover amazing events, register for activities, and get your digital certificates.</p>
-            <div class="role-actions">
-                <a href="{% url 'events:unified_login' %}?role=participant" class="btn btn-primary btn-continue">Continue</a>
-                <a href="{% url 'events:signup' %}?role=participant" class="btn btn-outline btn-secondary">Sign Up</a>
-            </div>
-        </div>
+        <!-- Participant removed: only Organizer and Coordinator available -->
     </div>
 
     <div class="auth-footer">

@@ -1,4 +1,156 @@
+from .forms_event_creation import ActivityForm, RegistrationFieldForm, CoordinatorForm, WebsiteSetupForm
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
 
+# Step 2: Activities
+@login_required
+def step2_activities(request):
+    activities = request.session.get('activities', [])
+    if request.method == 'POST':
+        form = ActivityForm(request.POST)
+        if form.is_valid():
+            activities.append(form.cleaned_data)
+            request.session['activities'] = activities
+            if 'add_another' in request.POST:
+                return redirect('step2_activities')
+            else:
+                return redirect('step3_registration_form')
+    else:
+        form = ActivityForm()
+    return render(request, 'events/step2_activities.html', {'form': form, 'activities': activities})
+
+# Step 3: Registration Form Builder
+@login_required
+def step3_registration_form(request):
+    fields = request.session.get('registration_fields', [])
+    if request.method == 'POST':
+        form = RegistrationFieldForm(request.POST)
+        if form.is_valid():
+            fields.append(form.cleaned_data)
+            request.session['registration_fields'] = fields
+            if 'add_another' in request.POST:
+                return redirect('step3_registration_form')
+            else:
+                return redirect('step4_coordinators')
+    else:
+        form = RegistrationFieldForm()
+    return render(request, 'events/step3_registration_form.html', {'form': form, 'fields': fields})
+
+# Step 4: Coordinators
+@login_required
+def step4_coordinators(request):
+    coordinators = request.session.get('coordinators', [])
+    if request.method == 'POST':
+        form = CoordinatorForm(request.POST)
+        if form.is_valid():
+            coordinators.append(form.cleaned_data)
+            request.session['coordinators'] = coordinators
+            if 'add_another' in request.POST:
+                return redirect('step4_coordinators')
+            else:
+                return redirect('step5_website_setup')
+    else:
+        form = CoordinatorForm()
+    return render(request, 'events/step4_coordinators.html', {'form': form, 'coordinators': coordinators})
+
+# Step 5: Website Setup
+@login_required
+def step5_website_setup(request):
+    if request.method == 'POST':
+        form = WebsiteSetupForm(request.POST)
+        if form.is_valid():
+            request.session['website_setup'] = form.cleaned_data
+            # Save all data to DB here
+            return redirect('event_creation_complete')
+    else:
+        form = WebsiteSetupForm()
+    return render(request, 'events/step5_website_setup.html', {'form': form})
+
+@login_required
+def event_creation_complete(request):
+    return render(request, 'events/event_creation_complete.html')
+
+from django.contrib.auth.decorators import login_required
+from .forms_event_creation import ActivityForm, RegistrationFieldForm, CoordinatorForm, WebsiteSetupForm
+
+# Step 2: Activities
+@login_required
+def step2_activities(request):
+    activities = request.session.get('activities', [])
+    if request.method == 'POST':
+        form = ActivityForm(request.POST)
+        if form.is_valid():
+            activities.append(form.cleaned_data)
+            request.session['activities'] = activities
+            if 'add_another' in request.POST:
+                return redirect('step2_activities')
+            else:
+                return redirect('step3_registration_form')
+    else:
+        form = ActivityForm()
+    return render(request, 'events/step2_activities.html', {'form': form, 'activities': activities})
+
+# Step 3: Registration Form Builder
+@login_required
+def step3_registration_form(request):
+    fields = request.session.get('registration_fields', [])
+    if request.method == 'POST':
+        form = RegistrationFieldForm(request.POST)
+        if form.is_valid():
+            fields.append(form.cleaned_data)
+            request.session['registration_fields'] = fields
+            if 'add_another' in request.POST:
+                return redirect('step3_registration_form')
+            else:
+                return redirect('step4_coordinators')
+    else:
+        form = RegistrationFieldForm()
+    return render(request, 'events/step3_registration_form.html', {'form': form, 'fields': fields})
+
+# Step 4: Coordinators
+@login_required
+def step4_coordinators(request):
+    coordinators = request.session.get('coordinators', [])
+    if request.method == 'POST':
+        form = CoordinatorForm(request.POST)
+        if form.is_valid():
+            coordinators.append(form.cleaned_data)
+            request.session['coordinators'] = coordinators
+            if 'add_another' in request.POST:
+                return redirect('step4_coordinators')
+            else:
+                return redirect('step5_website_setup')
+    else:
+        form = CoordinatorForm()
+    return render(request, 'events/step4_coordinators.html', {'form': form, 'coordinators': coordinators})
+
+# Step 5: Website Setup
+@login_required
+def step5_website_setup(request):
+    if request.method == 'POST':
+        form = WebsiteSetupForm(request.POST)
+        if form.is_valid():
+            request.session['website_setup'] = form.cleaned_data
+            # Save all data to DB here
+            return redirect('event_creation_complete')
+    else:
+        form = WebsiteSetupForm()
+    return render(request, 'events/step5_website_setup.html', {'form': form})
+
+@login_required
+def event_creation_complete(request):
+    return render(request, 'events/event_creation_complete.html')
+from .models import (
+    Activity,
+    Event,
+    EventCoordinator,
+    EventCoordinatorInvite,
+    Profile,
+    ActivityRegistrationFormField,
+    ActivityRegistrationFormResponse,
+    ActivityCoordinator,
+)
+from django.shortcuts import render, redirect, get_object_or_404
 # Activity Registration Form View
 from participant.models import ActivityRegistration
 from django.contrib.auth.decorators import login_required
@@ -40,21 +192,43 @@ def activity_registration_form(request, activity_id):
             if missing:
                 messages.error(request, f"Please provide required fields: {', '.join(missing)}.")
             else:
-                registration, created = ActivityRegistration.objects.get_or_create(
+                # Capacity check: respect activity.max_participants when set
+                if activity.max_participants:
+                    current_count = ActivityRegistration.objects.filter(activity=activity).count()
+                    if current_count >= activity.max_participants:
+                        messages.error(request, "Registration Closed: this activity has reached the maximum number of participants.")
+                        return render(request, "events/activity_registration.html", {"activity": activity, "fields": fields})
+
+                # prevent duplicate registrations
+                if ActivityRegistration.objects.filter(participant=request.user, activity=activity).exists():
+                    messages.error(request, "You have already registered for this activity.")
+                    return redirect("events:dashboard")
+
+                # Capacity check: respect activity.max_participants when set
+                if activity.max_participants:
+                    current_count = ActivityRegistration.objects.filter(activity=activity).count()
+                    if current_count >= activity.max_participants:
+                        messages.error(request, "Registration Closed: this activity has reached the maximum number of participants.")
+                        return render(request, "events/activity_registration.html", {"activity": activity, "fields": fields})
+
+                registration = ActivityRegistration.objects.create(
                     participant=request.user,
                     activity=activity,
-                    defaults={"form_data": form_data},
+                    qr_token=uuid.uuid4(),
                 )
-                if created:
-                    payment_check, _ = PaymentCheck.objects.get_or_create(registration=registration)
-                    payment_check.payment_proof = payment_qr
-                    payment_check.save()
-                    messages.success(request, "Registration + payment proof submitted.")
-                else:
-                    payment_check = registration.payment_check
-                    payment_check.payment_proof = payment_qr
-                    payment_check.save()
-                    messages.info(request, "Payment proof updated.")
+                # attach form data if model supports it
+                if hasattr(registration, 'form_data'):
+                    try:
+                        registration.form_data = form_data
+                        registration.save(update_fields=['form_data'])
+                    except Exception:
+                        pass
+
+                # store payment proof
+                payment_check, _ = PaymentCheck.objects.get_or_create(registration=registration)
+                payment_check.payment_proof = payment_qr
+                payment_check.save()
+                messages.success(request, "Registration + payment proof submitted.")
                 return redirect("events:dashboard")
 
     return render(
@@ -116,6 +290,7 @@ import uuid
 import urllib.error
 import urllib.request
 from io import BytesIO
+import re
 
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.decorators import login_required
@@ -132,6 +307,7 @@ from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django.contrib.sessions.models import Session
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
 
@@ -531,14 +707,32 @@ def _send_event_invite_email(request, invite):
 @login_required
 def event_list(request):
     if request.method == "GET":
+        q = request.GET.get('q', '').strip()
+        date_filter = request.GET.get('date', '').strip()
+        category = request.GET.get('category', '').strip()
+        fee = request.GET.get('fee', '').strip().lower()
+
         if request.user.is_superuser or request.user.is_staff:
             queryset = Event.objects.select_related("user").all().order_by("id")
-        else:
+        elif _is_organizer(request.user):
             queryset = (
-                Event.objects.select_related("user")
-                .filter(user=request.user)
-                .order_by("id")
+                Event.objects.select_related("user").filter(user=request.user).order_by("id")
             )
+        else:
+            # Participants and visitors: show all events (read-only)
+            queryset = Event.objects.select_related("user").all().order_by("id")
+
+        if q:
+            queryset = queryset.filter(event__icontains=q)
+        if date_filter:
+            queryset = queryset.filter(date_of_event=date_filter)
+        if category:
+            queryset = queryset.filter(category=category)
+        if fee:
+            if fee == 'free':
+                queryset = queryset.filter(registration__iregex=r'(?i)free')
+            elif fee == 'paid':
+                queryset = queryset.exclude(registration__iregex=r'(?i)free')
 
         # For traditional browser requests, render the event list template
         return render(
@@ -547,6 +741,10 @@ def event_list(request):
             {
                 "events": queryset,
                 "can_create_event": _is_organizer(request.user),
+                "search_q": q,
+                "filter_date": date_filter,
+                "filter_category": category,
+                "filter_fee": fee,
             },
         )
 
@@ -1176,6 +1374,11 @@ def event_registration_form(request, event_id):
                 f"Please provide required fields: {', '.join(missing)}.",
             )
         else:
+            # Do not allow registration if event completed
+            if event.status == Event.STATUS_COMPLETED:
+                messages.error(request, "Registration is closed for completed events.")
+                return redirect("events:event_detail", event_id=event.id)
+
             registration, created = EventRegistration.objects.get_or_create(
                 participant=request.user,
                 event=event,
@@ -1663,6 +1866,8 @@ def manage_activities(request):
     if selected_event_id:
         activities = Activity.objects.filter(event_id=selected_event_id).order_by("start_time")
 
+    # Users available to assign as coordinators
+    users = get_user_model().objects.filter(is_active=True).order_by("username")
     # Collect all form fields
     form_data = {
         "event_id": request.POST.get("event_id", selected_event_id or ""),
@@ -1677,7 +1882,8 @@ def manage_activities(request):
         "max_participants": request.POST.get("max_participants", ""),
         "is_team_event": request.POST.get("is_team_event", None),
         "team_size": request.POST.get("team_size", ""),
-        "coordinator_email": request.POST.get("coordinator_email", ""),
+        # Comma/newline-separated coordinator emails entered by the organizer
+        "coordinator_emails": request.POST.get("coordinator_emails", ""),
         "registration_fee": request.POST.get("registration_fee", ""),
         "registration_form_fields": request.POST.get("registration_form_fields", ""),
         # Handle file upload
@@ -1685,28 +1891,32 @@ def manage_activities(request):
     }
 
     if request.method == "POST":
-        # Debug output: print all POST and FILES data to console/log
+        # Debug output: print all POST and FILES data to console/log (and coordinators list)
         print("[DEBUG] POST data:", dict(request.POST))
         print("[DEBUG] FILES data:", dict(request.FILES))
+        print("[DEBUG] coordinator_emails:", request.POST.get("coordinator_emails"))
         # Optionally, you can log this to a file or use logging module
 
         if not can_manage:
             messages.error(request, "Only organizers can create activities.")
             return render(request, "events/manage_activities.html", {
                 "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                "can_view_event_names": can_view_event_names, "events": events, "activities": activities
+                "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                "users": users,
             })
 
         # Validate required fields
         # Check all required fields, including date and file if needed
-        required_fields = ["event_id", "activity_name", "registration_fee", "start_time", "end_time", "coordinator_email", "date"]
+        # Coordinator emails (comma/newline-separated) are required
+        required_fields = ["event_id", "activity_name", "registration_fee", "start_time", "end_time", "date", "coordinator_emails"]
         missing = [f for f in required_fields if not form_data.get(f)]
         if missing:
             messages.error(request, f"Missing required fields: {', '.join(missing)}. Please fill all required fields.")
             print(f"[DEBUG] Missing fields: {missing}")
             return render(request, "events/manage_activities.html", {
                 "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                "can_view_event_names": can_view_event_names, "events": events, "activities": activities
+                "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                "users": users,
             })
 
         # Validate times
@@ -1718,7 +1928,8 @@ def manage_activities(request):
             messages.error(request, "Start time must be in HH:MM format (e.g., 14:30).")
             return render(request, "events/manage_activities.html", {
                 "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                "can_view_event_names": can_view_event_names, "events": events, "activities": activities
+                "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                "users": users,
             })
         try:
             end_time = datetime.datetime.strptime(form_data["end_time"], time_format).time()
@@ -1726,42 +1937,66 @@ def manage_activities(request):
             messages.error(request, "End time must be in HH:MM format (e.g., 16:00).")
             return render(request, "events/manage_activities.html", {
                 "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                "can_view_event_names": can_view_event_names, "events": events, "activities": activities
+                "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                "users": users,
             })
 
         # Validate team event
         is_team_event = form_data["is_team_event"] == "on"
+        team_size_value = form_data.get("team_size")
         team_size = None
         if is_team_event:
-            if not form_data["team_size"]:
+            if not team_size_value:
                 messages.error(request, "Team size is required for team events.")
                 return render(request, "events/manage_activities.html", {
                     "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                    "can_view_event_names": can_view_event_names, "events": events, "activities": activities
+                    "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                    "users": users,
                 })
             try:
-                team_size = int(form_data["team_size"])
+                team_size = int(team_size_value)
             except ValueError:
                 messages.error(request, "Team size must be a number.")
                 return render(request, "events/manage_activities.html", {
                     "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                    "can_view_event_names": can_view_event_names, "events": events, "activities": activities
+                    "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                    "users": users,
                 })
             if team_size < 2:
                 messages.error(request, "Team size must be at least 2.")
                 return render(request, "events/manage_activities.html", {
                     "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                    "can_view_event_names": can_view_event_names, "events": events, "activities": activities
+                    "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                    "users": users,
                 })
 
-        # Validate email
-        try:
-            validate_email(form_data["coordinator_email"])
-        except ValidationError:
-            messages.error(request, "Please enter a valid coordinator email.")
+        # Parse coordinator emails (split by comma, semicolon, or newline)
+        raw_emails = (form_data.get("coordinator_emails") or "")
+        potential = [e.strip() for e in re.split(r"[\n,;]+", raw_emails) if e.strip()]
+        if not potential:
+            messages.error(request, "Please provide at least one coordinator email.")
+            print("[DEBUG] No coordinator emails provided")
             return render(request, "events/manage_activities.html", {
                 "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                "can_view_event_names": can_view_event_names, "events": events, "activities": activities
+                "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                "users": users,
+            })
+        # Validate each email
+        invalid = []
+        valid_emails = []
+        for em in potential:
+            try:
+                validate_email(em)
+                valid_emails.append(em.lower())
+            except ValidationError:
+                invalid.append(em)
+        if invalid:
+            messages.error(request, f"Invalid coordinator email(s): {', '.join(invalid)}")
+            print(f"[DEBUG] Invalid emails: {invalid}")
+            return render(request, "events/manage_activities.html", {
+                "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
+                "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                "users": users,
             })
 
         event = get_object_or_404(Event, id=form_data["event_id"])
@@ -1769,7 +2004,8 @@ def manage_activities(request):
             messages.error(request, "You do not have permission to add activities for this event.")
             return render(request, "events/manage_activities.html", {
                 "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                "can_view_event_names": can_view_event_names, "events": events, "activities": activities
+                "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                "users": users,
             })
 
         activity, created = Activity.objects.get_or_create(
@@ -1793,20 +2029,22 @@ def manage_activities(request):
             messages.info(request, "This activity already exists for the event.")
             return render(request, "events/manage_activities.html", {
                 "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                "can_view_event_names": can_view_event_names, "events": events, "activities": activities
+                "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                "users": users,
             })
 
-        invite, created_invite = EventCoordinatorInvite.objects.get_or_create(
-            event=event,
-            email=form_data["coordinator_email"].lower(),
-            status=EventCoordinatorInvite.STATUS_PENDING,
-            defaults={"invited_by": request.user},
-        )
-        if not created_invite:
-            messages.info(request, "Coordinator already invited for this event.")
-        else:
-            # Use event invite email for activity coordinator
-            _send_event_invite_email(request, invite)
+        # Create invites for each valid email
+        for email in valid_emails:
+            invite, created_invite = EventCoordinatorInvite.objects.get_or_create(
+                event=event,
+                email=email,
+                status=EventCoordinatorInvite.STATUS_PENDING,
+                defaults={"invited_by": request.user},
+            )
+            if not created_invite:
+                messages.info(request, "Coordinator already invited for this event.")
+            else:
+                _send_event_invite_email(request, invite)
 
         messages.success(request, "Activity created successfully.")
         return redirect("events:manage_activities")
@@ -1819,6 +2057,7 @@ def manage_activities(request):
         "can_view_event_names": can_view_event_names,
         "events": events,
         "activities": activities,
+        "users": users,
     })
 
 
@@ -2517,6 +2756,21 @@ def organizer_dashboard(request):
                 "participant_count": participant_count,
             })
 
+    # Organizer analytics
+    total_events = events.count() if hasattr(events, 'count') else len(events)
+    total_registrations = EventRegistration.objects.filter(event__user=request.user).count()
+    # Registrations per activity
+    regs_per_activity = {
+        r['activity_id']: r['count']
+        for r in ActivityRegistration.objects.filter(activity__event__user=request.user).values('activity_id').annotate(count=models.Count('id'))
+    }
+    # Visitor count: active anonymous sessions (no _auth_user_id in session data)
+    try:
+        active_sessions = Session.objects.filter(expire_date__gt=timezone.now())
+        visitor_count = sum(1 for s in active_sessions if not s.get_decoded().get('_auth_user_id'))
+    except Exception:
+        visitor_count = 0
+
     return render(
         request,
         "organizer_dashboard.html",
@@ -2526,6 +2780,12 @@ def organizer_dashboard(request):
             "can_register": can_register,
             "can_view_participant_map": can_view_participant_map,
             "can_check_payments": can_check_payments,
+            "analytics": {
+                "total_events": total_events,
+                "total_registrations": total_registrations,
+                    "regs_per_activity": regs_per_activity,
+                    "visitor_count": visitor_count,
+            },
         },
     )
 
@@ -2685,8 +2945,38 @@ def event_website_home(request, event_id):
 def event_website_activities(request, event_id):
     """Public activities page"""
     event = get_object_or_404(Event, id=event_id)
-    activities = event.activities.all()
-    
+    # annotate each activity with registration counts and remaining slots
+    activities_qs = event.activities.all().order_by('start_time')
+    # get counts in a single query
+    from participant.models import ActivityRegistration
+    reg_counts = {
+        r['activity_id']: r['count']
+        for r in ActivityRegistration.objects.filter(activity__event=event).values('activity_id').annotate(count=models.Count('id'))
+    }
+
+    activities = []
+    user_registered_activity_ids = set()
+    if request.user.is_authenticated:
+        user_registered_activity_ids = set(
+            ActivityRegistration.objects.filter(participant=request.user, activity__event=event).values_list('activity_id', flat=True)
+        )
+
+    for act in activities_qs:
+        current = reg_counts.get(act.id, 0)
+        maxp = act.max_participants or None
+        remaining = None if maxp is None else max(0, maxp - current)
+        percent = None
+        if maxp:
+            percent = int((current / maxp) * 100) if maxp > 0 else 100
+        activities.append({
+            'obj': act,
+            'current_registrations': current,
+            'max_participants': maxp,
+            'remaining_slots': remaining,
+            'fill_percent': percent,
+            'user_registered': act.id in user_registered_activity_ids,
+        })
+
     context = {
         'event': event,
         'activities': activities,
@@ -2730,7 +3020,11 @@ def activity_register(request, activity_id):
     """Register for activity"""
     activity = get_object_or_404(Activity, id=activity_id)
     event = activity.event
-    
+    # Visitors are not allowed to register; redirect to login/participant signup
+    if not request.user.is_authenticated or not _is_participant(request.user):
+        messages.error(request, "Please log in as a Participant to register for activities.")
+        return redirect(f"{reverse('events:unified_login')}?role=participant")
+
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
         email = request.POST.get('email', '').strip()
@@ -2743,6 +3037,20 @@ def activity_register(request, activity_id):
                 'activity': activity,
                 'event': event,
             })
+        # Prevent duplicate registration for same user
+        if ActivityRegistration.objects.filter(participant=request.user, activity=activity).exists():
+            messages.error(request, "You have already registered for this activity.")
+            return redirect('events:event_website_activities', event_id=event.id)
+
+        # Enforce max participants
+        if activity.max_participants:
+            current_count = ActivityRegistration.objects.filter(activity=activity).count()
+            if current_count >= activity.max_participants:
+                messages.error(request, "Registration Closed: this activity is full.")
+                return render(request, 'website/activity_register.html', {
+                    'activity': activity,
+                    'event': event,
+                })
         
         messages.success(request, "Registration successful! We'll contact you soon.")
         return redirect('events:event_website_home', event_id=event.id)
@@ -2752,3 +3060,98 @@ def activity_register(request, activity_id):
         'event': event,
     }
     return render(request, 'website/activity_register.html', context)
+
+
+# ================================
+# SIMPLE MULTI-STEP EVENT CREATION
+# ================================
+
+@login_required
+def create_event_step1(request):
+    if request.method == "POST":
+        event = Event.objects.create(
+            event=request.POST.get("event_name"),
+            description=request.POST.get("description"),
+            date_of_event=request.POST.get("date_of_event"),
+            time_of_event=request.POST.get("time_of_event"),
+            venue=request.POST.get("venue"),
+            location=request.POST.get("location"),
+            category=request.POST.get("category"),
+            contact_info=request.POST.get("contact_info"),
+            image_url=request.POST.get("image_url"),
+            user=request.user,
+        )
+
+        request.session["event_id"] = event.id
+        return redirect("events:create_event_step2")
+
+    return render(request, "events/create_event.html")
+
+
+@login_required
+def create_event_step2(request):
+    event_id = request.session.get("event_id")
+    event = get_object_or_404(Event, id=event_id)
+
+    if request.method == "POST":
+        Activity.objects.create(
+            event=event,
+            name=request.POST.get("name"),
+            description=request.POST.get("description"),
+            date=request.POST.get("date"),
+            start_time=request.POST.get("start_time"),
+            end_time=request.POST.get("end_time"),
+        )
+
+        if request.POST.get("action") == "next":
+            return redirect("events:create_event_step3")
+
+    return render(request, "events/add_activity.html")
+
+
+@login_required
+def create_event_step3(request):
+    event_id = request.session.get("event_id")
+
+    if request.method == "POST":
+        ActivityRegistrationFormField.objects.create(
+            activity_id=event_id,
+            label=request.POST.get("field_name"),
+            field_type=request.POST.get("field_type"),
+        )
+
+        if request.POST.get("action") == "next":
+            return redirect("events:create_event_step4")
+
+    return render(request, "events/add_forms.html")
+
+
+@login_required
+def create_event_step4(request):
+    event_id = request.session.get("event_id")
+
+    if request.method == "POST":
+        Coordinator.objects.create(
+            event_id=event_id,
+            name=request.POST.get("name"),
+            email=request.POST.get("email"),
+        )
+
+        if request.POST.get("action") == "next":
+            return redirect("events:create_event_step5")
+
+    return render(request, "events/add_coordinator.html")
+
+
+@login_required
+def create_event_step5(request):
+    event_id = request.session.get("event_id")
+    event = get_object_or_404(Event, id=event_id)
+
+    if request.method == "POST":
+        event.template_choice = request.POST.get("template")
+        event.save()
+
+        return redirect("events:manage_events")
+
+    return render(request, "events/website_setup.html")

@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 {% block body_class %}page-contact{% endblock %}
+
 {% block extra_css %}
-		body.page-contact::before {
+    <style>
+        body.page-contact::before {
 				content: "";
 				position: fixed;
 				top: 0; left: 0; width: 100vw; height: 100vh;
@@ -13,6 +15,7 @@
 				background-repeat: no-repeat;
 				filter: blur(2.5px) brightness(0.85);
 		}
+    </style>
 {% endblock %}
 {% block content %}
 <div style="display:flex;justify-content:center;align-items:center;min-height:80vh;">

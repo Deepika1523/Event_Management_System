@@ -6,6 +6,7 @@
 {% block body_class %}page-payment-status{% endblock %}
 
 {% block extra_css %}
+    <style>
         body.page-payment-status {
             background-image: linear-gradient(rgba(18, 18, 18, 0.45), rgba(18, 18, 18, 0.45)),
                 url("{% static 'images/luxury-golden-glow-with-soft-light-trails-and-sparkling-particles-on-dark-background_11537186.jpg!bwr800' %}");
@@ -118,6 +119,7 @@
             margin: 0;
             color: var(--muted);
         }
+    </style>
 {% endblock %}
 
 {% block content %}

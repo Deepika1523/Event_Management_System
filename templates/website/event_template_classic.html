@@ -6,109 +6,19 @@
 {% block body_class %}page-event-classic{% endblock %}
 
 {% block extra_css %}
-        body.page-event-classic {
-            background-image: linear-gradient(rgba(18, 18, 18, 0.35), rgba(18, 18, 18, 0.35)),
-                url("{% static 'images/luxury-golden-glow-with-soft-light-trails-and-sparkling-particles-on-dark-background_11537186.jpg!bwr800' %}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }
-        .event-shell {
-            width: min(1100px, 100%);
-            display: grid;
-            gap: 24px;
-        }
 
-        .card {
-            border-radius: 24px;
-            background: #ffffff;
-            border: 1px solid rgba(43, 38, 32, 0.08);
-            box-shadow: 0 24px 60px rgba(80, 62, 44, 0.16);
-            padding: 28px;
-            animation: rise 0.45s ease both;
-        }
-
-        .hero {
-            display: grid;
-            gap: 18px;
-        }
-
-        .eyebrow {
-            text-transform: uppercase;
-            letter-spacing: 0.28em;
-            font-size: 0.72rem;
-            color: var(--green-700);
-        }
-
-        .hero h1 {
-            margin: 0;
-            font-family: "Playfair Display", "Times New Roman", serif;
-            font-size: clamp(2rem, 4vw, 3rem);
-            color: var(--green-900);
-        }
-
-        .hero p {
-            margin: 0;
-            color: var(--muted);
-            line-height: 1.7;
-        }
-
-        .hero img {
-            width: 100%;
-            border-radius: 18px;
-            box-shadow: 0 18px 45px rgba(80, 62, 44, 0.2);
-        }
-
-        .details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-        }
-
-        .event-links {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .event-link {
-            text-decoration: none;
-            padding: 10px 16px;
-            border-radius: 999px;
-            background: #2f6f66;
-            color: #ffffff;
-            font-weight: 600;
-        }
-
-        .event-link:hover {
-            background: #23574f;
-        }
-
-        .detail {
-            background: rgba(247, 241, 233, 0.8);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 14px 16px;
-        }
-
-        .detail strong {
-            display: block;
-            color: var(--green-900);
-        }
-
-        .detail span {
-            color: var(--muted);
-        }
 {% endblock %}
 
 {% block content %}
     <main class="event-shell">
         <section class="card">
             <div class="event-links">
-                <a class="event-link" href="{{ coordinator_login_url }}">Coordinator Login</a>
-                <a class="event-link" href="{{ participant_login_url }}">Participant Login</a>
-                <a class="event-link" href="{% url 'events:event_registration_form' event.id %}">Register</a>
+          <a class="event-link" href="{{ participant_login_url }}">Participant Login</a>
+                {% if event.status != 'completed' %}
+                    <a class="event-link" href="{% url 'events:event_registration_form' event.id %}">Register</a>
+                {% else %}
+                    <span class="event-link" style="opacity:0.6;">Registration Closed</span>
+                {% endif %}
                 {% if can_create_activity %}
                     <a class="event-link" href="{% if request.user.is_superuser %}{{ admin_activity_url }}{% else %}{{ organizer_activity_url }}{% endif %}">Create Activity</a>
                 {% endif %}

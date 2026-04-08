@@ -73,7 +73,15 @@
 
                 <div class="form-actions">
                     <a href="{% url 'events:event_website_activities' event.id %}" class="btn btn-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary btn-lg">Complete Registration</button>
+                    {% if activity.max_participants and activity.activity_registrations.count >= activity.max_participants %}
+                        <button type="button" class="btn btn-outline" disabled>Registration Closed</button>
+                        {% elif event.status == 'completed' %}
+                        <button type="button" class="btn btn-outline" disabled>Event Completed</button>
+                    {% elif not request.user.is_authenticated or not request.user.is_staff and not request.user.is_superuser and not request.user.is_authenticated %}
+                        <a class="btn btn-primary" href="{% url 'accounts:role_selection' %}">Log in to Register</a>
+                    {% else %}
+                        <button type="submit" class="btn btn-primary btn-lg">Complete Registration</button>
+                    {% endif %}
                 </div>
             </form>
         </div>

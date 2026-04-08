@@ -18,25 +18,29 @@
 
 {% if activities %}
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
-    {% for activity in activities %}
-    <div class="activity-card">
+    {% for a in activities %}
+    {% with activity=a.obj %}
+    <div class="activity-card" style="border-radius:12px;padding:16px;background:rgba(255,255,255,0.02);">
         <div class="activity-card-header">
             <h3 class="activity-card-title">{{ activity.name }}</h3>
         </div>
         <div class="activity-card-body">
             <p class="activity-card-description">{{ activity.description|truncatewords:20 }}</p>
-            <div class="activity-card-meta">
-                <div class="activity-card-meta-item">
+            <div style="display:flex;gap:12px;align-items:center;margin-top:8px;">
+                <div style="flex:1;">
                     <strong>Fee:</strong> {{ activity.registration_fee }}
                 </div>
-                {% if activity.max_participants %}
-                <div class="activity-card-meta-item">
-                    <strong>Max:</strong> {{ activity.max_participants }}
+                {% if a.max_participants %}
+                <div style="text-align:right; min-width:120px;">
+                    <div style="font-size:0.9rem;color:var(--muted);">Slots left: <strong style="color:white;">{{ a.remaining_slots }}</strong></div>
+                    <div style="height:8px;background:rgba(255,255,255,0.04);border-radius:8px;overflow:hidden;margin-top:6px;">
+                        <div style="height:100%;background:linear-gradient(90deg,#7c3aed,#06b6d4);width:{{ a.fill_percent }}%"></div>
+                    </div>
                 </div>
                 {% endif %}
             </div>
             {% if activity.start_time %}
-            <div class="activity-card-meta">
+            <div class="activity-card-meta" style="margin-top:10px;">
                 <div class="activity-card-meta-item">
                     <strong>⏰ Start:</strong> {{ activity.start_time|time:"H:i" }}
                 </div>
@@ -48,12 +52,17 @@
             </div>
             {% endif %}
         </div>
-        <div class="activity-card-footer">
-            <a href="{% url 'events:activity_register' activity.id %}" class="btn btn-primary" style="width: 100%; justify-content: center;">
-                ✅ Register
-            </a>
+        <div class="activity-card-footer" style="margin-top:12px;">
+            {% if a.max_participants and a.remaining_slots == 0 %}
+                <button class="btn btn-outline" style="width:100%;" disabled>Registration Closed</button>
+            {% elif a.user_registered %}
+                <button class="btn btn-outline" style="width:100%;" disabled>Already Registered</button>
+            {% else %}
+                <a href="{% url 'events:activity_register' activity.id %}" class="btn btn-primary" style="width: 100%; justify-content: center;">✅ Register</a>
+            {% endif %}
         </div>
     </div>
+    {% endwith %}
     {% endfor %}
 </div>
 {% else %}

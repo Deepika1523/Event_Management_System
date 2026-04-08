@@ -2,6 +2,7 @@
 {% load static %}
 {% block body_class %}page-about{% endblock %}
 {% block extra_css %}
+    <style>
     body.page-about::before {
         content: "";
         position: fixed;
@@ -122,6 +123,7 @@
         .features-grid { gap: 16px; }
         .feature-card { padding: 18px 8px 14px 8px; }
     }
+    </style>
 {% endblock %}
 {% block content %}
 <div class="about-hero glass-card">

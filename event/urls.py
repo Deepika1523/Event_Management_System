@@ -5,6 +5,12 @@ app_name = 'events'
 from . import views, event_pdf_views
 
 urlpatterns = [
+    path("create/step2/", views.step2_activities, name="step2_activities"),
+    path("create/step3/", views.step3_registration_form, name="step3_registration_form"),
+    path("create/step4/", views.step4_coordinators, name="step4_coordinators"),
+    path("create/step5/", views.step5_website_setup, name="step5_website_setup"),
+    path("create/complete/", views.event_creation_complete, name="event_creation_complete"),
+    # ...existing code...
     path("", views.role_based_user_page, name="home"),
     path("dashboard/", views.participant_dashboard, name="dashboard"),
     path("login/", views.unified_login, name="unified_login"),
@@ -108,4 +114,16 @@ urlpatterns = [
     path("certificate/<uuid:certificate_id>/download/", views.download_certificate, name="download_certificate"),
     # Participant: activity gate pass PDF (approved only)
     path("activity-gate-pass/<int:registration_id>/", views.generate_activity_gate_pass, name="generate_activity_gate_pass"),
+
+
+    path("create/step1/", views.create_event_step1, name="create_event_step1"),
+    path("create/step2/", views.step2_activities, name="step2_activities"),
+    path("create/step3/", views.step3_registration_form, name="step3_registration_form"),
+    path("create/step4/", views.step4_coordinators, name="step4_coordinators"),
+    path("create/step5/", views.step5_website_setup, name="step5_website_setup"),
+    path("create/complete/", views.event_creation_complete, name="event_creation_complete"),
 ]
+
+
+
+

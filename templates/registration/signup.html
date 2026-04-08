@@ -38,6 +38,15 @@
                 </div>
             </div>
 
+
+            <div class="form-group">
+                <label class="form-label" for="fullname">Full Name</label>
+                <div style="position: relative;">
+                    <i data-lucide="user" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);"></i>
+                    <input type="text" name="fullname" id="fullname" class="form-input" style="padding-left: 3rem;" placeholder="John Doe" required value="{{ fullname|default:'' }}">
+                </div>
+            </div>
+
             <div class="form-group">
                 <label class="form-label" for="email">Email Address</label>
                 <div style="position: relative;">

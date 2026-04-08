@@ -13,12 +13,23 @@
     <span>Create Event</span>
 </div>
 
+
+
+<div class="form-nav" style="margin-bottom:20px;">
+    <button type="button" class="tab-btn active" onclick="showSection('event')">Event Detail</button>
+    <button type="button" class="tab-btn" onclick="showSection('activity')">Add Activity</button>
+    <button type="button" class="tab-btn" onclick="showSection('forms')">Add Forms</button>
+    <button type="button" class="tab-btn" onclick="showSection('coordinators')">Add Coordinators</button>
+    <button type="button" class="tab-btn" onclick="showSection('website')">Create Website</button>
+</div>
+
+
 <div class="card">
     <div class="card-header">
         <h2>📅 Event Details</h2>
     </div>
     <div class="card-body">
-        <form method="POST" class="form-row full">
+        <form method="POST" action="{% url 'events:create_event_step1' %}" class="form-row full">
             {% csrf_token %}
             
             <div class="form-group">
@@ -76,7 +87,9 @@
 
             <div class="form-actions">
                 <a href="{% url 'events:manage_events' %}" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary btn-lg">Create Event</button>
+                <button type="submit" class="btn btn-primary btn-lg">
+    Save & Continue →
+</button>
             </div>
         </form>
     </div>
