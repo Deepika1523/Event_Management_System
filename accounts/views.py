@@ -122,7 +122,7 @@ def participant_signup(request):
     return redirect('accounts:role_selection')
 
 
-def participant_login(request):
+def    participant_login(request):
     """Participant login is hidden — redirect to role selection."""
     messages.info(request, "Participant access is disabled. Choose Organizer or Coordinator.")
     return redirect('accounts:role_selection')

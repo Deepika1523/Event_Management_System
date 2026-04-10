@@ -301,7 +301,7 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.mail import send_mail
 from django.core.validators import validate_email
-from django.db import models
+from django.db import IntegrityError, models
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.urls import reverse
@@ -797,8 +797,7 @@ def event_list(request):
     return HttpResponseNotAllowed(["GET", "POST"])
 
 
-@csrf_exempt
-@login_required
+@csrf_exempt #removed login required temp
 def event_detail(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
@@ -1262,16 +1261,20 @@ def manage_events(request):
         if form.is_valid():
             created_event = form.save(commit=False)
             created_event.user = request.user
-            created_event.save()
-            
-            # Save multiple images if provided
-            from .models_eventimage import EventImage
-            if images:
-                for img in images:
-                    EventImage.objects.create(event=created_event, image=img)
-            
-            messages.success(request, "Event created successfully.")
-            return redirect("event_site", event_id=created_event.id)
+            try:
+                created_event.save()
+            except IntegrityError:
+                form.add_error("name", "An event with this name already exists.")
+                messages.error(request, "An event with this name already exists.")
+            else:
+                # Save multiple images if provided
+                from .models_eventimage import EventImage
+                if images:
+                    for img in images:
+                        EventImage.objects.create(event=created_event, image=img)
+                
+                messages.success(request, "Event created successfully.")
+                return redirect("event_site", event_id=created_event.id)
         else:
             # If form is invalid, we return the errors to the template.
             # The template will need to be updated to show these.
@@ -1314,9 +1317,14 @@ def edit_event(request, event_id):
     if request.method == "POST":
         form = EventForm(request.POST, request.FILES, instance=event)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Event updated successfully.")
-            return redirect("events:edit_event", event_id=event.id)
+            try:
+                form.save()
+            except IntegrityError:
+                form.add_error("name", "An event with this name already exists.")
+                messages.error(request, "An event with this name already exists.")
+            else:
+                messages.success(request, "Event updated successfully.")
+                return redirect("events:edit_event", event_id=event.id)
         else:
             for field, errors in form.errors.items():
                 for error in errors:
@@ -1358,15 +1366,73 @@ def event_registration_form(request, event_id):
         return redirect("events:event_detail", event_id=event.id)
 
     fields = _parse_registration_fields(event.registration_form_fields)
+    for field in fields:
+        field["value"] = ""
+    existing_registration = EventRegistration.objects.filter(
+        participant=request.user,
+        event=event,
+    ).first()
+    form_data = existing_registration.form_data if existing_registration and existing_registration.form_data else {}
+    for field in fields:
+        field["value"] = form_data.get(field["label"]) or form_data.get(field["key"]) or ""
+    submission_complete = existing_registration is not None
+    download_pass_url = (
+        reverse("events:generate_gate_pass", args=[existing_registration.id])
+        if existing_registration
+        else None
+    )
 
     if request.method == "POST":
-        form_data = {}
+        form_data = dict(form_data) if isinstance(form_data, dict) else {}
         missing = []
+
+        full_name = (request.POST.get("full_name") or "").strip()
+        phone = (request.POST.get("phone") or "").strip()
+        email = (request.POST.get("email") or request.user.email or "").strip()
+        payment_reference = (request.POST.get("payment_reference") or "").strip()
+
+        if not full_name:
+            missing.append("Full Name")
+        if not phone:
+            missing.append("Phone Number")
+        if not email:
+            missing.append("Email")
+        if not payment_reference:
+            missing.append("Payment Reference Number")
+
+        def _save_uploaded_file(upload, folder):
+            if not upload:
+                return ""
+            filename = default_storage.save(f"registration_uploads/{folder}/{upload.name}", upload)
+            return filename
+
+        id_proof = _save_uploaded_file(request.FILES.get("id_proof"), "id_proof")
+        payment_screenshot = _save_uploaded_file(request.FILES.get("payment_screenshot"), "payment")
+        photo = _save_uploaded_file(request.FILES.get("photo"), "photos")
+
+        if not id_proof:
+            missing.append("ID Proof")
+        if not payment_screenshot:
+            missing.append("Payment Screenshot")
+
+        form_data.update(
+            {
+                "full_name": full_name,
+                "phone": phone,
+                "email": email,
+                "payment_reference": payment_reference,
+                "id_proof": id_proof,
+                "payment_screenshot": payment_screenshot,
+                "photo": photo,
+            }
+        )
+
         for field in fields:
             value = (request.POST.get(field["key"]) or "").strip()
             if field["required"] and not value:
                 missing.append(field["label"])
             form_data[field["label"]] = value
+            form_data[field["key"]] = value
 
         if missing:
             messages.error(
@@ -1391,7 +1457,9 @@ def event_registration_form(request, event_id):
             else:
                 messages.success(request, "You are registered for this event.")
                 send_event_registration_email(request.user, event)
-            return redirect("events:dashboard")
+            existing_registration = registration
+            submission_complete = True
+            download_pass_url = reverse("events:generate_gate_pass", args=[registration.id])
 
     return render(
         request,
@@ -1399,6 +1467,10 @@ def event_registration_form(request, event_id):
         {
             "event": event,
             "fields": fields,
+            "registration": existing_registration,
+            "submission_complete": submission_complete,
+            "download_pass_url": download_pass_url,
+            "registration_data": form_data,
         },
     )
 
@@ -2855,13 +2927,16 @@ def coordinator_dashboard(request):
     )
 
 
-# Participant Dashboard (all authenticated users)
+# Shared Dashboard (participants, organizers, and coordinators)
 @login_required
 def participant_dashboard(request):
-    """Participant dashboard - shows available events and registered activities."""
+    """Shared dashboard - shows the role-appropriate dashboard experience."""
     user_role = get_user_role(request.user)
-    if user_role != 'participant' and not request.user.is_superuser:
-        messages.error(request, "Only participants can access this dashboard.")
+    if (
+        user_role not in {"participant", "organizer", "coordinator"}
+        and not request.user.is_superuser
+    ):
+        messages.error(request, "Only participants, organizers, and coordinators can access this dashboard.")
         return redirect('accounts:role_selection')
     is_head = _is_head_coordinator(request.user)
     is_event_coord = _is_event_coordinator(request.user)
@@ -2880,11 +2955,22 @@ def participant_dashboard(request):
     
     joined_events = [reg.event for reg in joined_registrations]
     recommended_events = Event.objects.exclude(id__in=joined_event_ids).select_related("user").order_by("-id")[:6]
+    featured_event = recommended_events[0] if recommended_events else (joined_events[0] if joined_events else None)
 
     # Activity Registrations Overhaul
     activity_registrations = ActivityRegistration.objects.filter(
         participant=request.user
     ).select_related("activity", "activity__event").order_by("-registered_at")
+
+    available_activities = Activity.objects.select_related("event", "event__user").order_by("-created_at")[:8]
+    upcoming_activities = Activity.objects.select_related("event", "event__user").filter(
+        event__date_of_event__gte=timezone.now().date()
+    ).order_by("event__date_of_event", "start_time")[:4]
+
+    leaderboard_preview = (
+        LeaderboardEntry.objects.select_related("activity", "participant", "activity__event")
+        .order_by("-score", "-updated_at")[:5]
+    )
 
     # We need attendance and certificate for these activities
     activity_ids = [reg.activity_id for reg in activity_registrations]
@@ -2909,6 +2995,10 @@ def participant_dashboard(request):
         {
             "joined_events": joined_events,
             "recommended_events": recommended_events,
+            "featured_event": featured_event,
+            "available_activities": available_activities,
+            "upcoming_activities": upcoming_activities,
+            "leaderboard_preview": leaderboard_preview,
             "activity_rows": activity_rows,
             "can_register": can_register,
             "can_view_participant_map": can_view_participant_map,
@@ -3025,39 +3115,49 @@ def activity_register(request, activity_id):
         messages.error(request, "Please log in as a Participant to register for activities.")
         return redirect(f"{reverse('events:unified_login')}?role=participant")
 
+    existing_registration = ActivityRegistration.objects.filter(
+        participant=request.user,
+        activity=activity,
+    ).first()
+    payment_check = None
+    if existing_registration:
+        payment_check = getattr(existing_registration, "payment_check", None)
+
     if request.method == 'POST':
-        name = request.POST.get('name', '').strip()
-        email = request.POST.get('email', '').strip()
-        phone = request.POST.get('phone', '').strip()
-        college = request.POST.get('college', '').strip()
-        
+        name = (request.POST.get('name') or request.POST.get('full_name') or '').strip()
+        email = (request.POST.get('email') or request.user.email or '').strip()
+        phone = (request.POST.get('phone') or '').strip()
+        college = (request.POST.get('college') or '').strip()
+        payment_proof = request.FILES.get('payment_proof') or request.FILES.get('payment_qr')
+
         if not name or not email or not phone:
             messages.error(request, "Name, Email, and Phone are required.")
-            return render(request, 'website/activity_register.html', {
-                'activity': activity,
-                'event': event,
-            })
-        # Prevent duplicate registration for same user
-        if ActivityRegistration.objects.filter(participant=request.user, activity=activity).exists():
-            messages.error(request, "You have already registered for this activity.")
-            return redirect('events:event_website_activities', event_id=event.id)
+        elif activity.max_participants and ActivityRegistration.objects.filter(activity=activity).count() >= activity.max_participants and not existing_registration:
+            messages.error(request, "Registration Closed: this activity is full.")
+        else:
+            registration = existing_registration
+            if registration is None:
+                registration = ActivityRegistration.objects.create(
+                    participant=request.user,
+                    activity=activity,
+                    qr_token=uuid.uuid4(),
+                )
 
-        # Enforce max participants
-        if activity.max_participants:
-            current_count = ActivityRegistration.objects.filter(activity=activity).count()
-            if current_count >= activity.max_participants:
-                messages.error(request, "Registration Closed: this activity is full.")
-                return render(request, 'website/activity_register.html', {
-                    'activity': activity,
-                    'event': event,
-                })
-        
-        messages.success(request, "Registration successful! We'll contact you soon.")
-        return redirect('events:event_website_home', event_id=event.id)
-    
+            payment_check, _ = PaymentCheck.objects.get_or_create(registration=registration)
+            if payment_proof:
+                payment_check.payment_proof = payment_proof
+                payment_check.save(update_fields=["payment_proof"])
+
+            messages.success(request, "Registration submitted successfully.")
+            existing_registration = registration
+            return redirect("events:activity_register", activity_id=activity.id)
+
     context = {
         'activity': activity,
         'event': event,
+        'registration_complete': bool(existing_registration),
+        'download_pass_url': reverse("events:generate_activity_gate_pass", args=[existing_registration.id]) if existing_registration and existing_registration.status == ActivityRegistration.STATUS_APPROVED else None,
+        'payment_check': payment_check,
     }
     return render(request, 'website/activity_register.html', context)
 

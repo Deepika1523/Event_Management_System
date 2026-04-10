@@ -9,13 +9,15 @@ from .models import (
 	ActivityRegistrationFormField,
 	ActivityRegistrationFormResponse
 )
+from .forms import EventAdminForm
 
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-	list_display = ("event", "user", "category", "template_choice", "date_of_event")
+	form = EventAdminForm
+	list_display = ("name", "user", "category", "template_choice", "date_of_event")
 	list_filter = ("category", "template_choice")
-	search_fields = ("event", "user__username", "user__email")
+	search_fields = ("name", "event", "user__username", "user__email")
 
 
 @admin.register(Profile)

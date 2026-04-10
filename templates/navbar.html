@@ -1,0 +1,35 @@
+{% with current_name=request.resolver_match.url_name|default:'' %}
+<header class="navbar">
+    <a href="{% url 'events:home' %}" class="navbar-brand">
+        <span class="brand-mark"><i data-lucide="zap"></i></span>
+        <span class="brand-text">EventSync</span>
+    </a>
+
+    {% if current_name == 'website-index' or current_name == 'home' or current_name == 'role_selection' or current_name == 'unified_login' or current_name == 'organizer_login' or current_name == 'participant_login' or current_name == 'signup' or current_name == 'participant_signup' %}
+        <div class="navbar-links navbar-links-minimal">
+            {% if user.is_authenticated %}
+                <a href="{% url 'accounts:logout' %}" class="nav-logout">Logout</a>
+            {% else %}
+                <a href="{% url 'accounts:unified_login' %}" class="nav-logout">Login</a>
+            {% endif %}
+        </div>
+    {% else %}
+        <button class="navbar-toggle" type="button" aria-label="Toggle navigation" data-navbar-toggle>
+            <i data-lucide="menu"></i>
+        </button>
+
+        <nav class="navbar-links" data-navbar-menu>
+            <a href="{% url 'events:home' %}">Home</a>
+            <a href="{% url 'events:event_create_or_list' %}">Events</a>
+            <a href="{% url 'events:dashboard' %}">Activities</a>
+            <a href="{% url 'events:dashboard' %}#leaderboard">Leaderboard</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'events:dashboard' %}">Dashboard</a>
+                <a href="{% url 'participant_logout' %}" class="nav-logout">Logout</a>
+            {% else %}
+                <a href="{% url 'events:unified_login' %}" class="nav-logout">Login</a>
+            {% endif %}
+        </nav>
+    {% endif %}
+</header>
+{% endwith %}

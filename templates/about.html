@@ -1,186 +1,42 @@
 {% extends "base.html" %}
 {% load static %}
+
+{% block title %}About | EventSync{% endblock %}
 {% block body_class %}page-about{% endblock %}
-{% block extra_css %}
-    <style>
-    body.page-about::before {
-        content: "";
-        position: fixed;
-        top: 0; left: 0; width: 100vw; height: 100vh;
-        z-index: -1;
-        background: url('{% static "images/luxury-golden-glow-with-soft-light-trails-and-sparkling-particles-on-dark-background_11537186.jpg!bwr800" %}');
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        filter: none;
-    }
-    .glass-card, .about-hero, .about-desc, .feature-card {
-        background: rgba(255, 255, 255, 0.18);
-        border-radius: 24px;
-        box-shadow: 0 8px 32px rgba(80, 60, 30, 0.18);
-        backdrop-filter: blur(18px) saturate(1.2);
-        -webkit-backdrop-filter: blur(18px) saturate(1.2);
-        border: 1.5px solid rgba(255,255,255,0.22);
-    }
-    .about-hero {
-        text-align: center;
-        padding: 64px 16px 32px 16px;
-        margin: 32px auto 0 auto;
-        max-width: 700px;
-        color: #fff;
-    }
-    .about-hero h1 {
-        font-family: 'Poppins', 'Inter', sans-serif;
-        font-size: 2.7rem;
-        font-weight: 700;
-        color: #fff;
-        margin-bottom: 10px;
-        text-shadow: 0 2px 12px rgba(80,60,30,0.18);
-    }
-    .about-hero p, .about-hero div {
-        font-size: 1.18rem;
-        color: #ffe9b0;
-        margin-bottom: 0;
-        text-shadow: 0 2px 8px rgba(80,60,30,0.13);
-    }
-    .about-desc {
-        margin: 36px auto 0 auto;
-        max-width: 800px;
-        padding: 32px 28px 24px 28px;
-        font-size: 1.13rem;
-        color: #fffbe7;
-        line-height: 1.7;
-        text-shadow: 0 2px 8px rgba(80,60,30,0.13);
-    }
-    .about-desc h2 {
-        color: #fff;
-        text-shadow: 0 2px 12px rgba(80,60,30,0.18);
-    }
-    .about-desc ul {
-        color: #ffe9b0;
-    }
-    .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 28px;
-        margin: 48px auto 0 auto;
-        max-width: 1000px;
-        padding: 0 12px;
-    }
-    .feature-card {
-        padding: 32px 20px 24px 20px;
-        text-align: center;
-        color: #fffbe7;
-        transition: transform 0.18s, box-shadow 0.18s;
-        cursor: pointer;
-    }
-    .feature-card:hover {
-        transform: translateY(-6px) scale(1.04);
-        box-shadow: 0 12px 40px rgba(255, 200, 100, 0.22);
-    }
-    .feature-icon {
-        font-size: 2.5rem;
-        color: #ffd580;
-        margin-bottom: 12px;
-        text-shadow: 0 2px 8px rgba(80,60,30,0.13);
-    }
-    .feature-title {
-        font-size: 1.13rem;
-        font-weight: 600;
-        color: #fff;
-        margin-bottom: 8px;
-        text-shadow: 0 2px 12px rgba(80,60,30,0.18);
-    }
-    .feature-desc {
-        font-size: 0.98rem;
-        color: #ffe9b0;
-        text-shadow: 0 2px 8px rgba(80,60,30,0.13);
-    }
-    .about-cta {
-        display: flex;
-        justify-content: center;
-        margin: 48px 0 0 0;
-    }
-    .about-cta a {
-        background: linear-gradient(90deg, #ffb347 0%, #ffcc80 100%);
-        color: #7a4c00;
-        font-size: 1.13rem;
-        font-weight: 600;
-        padding: 16px 38px;
-        border-radius: 12px;
-        text-decoration: none;
-        box-shadow: 0 4px 18px rgba(255, 200, 100, 0.13);
-        transition: background 0.18s, box-shadow 0.18s, transform 0.18s;
-    }
-    .about-cta a:hover {
-        background: linear-gradient(90deg, #ffcc80 0%, #ffb347 100%);
-        box-shadow: 0 8px 32px rgba(255,200,100,0.18);
-        transform: translateY(-2px) scale(1.03);
-    }
-    @media (max-width: 700px) {
-        .about-hero { padding: 32px 6px 18px 6px; }
-        .about-desc { padding: 18px 6px 12px 6px; }
-        .features-grid { gap: 16px; }
-        .feature-card { padding: 18px 8px 14px 8px; }
-    }
-    </style>
-{% endblock %}
+
 {% block content %}
-<div class="about-hero glass-card">
-    <h1>About EMS</h1>
-    <div style="font-size:1.18rem;font-weight:500;margin-bottom:8px;">Event Management System</div>
-    <p>Plan, organize, and manage events with confidence and ease.</p>
-</div>
-<div class="about-desc glass-card">
-    <h2 style="font-size:1.25rem;font-weight:600;margin-bottom:10px;">About Event Management System (EMS)</h2>
-    <p>The Event Management System (EMS) is a comprehensive web-based platform designed to simplify and automate the planning, organization, and execution of events within institutions and organizations.<br><br>
-    EMS provides a centralized system where organizers can create and manage events, define activities, handle registrations, and monitor participation efficiently. Participants can explore events, register for activities, make payments, and download gate passes with QR codes for seamless entry.<br><br>
-    The platform supports dynamic features such as custom registration forms, team-based participation, automated certificate generation, and real-time notifications. It ensures a smooth experience for both organizers and participants by reducing manual effort and improving coordination.<br><br>
-    With a user-friendly interface and scalable architecture, EMS is ideal for managing college fests, seminars, workshops, cultural events, and large-scale programs.</p>
-    <ul style="margin-top:18px;margin-bottom:0;font-size:1.05rem;">
-        <li>Role-based access (Organizer, Participant, Coordinator)</li>
-        <li>Activity-based registration system</li>
-        <li>Online payment integration</li>
-        <li>QR-based gate pass and entry validation</li>
-        <li>Automated certificate generation</li>
-        <li>Analytics and reporting dashboard</li>
-    </ul>
-</div>
-<div class="features-grid">
-    <div class="feature-card glass-card">
-        <div class="feature-icon"><span class="material-icons">event</span></div>
-        <div class="feature-title">Event Management</div>
-        <div class="feature-desc">Create, edit, and manage events with ease.</div>
+<section class="hero-section glass-card">
+    <div class="hero-bg" style="background-image: url('{% static "images/event_bg.jpg" %}');"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <span class="eyebrow">About EventSync</span>
+        <h1>One platform for events, registrations, and participant journeys.</h1>
+        <p class="hero-description">
+            EventSync brings organizers, coordinators, and participants into a single premium event workspace.
+            Create events, manage activities, collect registrations, and deliver a smoother experience end to end.
+        </p>
+        <div class="hero-actions">
+            <a href="{% url 'events:event_create_or_list' %}" class="btn btn-primary btn-lg">Explore Events</a>
+            <a href="{% url 'events:dashboard' %}" class="btn btn-outline btn-lg">Open Dashboard</a>
+        </div>
     </div>
-    <div class="feature-card glass-card">
-        <div class="feature-icon"><span class="material-icons">assignment</span></div>
-        <div class="feature-title">Activity-Based Registration</div>
-        <div class="feature-desc">Register for specific activities and manage teams.</div>
-    </div>
-    <div class="feature-card glass-card">
-        <div class="feature-icon"><span class="material-icons">payments</span></div>
-        <div class="feature-title">Online Payments (UPI)</div>
-        <div class="feature-desc">Seamless and secure payment integration.</div>
-    </div>
-    <div class="feature-card glass-card">
-        <div class="feature-icon"><span class="material-icons">qr_code_2</span></div>
-        <div class="feature-title">QR Code Gate Pass</div>
-        <div class="feature-desc">Instant gate pass generation and validation.</div>
-    </div>
-    <div class="feature-card glass-card">
-        <div class="feature-icon"><span class="material-icons">emoji_events</span></div>
-        <div class="feature-title">Certificates Generation</div>
-        <div class="feature-desc">Automated digital certificates for participants.</div>
-    </div>
-    <div class="feature-card glass-card">
-        <div class="feature-icon"><span class="material-icons">analytics</span></div>
-        <div class="feature-title">Analytics Dashboard</div>
-        <div class="feature-desc">Track registrations, payments, and event stats.</div>
-    </div>
-</div>
-<div class="about-cta">
-    <a href="/events/">Explore Events</a>
-</div>
+</section>
+
+<section class="dashboard-grid" style="margin-top: 1.5rem;">
+    <article class="glass-card" style="padding: 1.5rem;">
+        <span class="badge badge-approved">Organizers</span>
+        <h3 style="margin-top: 1rem;">Create and manage with clarity</h3>
+        <p class="text-muted">Build event pages, set up activities, and keep your team aligned from one place.</p>
+    </article>
+    <article class="glass-card" style="padding: 1.5rem;">
+        <span class="badge badge-pending">Participants</span>
+        <h3 style="margin-top: 1rem;">Register in a few guided steps</h3>
+        <p class="text-muted">Use the multi-step registration flow, upload proof, and get your digital pass.</p>
+    </article>
+    <article class="glass-card" style="padding: 1.5rem;">
+        <span class="badge badge-approved">Coordinators</span>
+        <h3 style="margin-top: 1rem;">Track activity operations</h3>
+        <p class="text-muted">Monitor participation, check payment proofs, and keep activities running smoothly.</p>
+    </article>
+</section>
 {% endblock %}
-<!-- Material Icons CDN -->
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">

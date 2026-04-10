@@ -2,92 +2,59 @@
 {% load static %}
 
 {% block title %}EventSync | Create, Manage & Experience Events{% endblock %}
-
 {% block body_class %}landing-page{% endblock %}
 
 {% block content %}
-<div class="landing-container" style="margin-left: 0; padding-top: 0;">
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="hero-bg" style="background-image: url('{% static 'images/landing_hero_dark.png' %}');"></div>
-        <div class="hero-overlay"></div>
-        <div class="hero-content" style="max-width: 800px; padding: 0 1rem; position: relative; z-index: 10;">
-            <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; color: var(--accent); margin-bottom: 1.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.875rem;">
-                <i data-lucide="zap" style="width: 16px; height: 16px;"></i> The Ultimate Event Experience
-            </div>
-            <h1>Create, Manage & Experience Events</h1>
-            <p style="font-size: 1.25rem; color: var(--text-muted); margin-bottom: 2.5rem; max-width: 600px; margin-inline: auto;">
-                A premium platform for tech fests, concerts, and professional gatherings. Manage registrations, scale activities, and engage your audience seamlessly.
-            </p>
-            <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
-                <a href="{% url 'accounts:role_selection' %}" class="btn btn-primary btn-lg" style="min-width: 180px;">
-                    Get Started <i data-lucide="chevron-right"></i>
-                </a>
-                <a href="{% url 'events:event_create_or_list' %}" class="btn btn-outline btn-lg" style="min-width: 180px; backdrop-filter: blur(8px);">
-                    Explore Events
-                </a>
-            </div>
+<section class="hero-section glass-card">
+    <div class="hero-bg" style="background-image: url('{% static "images/landing_hero_dark.png" %}');"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <span class="eyebrow">The Ultimate Event Experience</span>
+        <h1>Create, Manage & Experience Events</h1>
+        <p class="hero-description">
+            A premium platform for tech fests, concerts, and professional gatherings.
+            Manage registrations, scale activities, and engage your audience seamlessly.
+        </p>
+        <div class="hero-actions">
+            <a href="{% url 'accounts:role_selection' %}" class="btn btn-primary btn-lg">Get Started</a>
+            <a href="{% url 'events:event_create_or_list' %}" class="btn btn-outline btn-lg">Explore Events</a>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Features Grid -->
-    <section style="margin: 4rem 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-        <div class="glass-card">
-            <div style="width: 48px; height: 48px; background: rgba(99, 102, 241, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; color: var(--primary);">
-                <i data-lucide="qr-code"></i>
-            </div>
-            <h3 style="margin-bottom: 1rem;">Seamless QR Entry</h3>
-            <p style="color: var(--text-muted);">Instant check-ins with our integrated QR scanning system. Say goodbye to long queues.</p>
-        </div>
-        <div class="glass-card">
-            <div style="width: 48px; height: 48px; background: rgba(34, 197, 94, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; color: var(--secondary);">
-                <i data-lucide="list-checks"></i>
-            </div>
-            <h3 style="margin-bottom: 1rem;">Dynamic Form Builder</h3>
-            <p style="color: var(--text-muted);">Customize registration forms effortlessly. Support for teams, file uploads, and specific activity fields.</p>
-        </div>
-        <div class="glass-card">
-            <div style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; color: var(--accent);">
-                <i data-lucide="award"></i>
-            </div>
-            <h3 style="margin-bottom: 1rem;">Smart Certificates</h3>
-            <p style="color: var(--text-muted);">Automatically generate and issue certificates to participants upon activity completion.</p>
-        </div>
-    </section>
+<section class="dashboard-grid" style="margin-top: 1.5rem;">
+    <article class="glass-card" style="padding: 1.5rem;">
+        <div class="brand-icon" style="margin-bottom: 1rem;"><i data-lucide="qr-code"></i></div>
+        <h3>Seamless QR Entry</h3>
+        <p class="text-muted">Instant check-ins with integrated QR scanning and fast attendee validation.</p>
+    </article>
+    <article class="glass-card" style="padding: 1.5rem;">
+        <div class="brand-icon" style="margin-bottom: 1rem;"><i data-lucide="list-checks"></i></div>
+        <h3>Dynamic Form Builder</h3>
+        <p class="text-muted">Customize registration flows for teams, uploads, and activity-specific data.</p>
+    </article>
+    <article class="glass-card" style="padding: 1.5rem;">
+        <div class="brand-icon" style="margin-bottom: 1rem;"><i data-lucide="award"></i></div>
+        <h3>Smart Certificates</h3>
+        <p class="text-muted">Automatically generate and issue certificates after completion and scoring.</p>
+    </article>
+</section>
 
-    <!-- CTA Section -->
-    <section class="glass-card" style="text-align: center; padding: 4rem 2rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(15, 23, 42, 0) 100%);">
-        <h2 style="font-size: 2.5rem; margin-bottom: 1.5rem;">Ready to sync your event?</h2>
-        <p style="color: var(--text-muted); margin-bottom: 2rem;">Join thousands of organizers and participants on the most modern event platform.</p>
-        <a href="{% url 'events:signup' %}" class="btn btn-primary">Join EventSync Now</a>
-    </section>
+<section class="glass-card" style="margin-top: 1.5rem; padding: 2rem; text-align: center;">
+    <span class="eyebrow">Ready to sync your event?</span>
+    <h2 style="margin: 0.75rem 0 0.5rem;">A single premium product for every event role.</h2>
+    <p class="hero-description" style="margin-inline: auto;">Join organizers, coordinators, and participants on the same streamlined experience.</p>
+    <div class="hero-actions" style="justify-content: center;">
+        <a href="{% url 'events:signup' %}" class="btn btn-primary btn-lg">Join EventSync Now</a>
+    </div>
+</section>
 
-    <!-- Footer -->
-    <footer style="margin-top: 6rem; padding: 3rem 0; border-top: 1px solid var(--border-glass); text-align: center; color: var(--text-muted);">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 1rem;">
-            <div class="brand-icon" style="width: 24px; height: 24px; border-radius: 6px;">
-                <i data-lucide="zap" style="width: 14px; height: 14px; color: white;"></i>
-            </div>
-            <span class="brand-font" style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">EventSync</span>
-        </div>
-        <p>&copy; 2026 EventSync. All rights reserved.</p>
-        <div style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 1rem;">
-            <a href="/about/" style="color: inherit; text-decoration: none;">About</a>
-            <a href="/contact/" style="color: inherit; text-decoration: none;">Contact</a>
-            <a href="/privacy/" style="color: inherit; text-decoration: none;">Privacy</a>
-        </div>
-    </footer>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // Ensure Landing Page doesn't have sidebar margin
-    document.addEventListener('DOMContentLoaded', () => {
-        const sidebar = document.getElementById('sidebar');
-        const main = document.querySelector('.main-content');
-        if (sidebar) sidebar.style.display = 'none';
-        if (main) main.style.marginLeft = '0';
-    });
-</script>
+<footer class="site-footer" style="margin-top: 1.5rem; text-align: center;">
+    <div class="footer-links" style="justify-content: center; margin-bottom: 0.75rem;">
+        <a href="{% url 'about' %}">About</a>
+        <a href="{% url 'contact' %}">Contact</a>
+        <a href="#">Privacy</a>
+    </div>
+    <p class="footer-note">&copy; 2026 EventSync. All rights reserved.</p>
+</footer>
 {% endblock %}

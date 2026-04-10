@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Edit Event | {{ event.event }} | EventSync{% endblock %}
+{% block title %}Edit Event | {{ event.name }} | EventSync{% endblock %}
 
 {% block content %}
 <div class="dashboard-page-header" style="background-image: url('{% if event.image_url %}{{ event.image_url }}{% else %}{% static "images/dashboard_header_dark.png" %}{% endif %}');">
     <div class="header-content-rel">
         <h1 style="font-size: 2.5rem; color: white; margin-bottom: 0.5rem;">Update Event Settings</h1>
-        <p style="color: rgba(255,255,255,0.7);">Modify details for {{ event.event }}.</p>
+        <p style="color: rgba(255,255,255,0.7);">Modify details for {{ event.name }}.</p>
     </div>
 </div>
 
@@ -28,9 +28,9 @@
             
             <div class="form-group">
                 <label class="form-label">Event Name *</label>
-                <input id="event" name="event" type="text" class="form-input" value="{{ form.event.value|default:event.event }}" required>
-                {% if form.event.errors %}
-                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.event.errors.0 }}</div>
+                <input id="name" name="name" type="text" class="form-input" value="{{ form.name.value|default:event.name }}" required>
+                {% if form.name.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.name.errors.0 }}</div>
                 {% endif %}
             </div>
 

@@ -1,0 +1,35 @@
+{% extends "registration/auth_base.html" %}
+
+{% block title %}Participant Login | EventSync{% endblock %}
+{% block intro_heading %}Discover and join amazing events.{% endblock %}
+{% block intro_text %}Sign in to explore activities, registrations, and your participant dashboard.{% endblock %}
+{% block form_title %}Participant Login{% endblock %}
+{% block form_subtitle %}Use your participant account to continue.{% endblock %}
+
+{% block form_content %}
+    {% if error_message %}
+        <div class="glass-card message-card message-error" style="margin-bottom: 1rem;">{{ error_message }}</div>
+    {% endif %}
+
+    {% if form.errors %}
+        <div class="glass-card message-card message-error" style="margin-bottom: 1rem;">Invalid username or password.</div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="form-label" for="id_username">Username</label>
+            <input type="text" name="username" id="id_username" class="form-input" placeholder="Your username" required autofocus value="{{ username|default:'' }}">
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="id_password">Password</label>
+            <input type="password" name="password" id="id_password" class="form-input" placeholder="Password" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+    </form>
+
+    <div style="margin-top: 1rem; text-align: center;">
+        <span class="text-muted">Don't have an account?</span>
+        <a href="{% url 'participant:signup' %}" class="section-link">Sign up</a>
+    </div>
+{% endblock %}

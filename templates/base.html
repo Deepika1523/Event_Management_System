@@ -4,150 +4,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}EventSync | Create & Experience Events{% endblock %}</title>
-    <!-- Google Fonts -->
+    <title>{% block title %}EventSync{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Custom Style -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260409">
     {% block extra_css %}{% endblock %}
 </head>
-<body class="{% block body_class %}{% endblock %}">
-    
-    <div class="app-container">
-        <!-- Sidebar Navigation (Only for authenticated users or specific pages) -->
-        {% if request.user.is_authenticated %}
-        <aside class="sidebar" id="sidebar">
-            <a href="/" class="sidebar-brand">
-                <div class="brand-icon">
-                    <i data-lucide="zap" style="color: white; width: 24px; height: 24px;"></i>
-                </div>
-                <span class="brand-font" style="font-size: 1.5rem; font-weight: 800;">EventSync</span>
-            </a>
+<body class="app-shell {% block body_class %}{% endblock %}">
+    {% include "navbar.html" %}
 
-            <nav class="nav-menu">
-                <li class="nav-item">
-                    <a href="{% url 'events:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                        <i data-lucide="layout-dashboard"></i> Dashboard
-                    </a>
-                </li>
-                {% if request.user.is_staff or request.user.organizer %}
-                <li class="nav-item">
-                    <a href="{% url 'events:manage_events' %}" class="nav-link {% if 'manage-events' in request.path %}active{% endif %}">
-                        <i data-lucide="calendar"></i> Manage Events
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'events:manage_activities' %}" class="nav-link {% if 'manage-activities' in request.path %}active{% endif %}">
-                        <i data-lucide="compass"></i> Activities
-                    </a>
-                </li>
-                {% endif %}
-                <li class="nav-item">
-                    <a href="{% url 'events:event_create_or_list' %}" class="nav-link">
-                        <i data-lucide="search"></i> Browse Events
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'notification-index' %}" class="nav-link">
-                        <i data-lucide="bell"></i> Notifications
-                    </a>
-                </li>
-                <li class="nav-item" style="margin-top: 2rem;">
-                    <form method="post" action="{% url 'logout' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="nav-link" style="background: none; border: none; width: 100%; cursor: pointer;">
-                            <i data-lucide="log-out"></i> Logout
-                        </button>
-                    </form>
-                </li>
-            </nav>
-        </aside>
-        {% endif %}
-
-        <!-- Main Content Area -->
-        <main class="main-content" {% if not request.user.is_authenticated %}style="margin-left: 0;"{% endif %}>
-            <!-- Top Header (Breadcrumbs/User Info) -->
-            <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; position: relative; z-index: 50;">
-                <div class="breadcrumb">
-                    {% block breadcrumb %}{% endblock %}
-                </div>
-                
-                {% if request.user.is_authenticated %}
-                <div class="user-profile" style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); border-radius: 999px;">
-                    <span style="font-weight: 500; font-size: 0.875rem;">{{ request.user.username }}</span>
-                    <div style="width: 32px; height: 32px; background: var(--primary-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700;">{{ request.user.username|first|upper }}</div>
-                </div>
-                <form method="post" action="{% url 'logout' %}" style="margin-left: 0.75rem;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline" style="padding: 0.45rem 0.6rem; border-radius: 8px;">Logout</button>
-                </form>
-                {% else %}
-                <div class="auth-actions" style="display: flex; gap: 1rem;">
-                    <a href="{% url 'events:unified_login' %}" class="btn btn-outline">Log In</a>
-                    <a href="{% url 'events:signup' %}" class="btn btn-primary">Sign Up</a>
-                </div>
-                {% endif %}
-            </header>
-
-            {% if messages %}
-            <div class="messages-container" style="margin-bottom: 2rem;">
+    <main class="site-main">
+        {% if messages %}
+            <div class="message-stack">
                 {% for message in messages %}
-                <div class="glass-card" style="padding: 1rem; margin-bottom: 1rem; border-left: 4px solid {% if message.tags == 'success' %} #22C55E{% else %}#EF4444{% endif %}; background: rgba(255,255,255,0.05);">
-                    {{ message }}
-                </div>
+                    <div class="glass-card message-card message-{{ message.tags|default:'info' }}">{{ message }}</div>
                 {% endfor %}
             </div>
-            {% endif %}
+        {% endif %}
 
-            {% block content %}{% endblock %}
-        </main>
-    </div>
+        {% block content %}{% endblock %}
+    </main>
 
-    <!-- AI Chatbot UI (Floating Bottom Right) -->
-    <div class="chatbot-container">
-        <div class="chatbot-toggle" onclick="toggleChat()">
-            <i data-lucide="message-square" style="color: white;"></i>
-        </div>
-        <div class="chatbot-window" id="chatWindow">
-            <div class="chatbot-header">
-                <div class="brand-icon" style="width: 24px; height: 24px; border-radius: 4px;">
-                    <i data-lucide="sparkles" style="width: 14px; height: 14px; color: white;"></i>
-                </div>
-                <span style="font-weight: 700; color: white; font-size: 0.875rem;">EventSync AI</span>
-                <button onclick="toggleChat()" style="margin-left: auto; background: none; border: none; color: white; cursor: pointer;">
-                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-                </button>
-            </div>
-            <div class="chatbot-messages">
-                <div class="msg msg-bot">Hi! I'm your EventSync assistant. How can I help you today?</div>
-                <div class="msg msg-bot">Try asking: <br>• "When is the next tech fest?"<br>• "How do I register?"</div>
-            </div>
-            <div class="chatbot-input-area">
-                <input type="text" class="form-input" placeholder="Type your question..." style="font-size: 0.8rem; padding: 0.5rem 0.75rem;">
-                <button class="btn btn-primary" style="padding: 0.5rem; border-radius: 8px;">
-                    <i data-lucide="send" style="width: 14px; height: 14px;"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Scripts -->
     <script>
-        // Initialize Lucide icons
         lucide.createIcons();
 
-        // Chatbot Toggle Logic
-        function toggleChat() {
-            const chat = document.getElementById('chatWindow');
-            if (chat.style.display === 'flex') {
-                chat.style.display = 'none';
-            } else {
-                chat.style.display = 'flex';
-            }
+        const navToggle = document.querySelector("[data-navbar-toggle]");
+        const navMenu = document.querySelector("[data-navbar-menu]");
+        if (navToggle && navMenu) {
+            navToggle.addEventListener("click", () => {
+                navMenu.classList.toggle("is-open");
+            });
         }
     </script>
     {% block extra_js %}{% endblock %}

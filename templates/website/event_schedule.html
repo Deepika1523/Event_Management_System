@@ -1,8 +1,7 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
 
-{% block title %}Schedule - {{ event.event }} | EMS{% endblock %}
-{% block page_title %}{{ event.event }} - Schedule{% endblock %}
+{% block title %}Schedule - {{ event.event }} | EventSync{% endblock %}
 
 {% block content %}
 <div class="breadcrumb">
@@ -11,50 +10,39 @@
     <span>Schedule</span>
 </div>
 
-<div style="margin-bottom: 30px;">
-    <h2 style="margin-bottom: 10px;">📅 Event Schedule</h2>
-    <p style="color: var(--text-secondary);">Timeline of all activities during the event</p>
-</div>
+<section class="glass-card" style="padding: 2rem;">
+    <span class="eyebrow">Event Schedule</span>
+    <h1 class="hero-title" style="margin-top: 0.75rem;">Timeline and session flow</h1>
+    <p class="hero-description">A simple, readable schedule for all planned activities.</p>
+</section>
 
 {% if activities %}
-<div class="card">
-    <div class="card-body">
-        <div class="timeline">
-            {% for activity in activities %}
-            <div class="timeline-item">
-                <div class="timeline-time">
-                    {% if activity.start_time %}
-                        {{ activity.start_time|time:"H:i" }}
-                        {% if activity.end_time %}
-                            - {{ activity.end_time|time:"H:i" }}
-                        {% endif %}
-                    {% else %}
-                        Time Not Set
-                    {% endif %}
-                </div>
-                <div class="timeline-title">{{ activity.name }}</div>
-                <div class="timeline-description">
-                    {{ activity.description|truncatewords:30 }}
-                </div>
-                <div style="margin-top: 15px;">
-                    <a href="{% url 'events:activity_register' activity.id %}" class="btn btn-sm btn-primary">
-                        ✅ Register
-                    </a>
-                </div>
-            </div>
-            {% endfor %}
+<section class="timeline" style="margin-top: 1.5rem;">
+    {% for activity in activities %}
+    <article class="timeline-item">
+        <div class="timeline-time">
+            {% if activity.start_time %}
+                {{ activity.start_time|time:"H:i" }}{% if activity.end_time %} - {{ activity.end_time|time:"H:i" }}{% endif %}
+            {% else %}
+                Time not set
+            {% endif %}
         </div>
-    </div>
-</div>
+        <div class="timeline-title">{{ activity.name }}</div>
+        <div class="timeline-description">{{ activity.description|truncatewords:30 }}</div>
+        <div style="margin-top: 1rem;">
+            <a href="{% url 'events:activity_register' activity.id %}" class="btn btn-primary btn-small">Register</a>
+        </div>
+    </article>
+    {% endfor %}
+</section>
 {% else %}
-<div class="card" style="text-align: center; padding: 60px 30px;">
-    <p style="font-size: 48px; margin-bottom: 15px;">📭</p>
-    <p style="color: var(--text-secondary);">No schedule available yet</p>
-</div>
+<section class="glass-card empty-card" style="margin-top: 1.5rem;">
+    <h2>No schedule available yet</h2>
+    <p class="empty-text">We’ll publish the event timeline once the schedule is finalized.</p>
+</section>
 {% endif %}
 
-<div style="margin-top: 30px;">
-    <a href="{% url 'events:event_website_home' event.id %}" class="btn btn-secondary">← Back to Event</a>
+<div style="margin-top: 1.5rem;">
+    <a href="{% url 'events:event_website_home' event.id %}" class="btn btn-secondary">Back to Event</a>
 </div>
-
 {% endblock %}

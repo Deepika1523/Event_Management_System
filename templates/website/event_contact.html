@@ -1,8 +1,7 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
 
-{% block title %}Contact - {{ event.event }} | EMS{% endblock %}
-{% block page_title %}{{ event.event }} - Contact{% endblock %}
+{% block title %}Contact - {{ event.event }} | EventSync{% endblock %}
 
 {% block content %}
 <div class="breadcrumb">
@@ -11,95 +10,46 @@
     <span>Contact</span>
 </div>
 
-<div style="margin-bottom: 30px;">
-    <h2 style="margin-bottom: 10px;">📞 Contact Us</h2>
-    <p style="color: var(--text-secondary);">Get in touch with the event organizer</p>
-</div>
+<section class="glass-card" style="padding: 2rem;">
+    <span class="eyebrow">Contact Us</span>
+    <h1 class="hero-title" style="margin-top: 0.75rem;">Get in touch with the organizer</h1>
+    <p class="hero-description">Use the contact details below if you need support, venue information, or event help.</p>
+</section>
 
-<!-- CONTACT INFO -->
-<div class="contact-info">
-    <div class="contact-info-item">
-        <div class="contact-info-icon">📧</div>
+<section class="contact-info" style="margin-top: 1.5rem;">
+    <article class="contact-info-item">
+        <div class="contact-info-icon">✉</div>
         <div class="contact-info-label">Email</div>
-        <div class="contact-info-value">
-            {% if event.contact_info %}
-                {{ event.contact_info }}
-            {% else %}
-                contact@event.com
-            {% endif %}
-        </div>
-    </div>
-    <div class="contact-info-item">
+        <div class="contact-info-value">{% if event.contact_info %}{{ event.contact_info }}{% else %}contact@event.com{% endif %}</div>
+    </article>
+    <article class="contact-info-item">
         <div class="contact-info-icon">📍</div>
         <div class="contact-info-label">Venue</div>
         <div class="contact-info-value">{{ event.venue|default:"TBD" }}</div>
-    </div>
-    <div class="contact-info-item">
+    </article>
+    <article class="contact-info-item">
         <div class="contact-info-icon">📅</div>
         <div class="contact-info-label">Event Date</div>
         <div class="contact-info-value">{{ event.date_of_event|date:"M d, Y" }}</div>
-    </div>
-</div>
+    </article>
+</section>
 
-<!-- CONTACT FORM -->
-<div class="card">
-    <div class="card-header">
-        <h2>✉️ Send Us a Message</h2>
-    </div>
-    <div class="card-body">
-        <form class="contact-form">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <label class="form-label required">Name</label>
-                <input type="text" class="form-control" placeholder="Your name" required>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label required">Email</label>
-                <input type="email" class="form-control" placeholder="your@email.com" required>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Subject</label>
-                <input type="text" class="form-control" placeholder="What is this about?">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label required">Message</label>
-                <textarea class="form-textarea" placeholder="Your message here..." required></textarea>
-            </div>
-
-            <div class="form-actions">
-                <button type="reset" class="btn btn-secondary">Clear</button>
-                <button type="submit" class="btn btn-primary">Send Message</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- EVENT DETAILS -->
-<div class="card" style="margin-top: 30px;">
-    <div class="card-header">
-        <h2>📋 Event Details</h2>
-    </div>
-    <div class="card-body">
-        <div style="line-height: 1.8;">
-            <p><strong>Event Name:</strong> {{ event.event }}</p>
-            <p><strong>Date:</strong> {{ event.date_of_event|date:"F d, Y" }}</p>
-            <p><strong>Time:</strong> {{ event.time_of_event|time:"H:i A" }}</p>
-            <p><strong>Venue:</strong> {{ event.venue|default:"N/A" }}</p>
-            <p><strong>Location:</strong> {{ event.location|default:"N/A" }}</p>
-            <p><strong>Category:</strong> {{ event.category|title }}</p>
-            {% if event.contact_info %}
-            <p><strong>Contact:</strong> {{ event.contact_info }}</p>
-            {% endif %}
+<section class="glass-card" style="margin-top: 1.5rem; padding: 1.5rem;">
+    <div class="section-head">
+        <div>
+            <span class="section-kicker">Event Details</span>
+            <h2>{{ event.event }}</h2>
         </div>
     </div>
-</div>
+    <div class="text-muted" style="line-height: 1.8;">
+        <p><strong>Time:</strong> {{ event.time_of_event|time:"H:i A" }}</p>
+        <p><strong>Venue:</strong> {{ event.venue|default:"N/A" }}</p>
+        <p><strong>Location:</strong> {{ event.location|default:"N/A" }}</p>
+        <p><strong>Category:</strong> {{ event.category|title }}</p>
+    </div>
+</section>
 
-<div style="margin-top: 30px;">
-    <a href="{% url 'events:event_website_home' event.id %}" class="btn btn-secondary">← Back to Event</a>
+<div style="margin-top: 1.5rem;">
+    <a href="{% url 'events:event_website_home' event.id %}" class="btn btn-secondary">Back to Event</a>
 </div>
-
 {% endblock %}

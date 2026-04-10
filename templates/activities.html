@@ -1,27 +1,51 @@
 {% extends "base.html" %}
-{% load static %}
-{% block title %}Activities | Event Management System{% endblock %}
+
+{% block title %}Activities | EventSync{% endblock %}
 {% block body_class %}page-activities{% endblock %}
-{% block extra_css %}
-    <style>
-        body.page-activities::before {
-                content: "";
-                position: fixed;
-                top: 0; left: 0; width: 100vw; height: 100vh;
-                z-index: -1;
-                background: linear-gradient(rgba(18,18,18,0.75), rgba(18,18,18,0.75)), url('{% static "images/event_bg.jpg" %}');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                filter: blur(2.5px) brightness(0.85);
-        }
-    </style>
-{% endblock %}
+
 {% block content %}
-<div style="display:flex;justify-content:center;align-items:center;min-height:80vh;">
-    <div class="panel" style="max-width:600px;width:100%;padding:48px 36px 40px 36px;text-align:center;">
-        <h1 style="font-family:'Playfair Display',serif;font-size:2.3rem;font-weight:600;margin-bottom:18px;">Activities</h1>
-        <p style="font-size:1.15rem;line-height:1.7;color:#f3f3f3;">Browse and discover all activities available for your events.<br>More features coming soon.</p>
-    </div>
-</div>
+<section class="glass-card" style="padding: 2rem;">
+    <span class="eyebrow">Activities</span>
+    <h1 class="hero-title" style="margin-top: 0.75rem; margin-bottom: 0.75rem;">Discover event activities</h1>
+    <p class="hero-description">Browse competitions, workshops, and experiences in a clean dark dashboard layout.</p>
+</section>
+
+<section class="activities-grid" style="margin-top: 1.5rem;">
+    <article class="activity-card glass-card">
+        <div class="activity-topline">
+            <span class="pill">Featured</span>
+            <span class="pill pill-soft">Solo</span>
+        </div>
+        <h3>Chess Tournament</h3>
+        <p>Challenge other participants in a strategic one-on-one competition.</p>
+        <div class="activity-actions">
+            <a class="btn btn-primary btn-small" href="#">Register</a>
+            <a class="btn btn-secondary btn-small" href="#">Learn More</a>
+        </div>
+    </article>
+    <article class="activity-card glass-card">
+        <div class="activity-topline">
+            <span class="pill">Featured</span>
+            <span class="pill pill-soft">Team</span>
+        </div>
+        <h3>Treasure Hunt</h3>
+        <p>Work together to solve clues and complete the hunt across the venue.</p>
+        <div class="activity-actions">
+            <a class="btn btn-primary btn-small" href="#">Register</a>
+            <a class="btn btn-secondary btn-small" href="#">Learn More</a>
+        </div>
+    </article>
+    <article class="activity-card glass-card">
+        <div class="activity-topline">
+            <span class="pill">Featured</span>
+            <span class="pill pill-soft">Solo</span>
+        </div>
+        <h3>Coding Sprint</h3>
+        <p>Showcase your technical skills in a focused timed coding challenge.</p>
+        <div class="activity-actions">
+            <a class="btn btn-primary btn-small" href="#">Register</a>
+            <a class="btn btn-secondary btn-small" href="#">Learn More</a>
+        </div>
+    </article>
+</section>
 {% endblock %}

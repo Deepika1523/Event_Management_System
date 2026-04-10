@@ -1,11 +1,10 @@
 {% extends "registration/auth_base.html" %}
 
-{% block title %}Sign Up | EventSync{% endblock %}
-
-{% block intro_heading %}Create your EventSync account.{% endblock %}
-{% block intro_text %}Join the same premium dashboard experience used across the platform.{% endblock %}
-{% block form_title %}Sign up{% endblock %}
-{% block form_subtitle %}Create your account to continue.{% endblock %}
+{% block title %}Participant Signup | EventSync{% endblock %}
+{% block intro_heading %}Create your participant account.{% endblock %}
+{% block intro_text %}Register once and use the same account to join every event activity.{% endblock %}
+{% block form_title %}Participant Signup{% endblock %}
+{% block form_subtitle %}Create your account to join events.{% endblock %}
 
 {% block form_content %}
     {% if errors %}
@@ -20,37 +19,31 @@
 
     <form method="post" id="signupForm">
         {% csrf_token %}
-        <input type="hidden" name="role" value="{{ selected_role }}">
-
         <div class="form-group">
             <label class="form-label" for="username">Username</label>
             <input type="text" name="username" id="username" class="form-input" placeholder="johndoe" required value="{{ username|default:'' }}">
         </div>
-
         <div class="form-group">
             <label class="form-label" for="fullname">Full Name</label>
             <input type="text" name="fullname" id="fullname" class="form-input" placeholder="John Doe" required value="{{ fullname|default:'' }}">
         </div>
-
         <div class="form-group">
             <label class="form-label" for="email">Email Address</label>
             <input type="email" name="email" id="email" class="form-input" placeholder="name@example.com" required value="{{ email|default:'' }}">
         </div>
-
         <div class="form-group">
             <label class="form-label" for="password1">Password</label>
-            <input type="password" name="password1" id="password1" class="form-input" placeholder="••••••••" required>
+            <input type="password" name="password1" id="password1" class="form-input" placeholder="Password" required>
         </div>
-
         <div class="form-group">
             <label class="form-label" for="password2">Confirm Password</label>
-            <input type="password" name="password2" id="password2" class="form-input" placeholder="••••••••" required>
+            <input type="password" name="password2" id="password2" class="form-input" placeholder="Confirm Password" required>
         </div>
-
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Sign Up</button>
     </form>
 
-    <div class="auth-footer">
-        Already have an account? <a href="{% url 'events:unified_login' %}?role={{ selected_role|default:'organizer' }}">Sign in</a>
+    <div style="margin-top: 1rem; text-align: center;">
+        <span class="text-muted">Already have an account?</span>
+        <a href="{% url 'participant:login' %}" class="section-link">Login</a>
     </div>
 {% endblock %}

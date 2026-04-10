@@ -1,7 +1,10 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
+from django.db.models.functions import Lower
 from django.utils import timezone
+from django.utils.text import slugify
 import uuid
 from .models_eventimage import EventImage
 
@@ -21,6 +24,8 @@ class Event(models.Model):
     ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200, unique=True)
+    slug = models.SlugField(max_length=220, unique=True, blank=True)
     # Event status: upcoming / ongoing / completed
     STATUS_UPCOMING = 'upcoming'
     STATUS_ONGOING = 'ongoing'
@@ -62,9 +67,49 @@ class Event(models.Model):
 
     class Meta:
         ordering = ["-date_of_event"]
+        constraints = [
+            models.UniqueConstraint(Lower("name"), name="unique_event_name_ci"),
+        ]
 
     def __str__(self):
-        return self.event
+        return self.name
+
+    def clean(self):
+        super().clean()
+        if self.name:
+            self.name = self.name.strip()
+        if self.event:
+            self.event = self.event.strip()
+        if not self.name and self.event:
+            self.name = self.event
+        if self.name:
+            self.event = self.name
+        if not self.name:
+            raise ValidationError({"name": "This field is required."})
+
+    def save(self, *args, **kwargs):
+        if self.name:
+            self.name = self.name.strip()
+        if self.event:
+            self.event = self.event.strip()
+        if not self.name and self.event:
+            self.name = self.event
+        if self.name:
+            self.event = self.name
+
+        base_slug = slugify(self.name or "")
+        if base_slug:
+            slug = base_slug
+            slug_qs = Event.objects.exclude(pk=self.pk) if self.pk else Event.objects.all()
+            suffix = 2
+            while slug_qs.filter(slug=slug).exists():
+                slug = f"{base_slug}-{suffix}"
+                suffix += 1
+            self.slug = slug
+        else:
+            self.slug = ""
+
+        super().save(*args, **kwargs)
 
 
 class Activity(models.Model):

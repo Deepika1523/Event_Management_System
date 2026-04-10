@@ -2,26 +2,24 @@
 {% load static %}
 
 {% block title %}Choose Your Role | EventSync{% endblock %}
-{% block body_class %}auth-wrapper{% endblock %}
+{% block body_class %}auth-wrapper role-selection-page{% endblock %}
 
-{% block content %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/role_select.css' %}">
+<link rel="stylesheet" href="{% static 'css/role_select.css' %}?v=20260409">
 {% endblock %}
 
-<div class="auth-card role-selection">
-
+{% block content %}
+<section class="role-selection-panel">
     <div class="role-header">
-        <p style="text-transform: uppercase; letter-spacing: 0.15em; color: var(--muted); font-weight: 700; font-size: 0.85rem; margin:0 0 0.5rem 0;">Step 1 · Select your role</p>
+        <span class="eyebrow">Step 1</span>
         <h1>Who are you today?</h1>
+        <p class="lead">Pick the workspace that matches your role and we will guide you to the right experience.</p>
     </div>
 
     <div class="role-grid">
-
         {% for role in roles %}
-        {% with key=role.0 title=role.1 desc=role.2 base=role.3 tint=role.4 icon=role.6 %}
-
-        <div class="role-card" tabindex="0" role="button">
+        {% with key=role.0 title=role.1 desc=role.2 %}
+        <article class="role-card">
             <div class="role-icon {% if key == 'organizer' %}organizer{% elif key == 'coordinator' %}coordinator{% endif %}">
                 <i data-lucide="{% if key == 'organizer' %}zap{% elif key == 'coordinator' %}users{% endif %}"></i>
             </div>
@@ -35,13 +33,9 @@
                 <a href="{% url 'events:signup' %}?role={{ key }}" class="btn btn-outline">Sign Up</a>
                 {% endif %}
             </div>
-        </div>
-
+        </article>
         {% endwith %}
         {% endfor %}
-
     </div>
-
-</div>
-
+</section>
 {% endblock %}

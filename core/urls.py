@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
+from event import views as event_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -27,6 +28,7 @@ urlpatterns = [
     path("payment/", include("payment.urls")),
     path("participant/", include("participant.urls")),
     path("notification/", include("notification.urls")),
+    path("submit-registration/<int:event_id>/", event_views.event_registration_form, name="submit_registration"),
     path("", include("website.urls")),
     path("events/", include("event.urls")),
 ]

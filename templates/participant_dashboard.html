@@ -1,218 +1,342 @@
-{% extends "base.html" %}
 {% load static %}
-
-{% block title %}Participant Dashboard | EventSync{% endblock %}
-
-{% block content %}
-<div class="dashboard-container">
-    <!-- Welcome Header -->
-    <header class="dashboard-header" style="background-image: url('{% static 'images/dashboard_header_dark.png' %}'); position: relative; padding: 4rem 2rem; overflow: hidden; border-radius: var(--radius-lg); margin-bottom: 2rem;">
-        <div class="header-overlay" style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15, 23, 42, 0.4), var(--bg-deep)); z-index: 1;"></div>
-        <div class="header-content" style="position: relative; z-index: 10;">
-            <h1 style="font-size: 3rem; margin-bottom: 0.5rem; color: white;">Welcome, {{ request.user.get_full_name|default:request.user.username }}!</h1>
-            <p style="color: rgba(255,255,255,0.8); font-size: 1.125rem;">Explore upcoming events and manage your event syncs.</p>
-        </div>
-    </header>
-
-    <!-- Quick Stats -->
-    <section style="margin-top: -3rem; position: relative; z-index: 20; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
-        <div class="glass-card" style="display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid var(--primary);">
-            <div style="width: 48px; height: 48px; background: rgba(99, 102, 241, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
-                <i data-lucide="ticket"></i>
-            </div>
-            <div>
-                <div style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Joined Events</div>
-                <div style="font-size: 1.75rem; font-weight: 700; color: white;">{{ joined_events|length }}</div>
-            </div>
-        </div>
-        <div class="glass-card" style="display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid var(--secondary);">
-            <div style="width: 48px; height: 48px; background: rgba(34, 197, 94, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--secondary);">
-                <i data-lucide="zap"></i>
-            </div>
-            <div>
-                <div style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">New Available</div>
-                <div style="font-size: 1.75rem; font-weight: 700; color: white;">{{ recommended_events|length }}</div>
-            </div>
-        </div>
-        <div class="glass-card" style="display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid var(--accent);">
-            <div style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--accent);">
-                <i data-lucide="star"></i>
-            </div>
-            <div>
-                <div style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Global Rank</div>
-                <div style="font-size: 1.75rem; font-weight: 700; color: white;">--</div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Discovery Section -->
-    <section style="margin-bottom: 4rem;">
-        <div class="glass-card" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(15, 23, 42, 0) 100%); border: 1px solid rgba(99, 102, 241, 0.2); padding: 2.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2rem;">
-            <div style="max-width: 600px;">
-                <h2 style="font-size: 2rem; color: white; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;">
-                    <i data-lucide="sparkles" style="color: var(--primary);"></i> Discover New Hubs
-                </h2>
-                <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.6;">Browse through the most immersive tech-fests, workshops, and concerts. Find your next experience and sync up today!</p>
-            </div>
-            <a href="{% url 'events:event_create_or_list' %}" class="btn btn-primary" style="padding: 1.25rem 2.5rem; font-size: 1.1rem; box-shadow: var(--shadow-glow);">
-                Explore All Events
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Participant Dashboard | Event Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/participant_dashboard.css' %}?v=20260409">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="page-shell">
+        <header class="topbar">
+            <a class="brand" href="{% url 'events:dashboard' %}">
+                <span class="brand-mark">E</span>
+                <span class="brand-text">Event Portal</span>
             </a>
-        </div>
-    </section>
 
-    <!-- Recommended for You -->
-    <section style="margin-bottom: 4rem;">
-        <div class="section-header">
-            <h2 class="section-title">
-                <i data-lucide="calendar-heart" style="color: var(--primary);"></i> Recommended for You
-            </h2>
-            {% if recommended_events %}
-                <a href="{% url 'events:event_create_or_list' %}" class="btn btn-outline" style="font-size: 0.875rem; padding: 0.5rem 1rem;">View All</a>
-            {% endif %}
-        </div>
+            <nav class="nav-links" aria-label="Primary">
+                <a href="{% url 'events:dashboard' %}">Home</a>
+                <a href="{% url 'about' %}">About Event</a>
+                <a href="#activities">Activities</a>
+                <a href="#leaderboard">Leaderboard</a>
+                <a class="nav-logout" href="{% url 'participant_logout' %}">Logout</a>
+            </nav>
+        </header>
 
-        {% if recommended_events %}
-            <div class="dashboard-grid">
-                {% for event in recommended_events %}
-                    <div class="glass-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; height: 100%;">
-                        <div style="height: 180px; position: relative;">
-                            {% if event.image_url %}
-                                <img src="{{ event.image_url }}" alt="{{ event.event }}" style="width: 100%; height: 100%; object-fit: cover;">
+        <main>
+            <section class="hero-card">
+                <div class="hero-copy">
+                    <span class="eyebrow">Participant Dashboard</span>
+                    <h1>
+                        {% if featured_event %}
+                            {{ featured_event.event }}
+                        {% else %}
+                            Welcome to your event space
+                        {% endif %}
+                    </h1>
+                    <div class="hero-meta">
+                        <span>
+                            <i data-lucide="calendar-days"></i>
+                            {% if featured_event and featured_event.date_of_event %}
+                                {{ featured_event.date_of_event|date:"F d, Y" }}
                             {% else %}
-                                <div style="width: 100%; height: 100%; background: var(--primary-gradient); opacity: 0.1;"></div>
+                                Event date coming soon
                             {% endif %}
-                            <div style="position: absolute; top: 1rem; right: 1rem;">
-                                <span class="badge" style="background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); border: 1px solid var(--border-glass);">{{ event.get_category_display }}</span>
-                            </div>
-                        </div>
-                        <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
-                            <h3 style="font-size: 1.25rem; color: white; margin-bottom: 0.5rem;">{{ event.event }}</h3>
-                            <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-                                <span style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="calendar" style="width: 14px;"></i> {{ event.date_of_event }}</span>
-                                <span style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="user" style="width: 14px;"></i> By {{ event.user.get_full_name|default:event.user.username }}</span>
-                            </div>
-                            <div style="margin-top: auto;">
-                                <a href="{% url 'events:event_detail' event.id %}" class="btn btn-primary" style="width: 100%;">Register Now</a>
-                            </div>
+                        </span>
+                        <span>
+                            <i data-lucide="map-pin"></i>
+                            {% if featured_event and featured_event.venue %}
+                                {{ featured_event.venue }}
+                            {% else %}
+                                Online and campus venues
+                            {% endif %}
+                        </span>
+                    </div>
+                    <p class="hero-description">
+                        {% if featured_event and featured_event.description %}
+                            {{ featured_event.description|truncatewords:28 }}
+                        {% else %}
+                            Explore activities, track your registrations, and stay ready for the next experience.
+                        {% endif %}
+                    </p>
+                    <div class="hero-tagline">
+                        {% if featured_event and featured_event.tagline %}
+                            {{ featured_event.tagline }}
+                        {% else %}
+                            Compete, connect, and keep your event journey moving.
+                        {% endif %}
+                    </div>
+
+                    <div class="hero-actions">
+                        {% if featured_event %}
+                            <a class="btn btn-primary" href="{% url 'events:event_detail' featured_event.id %}">
+                                {% if user.is_authenticated %}Register Now{% else %}Login to Register{% endif %}
+                            </a>
+                        {% else %}
+                            <a class="btn btn-primary" href="{% url 'activities' %}">
+                                Explore Activities
+                            </a>
+                        {% endif %}
+                        <a class="btn btn-secondary" href="#registrations">My Registrations</a>
+                    </div>
+
+                    <div class="countdown-wrap" {% if featured_event and featured_event.date_of_event %}data-countdown="{{ featured_event.date_of_event|date:'Y-m-d' }}"{% endif %}>
+                        <span class="countdown-label">Countdown</span>
+                        <div class="countdown-grid">
+                            <div class="countdown-box"><strong data-unit="days">--</strong><span>Days</span></div>
+                            <div class="countdown-box"><strong data-unit="hours">--</strong><span>Hours</span></div>
+                            <div class="countdown-box"><strong data-unit="minutes">--</strong><span>Minutes</span></div>
+                            <div class="countdown-box"><strong data-unit="seconds">--</strong><span>Seconds</span></div>
                         </div>
                     </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="glass-card" style="text-align: center; padding: 4rem 2rem; border: 1px dashed var(--border-glass);">
-                <i data-lucide="smile" style="width: 48px; height: 48px; margin-bottom: 1rem; color: var(--text-muted); opacity: 0.5;"></i>
-                <h3 style="color: white; margin-bottom: 0.5rem;">No new events right now</h3>
-                <p style="color: var(--text-muted);">You've explored all the latest hubs. Check back soon!</p>
-            </div>
-        {% endif %}
-    </section>
-
-    <!-- Joined Events -->
-    <section>
-        <div class="section-header">
-            <h2 class="section-title">
-                <i data-lucide="ticket" style="color: var(--secondary);"></i> My Syncs
-            </h2>
-        </div>
-
-        {% if joined_events %}
-            <div class="dashboard-grid">
-                {% for event in joined_events %}
-                    <div class="glass-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; height: 100%; border-color: rgba(34, 197, 94, 0.2);">
-                        <div style="height: 180px; position: relative; filter: saturate(0.8);">
-                            {% if event.image_url %}
-                                <img src="{{ event.image_url }}" alt="{{ event.event }}" style="width: 100%; height: 100%; object-fit: cover;">
-                            {% else %}
-                                <div style="width: 100%; height: 100%; background: var(--primary-gradient); opacity: 0.1;"></div>
-                            {% endif %}
-                            <div style="position: absolute; inset: 0; background: linear-gradient(to top, var(--bg-deep), transparent);"></div>
-                            <div style="position: absolute; top: 1rem; right: 1rem;">
-                                <span class="badge" style="background: var(--secondary); color: var(--bg-deep);">Joined</span>
-                            </div>
-                        </div>
-                        <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column; margin-top: -2rem; position: relative; z-index: 10;">
-                            <h3 style="font-size: 1.25rem; color: white; margin-bottom: 0.5rem;">{{ event.event }}</h3>
-                            <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-                                <span style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="map-pin" style="width: 14px;"></i> {{ event.venue }}</span>
-                                <span style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="clock" style="width: 14px;"></i> {{ event.time_of_event }}</span>
-                            </div>
-                            <div style="margin-top: auto;">
-                                <a href="{% url 'events:event_detail' event.id %}" class="btn btn-outline" style="width: 100%; color: var(--secondary); border-color: var(--secondary);">Continue Explorer</a>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="glass-card" style="text-align: center; padding: 4rem 2rem; border: 1px dashed var(--border-glass);">
-                <i data-lucide="ticket" style="width: 48px; height: 48px; margin-bottom: 1rem; color: var(--text-muted); opacity: 0.5;"></i>
-                <h3 style="color: white; margin-bottom: 0.5rem;">You haven't joined any events yet</h3>
-                <p style="color: var(--text-muted); margin-bottom: 2rem;">Discover something new and start your journey today.</p>
-                <a href="{% url 'events:event_create_or_list' %}" class="btn btn-primary">Discover Events</a>
-            </div>
-        {% endif %}
-    </section>
-
-    <!-- Registered Activities -->
-    <section>
-        <div class="section-header">
-            <h2 class="section-title">
-                <i data-lucide="activity" style="color: var(--accent);"></i> Activity Registrations
-            </h2>
-        </div>
-
-        {% if activity_rows %}
-            <div class="glass-card" style="padding: 0; overflow: hidden;">
-                <div style="overflow-x: auto;">
-                    <table class="dark-table">
-                        <thead>
-                            <tr>
-                                <th>Activity</th>
-                                <th>Status</th>
-                                <th style="text-align: right;">Credentials</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for row in activity_rows %}
-                            <tr>
-                                <td>
-                                    <div style="font-weight: 600; color: white;">{{ row.registration.activity.name }}</div>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ row.registration.activity.event.event }}</div>
-                                </td>
-                                <td>
-                                    {% if row.registration.status == "approved" %}
-                                        <span class="badge" style="background: rgba(34,197,94,0.1); color: var(--secondary);">Approved</span>
-                                    {% elif row.registration.status == "rejected" %}
-                                        <span class="badge" style="background: rgba(239,68,68,0.1); color: var(--danger);">Rejected</span>
-                                    {% else %}
-                                        <span class="badge" style="background: rgba(245,158,11,0.1); color: var(--accent);">Pending</span>
-                                    {% endif %}
-                                </td>
-                                <td style="text-align: right;">
-                                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                                        {% if row.registration.status == "approved" %}
-                                            <a target="_blank" href="{% url 'events:generate_activity_gate_pass' row.registration.id %}" class="btn" style="padding: 0.4rem 1rem; font-size: 0.75rem; background: rgba(34,197,94,0.1); color: var(--secondary);">Get Gate Pass</a>
-                                        {% endif %}
-                                        {% if row.attendance and row.certificate %}
-                                            <a target="_blank" href="{% url 'events:download_certificate' row.certificate.certificate_id %}" class="btn" style="padding: 0.4rem 1rem; font-size: 0.75rem; background: rgba(245,158,11,0.1); color: var(--accent);">Get Certificate</a>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
                 </div>
-            </div>
-        {% else %}
-            <div class="glass-card" style="text-align: center; padding: 4rem 2rem; border: 1px dashed var(--border-glass);">
-                <i data-lucide="clipboard-x" style="width: 48px; height: 48px; margin-bottom: 1rem; color: var(--text-muted); opacity: 0.5;"></i>
-                <h3 style="color: white; margin-bottom: 0.5rem;">No activity registrations</h3>
-                <p style="color: var(--text-muted); margin-bottom: 2rem;">You have not registered for any activities yet.</p>
-                <a href="{% url 'events:event_create_or_list' %}" class="btn btn-outline" style="border-color: var(--border-glass);">Find Activities</a>
-            </div>
-        {% endif %}
-    </section>
 
-</div>
-{% endblock %}
+                <div class="hero-visual">
+                    {% if featured_event and featured_event.image_url %}
+                        <img src="{{ featured_event.image_url }}" alt="{{ featured_event.event }}" class="hero-image">
+                    {% else %}
+                        <div class="hero-fallback">
+                            <div class="floating-card floating-card-a">
+                                <i data-lucide="ticket"></i>
+                                <span>Attend</span>
+                            </div>
+                            <div class="floating-card floating-card-b">
+                                <i data-lucide="trophy"></i>
+                                <span>Compete</span>
+                            </div>
+                            <div class="floating-card floating-card-c">
+                                <i data-lucide="sparkles"></i>
+                                <span>Connect</span>
+                            </div>
+                            <div class="hero-orbit"></div>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="status-grid">
+                <article class="status-card">
+                    <div class="status-icon"><i data-lucide="user-round"></i></div>
+                    <div>
+                        <p class="status-label">Logged-in user</p>
+                        <h2>{{ user.get_full_name|default:user.username }}</h2>
+                        <span class="status-subtle">@{{ user.username }}</span>
+                    </div>
+                </article>
+
+                <article class="status-card">
+                    <div class="status-icon"><i data-lucide="mail"></i></div>
+                    <div>
+                        <p class="status-label">Email</p>
+                        <h2>{{ user.email|default:"No email saved" }}</h2>
+                        <span class="status-subtle">Keep your profile details updated</span>
+                    </div>
+                </article>
+
+                <article class="status-card">
+                    <div class="status-icon"><i data-lucide="badge-check"></i></div>
+                    <div>
+                        <p class="status-label">Registration status</p>
+                        <h2>
+                            {% if joined_events %}
+                                Registered
+                            {% else %}
+                                Not Registered
+                            {% endif %}
+                        </h2>
+                        <span class="status-subtle">{{ joined_events|length }} joined event{{ joined_events|length|pluralize }}</span>
+                    </div>
+                </article>
+            </section>
+
+            <section class="section-block" id="activities">
+                <div class="section-head">
+                    <div>
+                        <span class="section-kicker">Explore Activities</span>
+                        <h2>Browse and register for the latest activities</h2>
+                    </div>
+                    <a class="section-link" href="{% url 'activities' %}">View all</a>
+                </div>
+
+                <div class="activities-grid">
+                    {% for activity in available_activities %}
+                        <article class="activity-card">
+                            <div class="activity-topline">
+                                <span class="pill">{{ activity.event.event }}</span>
+                                <span class="pill pill-soft">
+                                    {% if activity.is_team_event %}Team{% else %}Solo{% endif %}
+                                </span>
+                            </div>
+                            <h3>{{ activity.name }}</h3>
+                            <p>
+                                {% if activity.description %}
+                                    {{ activity.description|truncatewords:18 }}
+                                {% else %}
+                                    Join this activity and be part of the event experience.
+                                {% endif %}
+                            </p>
+                            <div class="activity-meta">
+                                <span><i data-lucide="calendar"></i> {% if activity.date %}{{ activity.date|date:"M d" }}{% else %}TBA{% endif %}</span>
+                                <span><i data-lucide="wallet"></i> {{ activity.registration_fee|default:"Free" }}</span>
+                            </div>
+                            <div class="activity-actions">
+                                {% if user.is_authenticated %}
+                                    <a class="btn btn-primary btn-small" href="{% url 'events:activity_register' activity.id %}">Register</a>
+                                {% else %}
+                                    <a class="btn btn-primary btn-small" href="{% url 'participant_login' %}">Login to Register</a>
+                                {% endif %}
+                                <a class="btn btn-ghost btn-small" href="{% url 'events:event_detail' activity.event.id %}">Learn More</a>
+                            </div>
+                        </article>
+                    {% empty %}
+                        <article class="empty-card">
+                            <h3>No activities available yet</h3>
+                            <p>Check back soon for new competitions, workshops, and sessions.</p>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="section-block split-layout" id="registrations">
+                <div class="panel">
+                    <div class="section-head compact">
+                        <div>
+                            <span class="section-kicker">My Registrations</span>
+                            <h2>Your joined activities</h2>
+                        </div>
+                    </div>
+
+                    <div class="registration-list">
+                        {% for row in activity_rows %}
+                            <article class="registration-item">
+                                <div>
+                                    <h3>{{ row.registration.activity.name }}</h3>
+                                    <p>{{ row.registration.activity.event.event }}</p>
+                                </div>
+                                <div class="registration-right">
+                                    <span class="pill pill-status pill-{{ row.registration.status|default:'pending' }}">
+                                        {{ row.registration.status|default:"pending"|capfirst }}
+                                    </span>
+                                    {% if row.attendance %}
+                                        <span class="status-chip status-chip-success">
+                                            {{ row.attendance.status|capfirst }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </article>
+                        {% empty %}
+                            <p class="empty-text">You have not registered for any activities yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="section-head compact">
+                        <div>
+                            <span class="section-kicker">Leaderboard Preview</span>
+                            <h2>Top scores this week</h2>
+                        </div>
+                    </div>
+
+                    <div class="leaderboard-list" id="leaderboard">
+                        {% for entry in leaderboard_preview %}
+                            <article class="leaderboard-item">
+                                <div class="rank-badge">#{{ forloop.counter }}</div>
+                                <div class="leaderboard-copy">
+                                    <h3>{{ entry.activity.name }}</h3>
+                                    <p>{{ entry.participant.username }}</p>
+                                </div>
+                                <strong>{{ entry.score }}</strong>
+                            </article>
+                        {% empty %}
+                            <p class="empty-text">Leaderboard entries will appear once activities start scoring.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+
+            <section class="section-block">
+                <div class="section-head">
+                    <div>
+                        <span class="section-kicker">Upcoming Activities</span>
+                        <h2>What’s next on the schedule</h2>
+                    </div>
+                </div>
+
+                <div class="upcoming-grid">
+                    {% for activity in upcoming_activities %}
+                        <article class="upcoming-card">
+                            <span class="pill pill-soft">{{ activity.event.event }}</span>
+                            <h3>{{ activity.name }}</h3>
+                            <p>
+                                {% if activity.start_time %}
+                                    Starts at {{ activity.start_time|time:"g:i A" }}
+                                {% else %}
+                                    Timing to be announced
+                                {% endif %}
+                            </p>
+                            <a class="section-link" href="{% url 'events:event_detail' activity.event.id %}">Open event</a>
+                        </article>
+                    {% empty %}
+                        <article class="empty-card">
+                            <h3>No upcoming activities yet</h3>
+                            <p>New sessions will show up here automatically when events are published.</p>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            <div>
+                <strong>Event Portal</strong>
+                <p>Contact: support@eventportal.com</p>
+            </div>
+            <div class="footer-links">
+                <a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a>
+                <a href="https://www.facebook.com/" target="_blank" rel="noopener">Facebook</a>
+                <a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a>
+            </div>
+            <p>Copyright {% now "Y" %} Event Portal. All rights reserved.</p>
+        </footer>
+    </div>
+    <script>
+        lucide.createIcons();
+
+        document.querySelectorAll("[data-countdown]").forEach((wrap) => {
+            const target = wrap.getAttribute("data-countdown");
+            if (!target) return;
+
+            const targetDate = new Date(`${target}T23:59:59`);
+            const units = {
+                days: wrap.querySelector('[data-unit="days"]'),
+                hours: wrap.querySelector('[data-unit="hours"]'),
+                minutes: wrap.querySelector('[data-unit="minutes"]'),
+                seconds: wrap.querySelector('[data-unit="seconds"]'),
+            };
+
+            const tick = () => {
+                const now = new Date();
+                const diff = Math.max(targetDate - now, 0);
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const minutes = Math.floor((diff / (1000 * 60)) % 60);
+                const seconds = Math.floor((diff / 1000) % 60);
+
+                units.days.textContent = String(days).padStart(2, "0");
+                units.hours.textContent = String(hours).padStart(2, "0");
+                units.minutes.textContent = String(minutes).padStart(2, "0");
+                units.seconds.textContent = String(seconds).padStart(2, "0");
+            };
+
+            tick();
+            setInterval(tick, 1000);
+        });
+    </script>
+</body>
+</html>
