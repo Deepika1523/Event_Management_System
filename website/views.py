@@ -78,6 +78,7 @@ def event_site(request, event_id):
     template_name = template_map.get(event.template_choice, template_map["classic"])
     coordinator_login_url = reverse('events:coordinator_login')
     participant_login_url = reverse('events:participant_login')
+    participant_signup_url = reverse('events:event_participant_signup', args=[event.id])
     can_create_activity = (
         request.user.is_authenticated
         and (request.user.is_superuser or event.user_id == request.user.id)
@@ -92,6 +93,7 @@ def event_site(request, event_id):
             "event": event,
             "coordinator_login_url": coordinator_login_url,
             "participant_login_url": participant_login_url,
+            "participant_signup_url": participant_signup_url,
             "can_create_activity": can_create_activity,
             "admin_activity_url": admin_activity_url,
             "organizer_activity_url": organizer_activity_url,

@@ -1,4 +1,5 @@
 from django import forms
+from .models import Activity
 
 ACTIVITY_TYPE_CHOICES = [
     ('competition', 'Competition'),
@@ -49,3 +50,32 @@ TEMPLATE_CHOICES = [
 class WebsiteSetupForm(forms.Form):
     template = forms.ChoiceField(choices=TEMPLATE_CHOICES)
     banner_text = forms.CharField(max_length=200)
+
+
+class ActivityEditForm(forms.ModelForm):
+    class Meta:
+        model = Activity
+        fields = [
+            "name",
+            "description",
+            "date",
+            "start_time",
+            "end_time",
+            "registration_fee",
+            "prize",
+            "rules",
+            "eligibility",
+            "max_participants",
+            "is_team_event",
+            "team_size",
+        ]
+        widgets = {
+            "date": forms.DateInput(attrs={"type": "date"}),
+            "start_time": forms.TimeInput(attrs={"type": "time"}),
+            "end_time": forms.TimeInput(attrs={"type": "time"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs["class"] = "form-input"

@@ -85,6 +85,9 @@
             <a href="{{ participant_login_url }}" class="btn btn-outline">
                 <i data-lucide="user"></i> Participant Login
             </a>
+            <a href="{{ participant_signup_url }}" class="btn btn-outline">
+                <i data-lucide="user-plus"></i> Participant Signup
+            </a>
             {% if can_create_activity %}
                 <a class="btn btn-outline" href="{% if request.user.is_superuser %}{{ admin_activity_url }}{% else %}{{ organizer_activity_url }}{% endif %}">
                     <i data-lucide="plus-circle"></i> Create Activity

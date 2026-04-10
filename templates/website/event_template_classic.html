@@ -11,9 +11,10 @@
 
 {% block content %}
     <main class="event-shell">
-        <section class="card">
+        <section class="card" style="margin-bottom: 1rem;">
             <div class="event-links">
           <a class="event-link" href="{{ participant_login_url }}">Participant Login</a>
+          <a class="event-link" href="{{ participant_signup_url }}">Participant Signup</a>
                 {% if event.status != 'completed' %}
                     <a class="event-link" href="{% url 'events:event_registration_form' event.id %}">Register</a>
                 {% else %}

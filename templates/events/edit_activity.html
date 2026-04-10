@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Edit Activity | {{ activity.name }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-page-header" style="background-image: url('{% static 'images/dashboard_header_dark.png' %}');">
+    <div class="header-content-rel">
+        <h1 style="font-size: 2.5rem; color: white; margin-bottom: 0.5rem;">Edit Activity</h1>
+        <p style="color: rgba(255,255,255,0.7);">Update {{ activity.name }} for {{ activity.event.name }}.</p>
+    </div>
+</div>
+
+<div style="max-width: 860px; margin: 0 auto; margin-top: -3rem; position: relative; z-index: 30;">
+    <section class="glass-card">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+            <div style="width: 48px; height: 48px; background: rgba(34, 197, 94, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--secondary);">
+                <i data-lucide="edit-3"></i>
+            </div>
+            <div>
+                <h2 style="font-size: 1.5rem; color: white;">Activity Details</h2>
+                <p style="font-size: 0.875rem; color: var(--text-muted);">Edit the activity that belongs to {{ activity.event.name }}.</p>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'events:edit_activity' activity.id %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label class="form-label">Activity Name *</label>
+                <input name="name" type="text" class="form-input" value="{{ form.name.value|default:activity.name }}" required>
+                {% if form.name.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.name.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-input" rows="4">{{ form.description.value|default:activity.description }}</textarea>
+                {% if form.description.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.description.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Rules</label>
+                <textarea name="rules" class="form-input" rows="3">{{ form.rules.value|default:activity.rules }}</textarea>
+                {% if form.rules.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.rules.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Eligibility</label>
+                <textarea name="eligibility" class="form-input" rows="3">{{ form.eligibility.value|default:activity.eligibility }}</textarea>
+                {% if form.eligibility.errors %}
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.eligibility.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input name="date" type="date" class="form-input" value="{{ form.date.value|default:activity.date|date:'Y-m-d' }}">
+                    {% if form.date.errors %}
+                        <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.date.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Registration Fee</label>
+                    <input name="registration_fee" type="text" class="form-input" value="{{ form.registration_fee.value|default:activity.registration_fee }}">
+                    {% if form.registration_fee.errors %}
+                        <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.registration_fee.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Start Time</label>
+                    <input name="start_time" type="time" class="form-input" value="{{ form.start_time.value|default:activity.start_time|time:'H:i' }}">
+                    {% if form.start_time.errors %}
+                        <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.start_time.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">End Time</label>
+                    <input name="end_time" type="time" class="form-input" value="{{ form.end_time.value|default:activity.end_time|time:'H:i' }}">
+                    {% if form.end_time.errors %}
+                        <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.end_time.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Prize</label>
+                    <input name="prize" type="text" class="form-input" value="{{ form.prize.value|default:activity.prize }}">
+                    {% if form.prize.errors %}
+                        <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.prize.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Max Participants</label>
+                    <input name="max_participants" type="number" min="1" class="form-input" value="{{ form.max_participants.value|default:activity.max_participants }}">
+                    {% if form.max_participants.errors %}
+                        <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.max_participants.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Team Event</label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary);">
+                        <input name="is_team_event" type="checkbox" style="width: auto;" {% if form.is_team_event.value or activity.is_team_event %}checked{% endif %}>
+                        This is a team activity
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Team Size</label>
+                    <input name="team_size" type="number" min="1" class="form-input" value="{{ form.team_size.value|default:activity.team_size }}">
+                    {% if form.team_size.errors %}
+                        <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ form.team_size.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if form.non_field_errors %}
+                <div style="color: var(--danger); font-size: 0.85rem; margin-bottom: 1rem;">{{ form.non_field_errors.0 }}</div>
+            {% endif %}
+
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <a href="{% url 'events:manage_activities' %}?event_id={{ activity.event.id }}" class="btn btn-outline">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

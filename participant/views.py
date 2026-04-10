@@ -15,9 +15,11 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from .models import Participant
+from event.models import Event
 
-# SIGNUP
-def participant_signup(request):
+
+def _handle_participant_signup(request):
+    """Validate and create a participant account."""
     errors = []
     form_data = {
         "username": "",
@@ -62,12 +64,39 @@ def participant_signup(request):
             )
             Participant.objects.create(user=user)
             login(request, user)
-            return redirect("events:participant_dashboard")
+            return user, errors, form_data
+
+    return None, errors, form_data
+
+# SIGNUP
+def participant_signup(request):
+    user, errors, form_data = _handle_participant_signup(request)
+    if user is not None:
+        return redirect("events:participant_dashboard")
 
     return render(
         request,
         "participant/signup.html",
         {
+            "errors": errors,
+            **form_data,
+        },
+    )
+
+
+def participant_signup_for_event(request, event_id):
+    """Create a participant account from an event-branded signup page."""
+    event = get_object_or_404(Event, id=event_id)
+    user, errors, form_data = _handle_participant_signup(request)
+    if user is not None:
+        messages.success(request, "Your participant account has been created.")
+        return redirect("events:event_website_home", event_id=event.id)
+
+    return render(
+        request,
+        "website/participant_registration.html",
+        {
+            "event": event,
             "errors": errors,
             **form_data,
         },

@@ -22,7 +22,7 @@
             <h2 style="font-size: 1.25rem; color: white;">Create Activity</h2>
         </div>
 
-        {% if can_manage %}
+        {% if can_create_activity %}
         <form method="post" action="{% url 'events:manage_activities' %}" enctype="multipart/form-data">
             {% csrf_token %}
             
@@ -96,7 +96,11 @@
         {% else %}
         <div style="padding: 2rem; text-align: center; color: var(--text-muted); border: 1px dashed var(--border-glass); border-radius: var(--radius-md);">
             <i data-lucide="lock" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
-            <p>Access Restricted. Only authorized users can manage activities.</p>
+            {% if can_view_manage_page %}
+                <p>You can manage assigned activities below.</p>
+            {% else %}
+                <p>Access Restricted. Only authorized users can manage activities.</p>
+            {% endif %}
         </div>
         {% endif %}
     </section>
@@ -117,23 +121,38 @@
                     <tr>
                         <th>Activity</th>
                         <th>Coordinators</th>
-                        <th style="text-align: right;">View</th>
+                        <th style="text-align: right;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in activities %}
-                    <tr>
+                        <tr>
                         <td>
-                            <div style="font-weight: 600; color: white; margin-bottom: 0.25rem;">{{ item.name }}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ item.event.event }}</div>
+                            <div style="font-weight: 600; color: white; margin-bottom: 0.25rem;">{{ item.activity.name }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ item.activity.event.name }}</div>
                         </td>
                         <td>
                             <div style="font-size: 0.875rem;">{{ item.coordinator_names|default:"No Coordinators" }}</div>
                         </td>
                         <td style="text-align: right;">
-                            <a href="{% url 'events:event_activities_pdf' item.event.id %}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;" title="Download PDF">
-                                <i data-lucide="file-text" style="width: 14px; height: 14px;"></i> PDF
-                            </a>
+                            <div style="display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap;">
+                                <a href="{% url 'events:event_activities_pdf' item.activity.event.id %}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;" title="Download PDF">
+                                    <i data-lucide="file-text" style="width: 14px; height: 14px;"></i> PDF
+                                </a>
+                                {% if item.can_edit %}
+                                <a href="{% url 'events:edit_activity' item.activity.id %}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;" title="Edit Activity">
+                                    <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i> Edit
+                                </a>
+                                {% endif %}
+                                {% if item.can_delete %}
+                                <form method="post" action="{% url 'events:delete_activity' item.activity.id %}" style="display: inline;" onsubmit="return confirm('Delete this activity? This cannot be undone.');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; color: var(--danger); border-color: rgba(239,68,68,0.3);" title="Delete Activity">
+                                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Delete
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}

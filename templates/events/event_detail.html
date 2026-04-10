@@ -2,90 +2,472 @@
 {% load static %}
 
 {% block title %}{{ event.event }} | EventSync{% endblock %}
+{% block body_class %}page-event-detail{% endblock %}
+
+{% block extra_css %}
+<style>
+    body.page-event-detail {
+        background:
+            radial-gradient(circle at top left, rgba(56, 189, 248, 0.10), transparent 28%),
+            radial-gradient(circle at top right, rgba(124, 58, 237, 0.14), transparent 26%),
+            linear-gradient(180deg, #09111f 0%, #0c1628 100%);
+    }
+
+    .event-detail-shell {
+        max-width: 1100px;
+        margin: 30px auto 48px;
+        padding: 0 20px;
+        display: grid;
+        gap: 24px;
+    }
+
+    .event-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .event-links {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        line-height: 1.4;
+        opacity: 0.78;
+    }
+
+    .event-links a {
+        color: rgba(226, 232, 240, 0.86);
+        transition: opacity 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    }
+
+    .event-links a:hover {
+        color: #ffffff;
+        opacity: 1;
+        transform: translateY(-1px);
+    }
+
+    .event-links .sep {
+        color: rgba(148, 163, 184, 0.6);
+    }
+
+    .event-links .is-active {
+        color: #ffffff;
+        font-weight: 700;
+        opacity: 1;
+    }
+
+    .hero-card,
+    .section-card,
+    .details-card,
+    .side-card {
+        background: rgba(10, 17, 31, 0.78);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+    }
+
+    .hero-card {
+        position: relative;
+        overflow: hidden;
+        min-height: 360px;
+        padding: 28px;
+        display: flex;
+        align-items: flex-end;
+    }
+
+    .hero-media {
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(180deg, rgba(5, 10, 20, 0.08) 0%, rgba(5, 10, 20, 0.86) 100%),
+            url('{% if event.image %}{{ event.image.url }}{% elif event.image_url %}{{ event.image_url }}{% else %}{% static "images/event_banner_dark.png" %}{% endif %}');
+        background-size: cover;
+        background-position: center;
+        filter: saturate(1.05);
+    }
+
+    .hero-inner {
+        position: relative;
+        z-index: 1;
+        max-width: 780px;
+        display: grid;
+        gap: 14px;
+    }
+
+    .event-badge {
+        width: fit-content;
+        padding: 0.45rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(56, 189, 248, 0.16);
+        border: 1px solid rgba(56, 189, 248, 0.24);
+        color: #cbeafe;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+    }
+
+    .event-title {
+        margin: 0;
+        font-size: clamp(28px, 4vw, 32px);
+        line-height: 1.15;
+        letter-spacing: -0.03em;
+        color: #ffffff;
+        overflow-wrap: anywhere;
+        text-wrap: balance;
+    }
+
+    .event-description {
+        margin: 0;
+        max-width: 70ch;
+        font-size: 1rem;
+        line-height: 1.7;
+        color: rgba(226, 232, 240, 0.84);
+    }
+
+    .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        color: rgba(226, 232, 240, 0.82);
+        font-size: 0.95rem;
+    }
+
+    .hero-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0.65rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 4px;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0.8rem 1.1rem;
+        border-radius: 8px;
+        font-weight: 700;
+        border: 1px solid transparent;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+        color: white;
+        box-shadow: 0 14px 30px rgba(79, 70, 229, 0.28);
+    }
+
+    .btn-primary:hover,
+    .btn-secondary:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.05);
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.04);
+        color: #e5eefb;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .details-card {
+        padding: 25px;
+    }
+
+    .section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .section-heading h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: #ffffff;
+        letter-spacing: -0.02em;
+    }
+
+    .section-heading p {
+        margin: 0.35rem 0 0;
+        color: rgba(226, 232, 240, 0.72);
+        line-height: 1.6;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px 24px;
+    }
+
+    .detail-column {
+        display: grid;
+        gap: 12px;
+    }
+
+    .detail-item {
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .detail-label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(148, 163, 184, 0.96);
+    }
+
+    .detail-value {
+        color: #eef4fb;
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+    }
+
+    .main-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.85fr);
+        gap: 24px;
+    }
+
+    .section-card {
+        padding: 25px;
+    }
+
+    .section-card h3 {
+        margin: 0 0 12px;
+        color: #ffffff;
+        font-size: 1.1rem;
+    }
+
+    .section-card p {
+        margin: 0;
+        color: rgba(226, 232, 240, 0.82);
+        line-height: 1.7;
+        overflow-wrap: anywhere;
+    }
+
+    .side-stack {
+        display: grid;
+        gap: 20px;
+    }
+
+    .side-card {
+        padding: 22px;
+    }
+
+    .side-card .meta-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(148, 163, 184, 0.95);
+        margin-bottom: 8px;
+    }
+
+    .side-card .meta-value {
+        color: #ffffff;
+        font-size: 1.2rem;
+        font-weight: 700;
+        line-height: 1.35;
+    }
+
+    .side-card .muted {
+        color: rgba(226, 232, 240, 0.76);
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 900px) {
+        .main-grid,
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .event-detail-shell {
+            padding: 0 16px;
+        }
+
+        .hero-card {
+            min-height: 320px;
+            padding: 20px;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .event-detail-shell {
+            margin-top: 18px;
+        }
+
+        .hero-card,
+        .details-card,
+        .section-card,
+        .side-card {
+            padding: 18px;
+        }
+
+        .event-links {
+            gap: 8px;
+        }
+
+        .event-links .sep {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
+<main class="event-detail-shell">
+    <div class="event-topbar">
+        <nav class="event-links" aria-label="Event links">
+            <a href="{% url 'events:participant_login' %}">Participant Login</a>
+            <span class="sep">|</span>
+            <a href="{{ participant_signup_url }}">Participant Signup</a>
+            <span class="sep">|</span>
+            <a href="{{ event_registration_url }}">Register</a>
+            {% if can_create_activity %}
+                <span class="sep">|</span>
+                <a href="{% url 'events:manage_activities' %}">Create Activity</a>
+            {% endif %}
+        </nav>
 
-{% if event.image_url %}
-<div class="dashboard-page-header" style="background-image: url('{{ event.image_url }}'); height: 400px;">
-{% else %}
-<style>
-.dashboard-page-header {
-    background-image: url('{% static "images/event_banner_dark.png" %}'); height: 400px;
-}
-</style>
-<div class="dashboard-page-header" >
-{% endif %}
-    <div class="header-content-rel">
-        <span class="badge" style="background: var(--primary); color: white; margin-bottom: 1rem;">
-            {{ event.category|upper }}
-        </span>
-        <h1 style="font-size: 4rem; color: white; margin-bottom: 1rem; text-shadow: 0 4px 20px rgba(0,0,0,0.5);">
-            {{ event.event }}
-        </h1>
-        <div style="display: flex; gap: 2rem; color: rgba(255,255,255,0.9); font-weight: 500;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <i data-lucide="calendar"></i> {{ event.date_of_event }}
+        {% if is_registered %}
+            <span class="event-badge">Registered</span>
+        {% endif %}
+    </div>
+
+    <section class="hero-card">
+        <div class="hero-media" aria-hidden="true"></div>
+        <div class="hero-inner">
+            <span class="event-badge">{% if event.category %}{{ event.category|upper }}{% else %}FEST{% endif %}</span>
+            <h1 class="event-title">{{ event.event }}</h1>
+            {% if event.tagline %}
+                <p class="event-description" style="font-size: 1.08rem; color: rgba(191, 219, 254, 0.95); font-weight: 600;">
+                    {{ event.tagline }}
+                </p>
+            {% endif %}
+            <p class="event-description">{{ event.description|linebreaksbr }}</p>
+            <div class="hero-meta">
+                <span><i data-lucide="calendar"></i> {{ event.date_of_event }}</span>
+                <span><i data-lucide="clock"></i> {{ event.time_of_event }}</span>
+                <span><i data-lucide="map-pin"></i> {{ event.venue }}</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <i data-lucide="clock"></i> {{ event.time_of_event }}
-            </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <i data-lucide="map-pin"></i> {{ event.venue }}
+            <div class="hero-actions">
+                <a class="btn-primary" href="{{ event_registration_url }}">Register Now</a>
+                <a class="btn-secondary" href="{% url 'events:event_website_home' event.id %}">View Website</a>
             </div>
         </div>
-    </div>
-</div>
+    </section>
 
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-top: -4rem; position: relative; z-index: 20;">
-    <!-- Main Info -->
-    <div style="display: flex; flex-direction: column; gap: 2rem;">
-        <section class="glass-card">
-            <h2 style="font-size: 1.5rem; color: white; margin-bottom: 1.5rem;">
-                <i data-lucide="info"></i> About This Event
-            </h2>
-            <p style="color: var(--text-muted); line-height: 1.8;">
-                {{ event.description|linebreaks }}
-            </p>
-        </section>
-        {% if event.activities_overview %}
-        <section class="glass-card">
-            <h2 style="font-size: 1.5rem; color: white; margin-bottom: 1.5rem;">
-                <i data-lucide="activity"></i> Featured Activities
-            </h2>
-            <p style="color: var(--text-muted);">
-                {{ event.activities_overview|linebreaks }}
-            </p>
-        </section>
-        {% endif %}
-        {% if event.rules %}
-        <section class="glass-card">
-            <h2 style="font-size: 1.5rem; color: white; margin-bottom: 1.5rem;">
-                <i data-lucide="shield-alert"></i> Guidelines & Rules
-            </h2>
-            <p style="color: var(--text-muted);">
-                {{ event.rules|linebreaks }}
-            </p>
-        </section>
-        {% endif %}
-    </div>
-    <!-- Sidebar -->
-    <div style="display: flex; flex-direction: column; gap: 2rem;">
-        <section class="glass-card">
-            <div style="text-align: center; margin-bottom: 1rem;">
-                <div style="font-size: 0.875rem; color: var(--text-muted);">Registration Fee</div>
-                <div style="font-size: 2rem; font-weight: bold; color: white;">₹{{ event.registration }}</div>
+    <section class="details-card">
+        <div class="section-heading">
+            <div>
+                <h2>Event Details</h2>
+                <p>Key information about the event at a glance.</p>
             </div>
-            {% if is_registered %}
-                <button class="btn" style="width:100%; background:rgba(255,255,255,0.03); color:var(--text-muted); cursor:default;" disabled>Already Registered</button>
-            {% else %}
-                <a href="{% url 'events:event_registration_form' event.id %}" class="btn btn-primary" style="width: 100%;">Register Now</a>
-            {% endif %}
-        </section>
-        <section class="glass-card">
-            <h3 style="color: white;">Organizer</h3>
-            <p style="color: var(--text-muted);">{{ event.user.username }}</p>
-        </section>
-    </div>
-</div>
+        </div>
 
+        <div class="details-grid">
+            <div class="detail-column">
+                <div class="detail-item">
+                    <span class="detail-label">Date</span>
+                    <div class="detail-value">{{ event.date_of_event }}</div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Time</span>
+                    <div class="detail-value">{{ event.time_of_event }}</div>
+                </div>
+            </div>
+
+            <div class="detail-column">
+                <div class="detail-item">
+                    <span class="detail-label">Venue</span>
+                    <div class="detail-value">{{ event.venue }}</div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Fee</span>
+                    <div class="detail-value">{{ event.registration|default:"Free" }}</div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Contact</span>
+                    <div class="detail-value">{{ event.contact_info|default:"TBD" }}</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="main-grid">
+        <section class="section-card">
+            <h3>About This Event</h3>
+            <p>{{ event.description|linebreaks }}</p>
+        </section>
+
+        <aside class="side-stack">
+            <section class="side-card">
+                <div class="meta-label">Registration</div>
+                <div class="meta-value">{% if is_registered %}Already registered{% else %}Open{% endif %}</div>
+                <p class="muted" style="margin-top: 8px;">Use the register button above to join this event.</p>
+            </section>
+
+            <section class="side-card">
+                <div class="meta-label">Organizer</div>
+                <div class="meta-value">{{ event.user.username }}</div>
+                <p class="muted" style="margin-top: 8px;">Managed by the event organizer.</p>
+            </section>
+        </aside>
+    </div>
+
+    {% if event.activities_overview or event.schedule or event.rules %}
+        <section class="details-card">
+            <div class="section-heading">
+                <div>
+                    <h2>More Information</h2>
+                    <p>Additional details to help participants prepare.</p>
+                </div>
+            </div>
+
+            <div style="display: grid; gap: 16px;">
+                {% if event.schedule %}
+                    <div class="detail-item">
+                        <span class="detail-label">Schedule</span>
+                        <div class="detail-value">{{ event.schedule|linebreaks }}</div>
+                    </div>
+                {% endif %}
+                {% if event.activities_overview %}
+                    <div class="detail-item">
+                        <span class="detail-label">Activities</span>
+                        <div class="detail-value">{{ event.activities_overview|linebreaks }}</div>
+                    </div>
+                {% endif %}
+                {% if event.rules %}
+                    <div class="detail-item">
+                        <span class="detail-label">Rules</span>
+                        <div class="detail-value">{{ event.rules|linebreaks }}</div>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    {% endif %}
+</main>
 {% endblock %}

@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Join {{ event.event }} | EventSync{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(180deg, #08111f 0%, #0c1729 100%);
+    }
+    .registration-shell {
+        max-width: 1120px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 1.5rem;
+        align-items: start;
+    }
+    .panel {
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(14px);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+        overflow: hidden;
+    }
+    .hero {
+        padding: 2rem;
+        display: grid;
+        gap: 1.25rem;
+    }
+    .eyebrow {
+        display: inline-flex;
+        width: fit-content;
+        padding: 0.4rem 0.8rem;
+        border-radius: 999px;
+        background: rgba(59, 130, 246, 0.14);
+        color: #9ed0ff;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        font-weight: 700;
+    }
+    .hero h1,
+    .form-card h2 {
+        margin: 0;
+        color: #fff;
+    }
+    .hero p,
+    .form-card p,
+    .event-meta {
+        color: rgba(226, 232, 240, 0.78);
+        line-height: 1.7;
+    }
+    .event-image {
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        object-fit: cover;
+        border-radius: 20px;
+        margin-top: 0.5rem;
+    }
+    .meta-grid {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    .meta-item {
+        padding: 1rem;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .meta-label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: rgba(148, 163, 184, 0.9);
+        margin-bottom: 0.45rem;
+    }
+    .meta-value {
+        color: #fff;
+        font-weight: 600;
+    }
+    .form-card {
+        padding: 2rem;
+    }
+    .message-card {
+        margin-bottom: 1rem;
+        padding: 1rem 1.1rem;
+        border-radius: 16px;
+        border: 1px solid rgba(248, 113, 113, 0.25);
+        background: rgba(248, 113, 113, 0.1);
+        color: #fecaca;
+    }
+    .form-group {
+        display: grid;
+        gap: 0.45rem;
+        margin-bottom: 1rem;
+    }
+    .form-label {
+        color: #e2e8f0;
+        font-weight: 600;
+    }
+    .form-input {
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(15, 23, 42, 0.75);
+        color: #fff;
+        padding: 0.95rem 1rem;
+        outline: none;
+    }
+    .form-input:focus {
+        border-color: rgba(96, 165, 250, 0.85);
+        box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.12);
+    }
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        margin-top: 0.5rem;
+        padding: 0.95rem 1rem;
+        border: 0;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #2563eb, #14b8a6);
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .form-footer {
+        margin-top: 1rem;
+        text-align: center;
+        color: rgba(226, 232, 240, 0.75);
+    }
+    .form-footer a {
+        color: #93c5fd;
+        font-weight: 700;
+        text-decoration: none;
+    }
+    @media (max-width: 900px) {
+        .registration-shell {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="registration-shell">
+    <section class="panel hero">
+        <span class="eyebrow">Participant Registration</span>
+        <h1>Join {{ event.event }}</h1>
+        <p>
+            Create your participant account from the event website so you can register,
+            attend activities, and return to your dashboard later.
+        </p>
+
+        {% if event.image or event.image_url %}
+            <img
+                class="event-image"
+                src="{% if event.image %}{{ event.image.url }}{% else %}{{ event.image_url }}{% endif %}"
+                alt="{{ event.event }}"
+            >
+        {% endif %}
+
+        <div class="meta-grid">
+            <div class="meta-item">
+                <div class="meta-label">Event</div>
+                <div class="meta-value">{{ event.event }}</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Date</div>
+                <div class="meta-value">{{ event.date_of_event|date:"F d, Y" }}</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Venue</div>
+                <div class="meta-value">{{ event.venue|default:"TBD" }}</div>
+            </div>
+        </div>
+
+        <div class="event-meta">
+            {{ event.description|linebreaks }}
+        </div>
+    </section>
+
+    <section class="panel form-card">
+        <h2>Create your account</h2>
+        <p>Use the same details you’ll use to register for activities and access the participant dashboard.</p>
+
+        {% if errors %}
+            <div class="message-card">
+                <ul style="margin: 0; padding-left: 1.2rem;">
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label" for="username">Username</label>
+                <input class="form-input" type="text" id="username" name="username" value="{{ username|default:'' }}" placeholder="johndoe" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="fullname">Full Name</label>
+                <input class="form-input" type="text" id="fullname" name="fullname" value="{{ fullname|default:'' }}" placeholder="John Doe" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="email">Email Address</label>
+                <input class="form-input" type="email" id="email" name="email" value="{{ email|default:'' }}" placeholder="name@example.com" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="password1">Password</label>
+                <input class="form-input" type="password" id="password1" name="password1" placeholder="Create a password" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="password2">Confirm Password</label>
+                <input class="form-input" type="password" id="password2" name="password2" placeholder="Confirm your password" required>
+            </div>
+            <button type="submit" class="btn-primary">Create Participant Account</button>
+        </form>
+
+        <div class="form-footer">
+            Already have an account?
+            <a href="{% url 'events:participant_login' %}">Sign in</a>
+        </div>
+        <div class="form-footer" style="margin-top: 0.35rem;">
+            <a href="{% url 'events:event_website_home' event.id %}">Back to event home</a>
+        </div>
+    </section>
+</main>
+{% endblock %}

@@ -60,13 +60,15 @@
 
 {% block content %}
     <main class="event-shell">
-        <div class="event-top">
+            <div class="event-top" style="margin-bottom: 0.5rem;">
+                <!-- Hide redundant top links -->
             <div class="left-area">
                 <!-- could be breadcrumbs or small meta -->
             </div>
             <div class="event-actions">
                 <a class="pill ghost" href="{{ coordinator_login_url }}">Coordinator Login</a>
                 <a class="pill ghost" href="{{ participant_login_url }}">Participant Login</a>
+                <a class="pill ghost" href="{{ participant_signup_url }}">Participant Signup</a>
                 {% if event.status != 'completed' %}
                     <a class="pill primary" href="{% url 'events:event_registration_form' event.id %}">Register</a>
                 {% else %}

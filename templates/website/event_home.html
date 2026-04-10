@@ -21,6 +21,12 @@
         <div class="hero-actions">
             <a href="{% url 'events:event_registration_form' event.id %}" class="btn btn-primary btn-lg">Register Now</a>
             <a href="{% url 'events:event_website_activities' event.id %}" class="btn btn-outline btn-lg">Explore Activities</a>
+            {% if participant_login_url %}
+                <a href="{{ participant_login_url }}" class="btn btn-outline btn-lg">Participant Login</a>
+            {% endif %}
+            {% if participant_signup_url %}
+                <a href="{{ participant_signup_url }}" class="btn btn-outline btn-lg">Participant Signup</a>
+            {% endif %}
         </div>
     </div>
 </section>

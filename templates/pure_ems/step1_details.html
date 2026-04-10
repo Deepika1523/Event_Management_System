@@ -1,0 +1,42 @@
+{% extends "base_nojs.html" %}
+
+{% block title %}Step 1: Event Details | EMS{% endblock %}
+
+{% block content %}
+<div class="card">
+    <ul class="steps">
+        <li class="step active">1. Details</li>
+        <li class="step">2. Activities</li>
+        <li class="step">3. Registration</li>
+        <li class="step">4. Coordinators</li>
+        <li class="step">5. Review</li>
+    </ul>
+
+    <h2>Step 1: Event Details</h2>
+    <p class="text-muted">Tell us about your event. These details will be public once Published.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    <div style="color: var(--error); font-size: 0.875rem; margin-top: 0.25rem;">
+                        {{ field.errors.0 }}
+                    </div>
+                {% endif %}
+                {% if field.help_text %}
+                    <small class="text-muted">{{ field.help_text }}</small>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+            <a href="{% url 'events:pure_dashboard' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Next: Add Activities</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

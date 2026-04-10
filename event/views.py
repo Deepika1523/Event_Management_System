@@ -1,4 +1,4 @@
-from .forms_event_creation import ActivityForm, RegistrationFieldForm, CoordinatorForm, WebsiteSetupForm
+from .forms_event_creation import ActivityForm, RegistrationFieldForm, CoordinatorForm, WebsiteSetupForm, ActivityEditForm
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
@@ -71,7 +71,7 @@ def event_creation_complete(request):
     return render(request, 'events/event_creation_complete.html')
 
 from django.contrib.auth.decorators import login_required
-from .forms_event_creation import ActivityForm, RegistrationFieldForm, CoordinatorForm, WebsiteSetupForm
+from .forms_event_creation import ActivityForm, RegistrationFieldForm, CoordinatorForm, WebsiteSetupForm, ActivityEditForm
 
 # Step 2: Activities
 @login_required
@@ -805,6 +805,10 @@ def event_detail(request, event_id):
     from participant.models import EventRegistration
 
     is_registered = EventRegistration.objects.filter(participant=request.user, event=event).exists()
+    can_create_activity = (
+        request.user.is_authenticated
+        and (request.user.is_superuser or event.user_id == request.user.id)
+    )
 
     return render(
         request,
@@ -812,7 +816,11 @@ def event_detail(request, event_id):
         {
             "event": event,
             "can_manage": _can_manage_event(request.user, event),
+            "can_create_activity": can_create_activity,
             "is_registered": is_registered,
+            "participant_login_url": reverse("events:participant_login"),
+            "participant_signup_url": reverse("events:event_participant_signup", args=[event.id]),
+            "event_registration_url": reverse("events:event_registration_form", args=[event.id]),
         },
     )
 
@@ -1109,6 +1117,112 @@ def signup(request):
     )
 
 
+def participant_signup(request):
+    user_model = get_user_model()
+    errors = []
+    form_data = {
+        "username": "",
+        "fullname": "",
+        "email": "",
+    }
+
+    if request.method == "POST":
+        username = (request.POST.get("username") or "").strip()
+        fullname = (request.POST.get("fullname") or "").strip()
+        email = (request.POST.get("email") or "").strip().lower()
+        password1 = request.POST.get("password1") or ""
+        password2 = request.POST.get("password2") or ""
+        next_url = request.POST.get("next") or request.GET.get("next")
+
+        # If username is empty (e.g. from bridge page), use email
+        if not username and email:
+            username = email
+
+        form_data.update({
+            "username": username,
+            "fullname": fullname,
+            "email": email,
+        })
+
+        if not username:
+            errors.append("Username is required.")
+        if not fullname:
+            errors.append("Full name is required.")
+        if not email:
+            errors.append("Email is required.")
+        if not password1:
+            errors.append("Password is required.")
+        if password1 != password2:
+            errors.append("Passwords do not match.")
+        if username and user_model.objects.filter(username__iexact=username).exists():
+            errors.append("Username is already taken.")
+        if email and user_model.objects.filter(email__iexact=email).exists():
+            errors.append("A user with this email already exists.")
+
+        if not errors:
+            from participant.models import Participant
+
+            user = user_model.objects.create_user(
+                username=username,
+                email=email,
+                password=password1,
+                first_name=fullname,
+            )
+            Participant.objects.create(user=user)
+            login(request, user)
+            messages.success(request, "Account created successfully. Welcome!")
+            if next_url:
+                return redirect(next_url)
+            return redirect("events:participant_dashboard")
+
+    return render(
+        request,
+        "registration/signup.html",
+        {
+            "errors": errors,
+            **form_data,
+        },
+    )
+
+
+def participant_login(request):
+    error_message = None
+    username = ""
+
+    if request.method == "POST":
+        username = (request.POST.get("username") or "").strip()
+        password = request.POST.get("password") or ""
+
+        if not username or not password:
+            error_message = "Username and password are required."
+        else:
+            user = authenticate(request, username=username, password=password)
+            if user is None:
+                user_model = get_user_model()
+                candidate = user_model.objects.filter(email__iexact=username).first()
+                if candidate:
+                    user = authenticate(request, username=candidate.username, password=password)
+
+            if user is not None:
+                login(request, user)
+                messages.success(request, f"Welcome back, {user.first_name or user.username}!")
+                next_url = request.POST.get("next") or request.GET.get("next")
+                if next_url:
+                    return redirect(next_url)
+                return redirect("events:participant_dashboard")
+
+            error_message = "Invalid username or password."
+
+    return render(
+        request,
+        "registration/participant_login.html",
+        {
+            "error_message": error_message,
+            "username": username,
+        },
+    )
+
+
 @login_required
 def invite_coordinator(request):
     if not _is_organizer(request.user):
@@ -1352,9 +1466,26 @@ def edit_event(request, event_id):
     )
 
 
-@login_required
 def event_registration_form(request, event_id):
     event = get_object_or_404(Event, id=event_id)
+    
+    # Check if participant is logged in
+    if not request.user.is_authenticated:
+        return render(request, "registration/participant_auth_bridge.html", {
+            "event": event,
+            "next": request.path,
+        })
+    # Check if participant is already registered
+    from participant.models import EventRegistration
+    existing_registration = EventRegistration.objects.filter(
+        participant=request.user,
+        event=event,
+    ).first()
+    
+    if existing_registration:
+        messages.info(request, "You are already registered for this event.")
+        return redirect("events:event_detail", event_id=event.id)
+
     # Only participants may register; if user hasn't chosen a role, send them to role selection
     if not _is_participant(request.user):
         messages.error(request, "Only participants can register for events. Please choose your role.")
@@ -1909,13 +2040,14 @@ def manage_activities(request):
     is_head = _is_head_coordinator(request.user)
     is_event_coord = _is_event_coordinator(request.user)
     is_activity_coord = _is_activity_coordinator(request.user)
-    can_manage = (
+    can_create_activity = (
         _is_organizer(request.user)
         or request.user.is_staff
         or request.user.is_superuser
         or is_head
         or is_event_coord
     )
+    can_view_manage_page = can_create_activity or is_activity_coord
     selected_event_id = request.GET.get("event_id") or request.POST.get("event_id")
     can_view_event_names = (
         request.user.is_superuser
@@ -1923,6 +2055,7 @@ def manage_activities(request):
         or _is_organizer(request.user)
         or is_head
         or is_event_coord
+        or is_activity_coord
     )
 
     # Provide all events for dropdown
@@ -1930,6 +2063,10 @@ def manage_activities(request):
         events = Event.objects.all().order_by("-id")
     elif _is_organizer(request.user):
         events = Event.objects.filter(user=request.user).order_by("-id")
+    elif is_event_coord:
+        events = Event.objects.filter(coordinators__user=request.user).distinct().order_by("-id")
+    elif is_activity_coord:
+        events = Event.objects.filter(activities__activity_coordinators__user=request.user).distinct().order_by("-id")
     else:
         events = Event.objects.none()
 
@@ -1937,6 +2074,25 @@ def manage_activities(request):
     activities = []
     if selected_event_id:
         activities = Activity.objects.filter(event_id=selected_event_id).order_by("start_time")
+
+    activity_rows = []
+    activity_coordinator_map = {}
+    if activities:
+        coordinator_rows = ActivityCoordinator.objects.select_related("user").filter(
+            activity_id__in=[activity.id for activity in activities]
+        )
+        for row in coordinator_rows:
+            activity_coordinator_map.setdefault(row.activity_id, []).append(row.user)
+        for activity in activities:
+            coordinators = activity_coordinator_map.get(activity.id, [])
+            activity_rows.append(
+                {
+                    "activity": activity,
+                    "coordinator_names": ", ".join(user.username for user in coordinators) or "-",
+                    "can_edit": _can_manage_activity(request.user, activity),
+                    "can_delete": _can_manage_activity(request.user, activity),
+                }
+            )
 
     # Users available to assign as coordinators
     users = get_user_model().objects.filter(is_active=True).order_by("username")
@@ -1969,11 +2125,12 @@ def manage_activities(request):
         print("[DEBUG] coordinator_emails:", request.POST.get("coordinator_emails"))
         # Optionally, you can log this to a file or use logging module
 
-        if not can_manage:
-            messages.error(request, "Only organizers can create activities.")
+        if not can_create_activity:
+            messages.error(request, "Only organizers and event coordinators can create activities.")
             return render(request, "events/manage_activities.html", {
-                "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                "form_data": form_data, "can_manage": can_create_activity, "can_view_manage_page": can_view_manage_page,
+                "selected_event_id": selected_event_id, "can_view_event_names": can_view_event_names,
+                "events": events, "activities": activity_rows,
                 "users": users,
             })
 
@@ -1986,8 +2143,9 @@ def manage_activities(request):
             messages.error(request, f"Missing required fields: {', '.join(missing)}. Please fill all required fields.")
             print(f"[DEBUG] Missing fields: {missing}")
             return render(request, "events/manage_activities.html", {
-                "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                "form_data": form_data, "can_manage": can_create_activity, "can_view_manage_page": can_view_manage_page,
+                "selected_event_id": selected_event_id, "can_view_event_names": can_view_event_names,
+                "events": events, "activities": activity_rows,
                 "users": users,
             })
 
@@ -1999,8 +2157,9 @@ def manage_activities(request):
         except ValueError:
             messages.error(request, "Start time must be in HH:MM format (e.g., 14:30).")
             return render(request, "events/manage_activities.html", {
-                "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                "form_data": form_data, "can_manage": can_create_activity, "can_view_manage_page": can_view_manage_page,
+                "selected_event_id": selected_event_id, "can_view_event_names": can_view_event_names,
+                "events": events, "activities": activity_rows,
                 "users": users,
             })
         try:
@@ -2008,8 +2167,9 @@ def manage_activities(request):
         except ValueError:
             messages.error(request, "End time must be in HH:MM format (e.g., 16:00).")
             return render(request, "events/manage_activities.html", {
-                "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                "form_data": form_data, "can_manage": can_create_activity, "can_view_manage_page": can_view_manage_page,
+                "selected_event_id": selected_event_id, "can_view_event_names": can_view_event_names,
+                "events": events, "activities": activity_rows,
                 "users": users,
             })
 
@@ -2021,8 +2181,9 @@ def manage_activities(request):
             if not team_size_value:
                 messages.error(request, "Team size is required for team events.")
                 return render(request, "events/manage_activities.html", {
-                    "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                    "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                    "form_data": form_data, "can_manage": can_create_activity, "can_view_manage_page": can_view_manage_page,
+                    "selected_event_id": selected_event_id, "can_view_event_names": can_view_event_names,
+                    "events": events, "activities": activity_rows,
                     "users": users,
                 })
             try:
@@ -2030,15 +2191,17 @@ def manage_activities(request):
             except ValueError:
                 messages.error(request, "Team size must be a number.")
                 return render(request, "events/manage_activities.html", {
-                    "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                    "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                    "form_data": form_data, "can_manage": can_create_activity, "can_view_manage_page": can_view_manage_page,
+                    "selected_event_id": selected_event_id, "can_view_event_names": can_view_event_names,
+                    "events": events, "activities": activity_rows,
                     "users": users,
                 })
             if team_size < 2:
                 messages.error(request, "Team size must be at least 2.")
                 return render(request, "events/manage_activities.html", {
-                    "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                    "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                    "form_data": form_data, "can_manage": can_create_activity, "can_view_manage_page": can_view_manage_page,
+                    "selected_event_id": selected_event_id, "can_view_event_names": can_view_event_names,
+                    "events": events, "activities": activity_rows,
                     "users": users,
                 })
 
@@ -2049,8 +2212,9 @@ def manage_activities(request):
             messages.error(request, "Please provide at least one coordinator email.")
             print("[DEBUG] No coordinator emails provided")
             return render(request, "events/manage_activities.html", {
-                "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                "form_data": form_data, "can_manage": can_create_activity, "can_view_manage_page": can_view_manage_page,
+                "selected_event_id": selected_event_id, "can_view_event_names": can_view_event_names,
+                "events": events, "activities": activity_rows,
                 "users": users,
             })
         # Validate each email
@@ -2066,8 +2230,9 @@ def manage_activities(request):
             messages.error(request, f"Invalid coordinator email(s): {', '.join(invalid)}")
             print(f"[DEBUG] Invalid emails: {invalid}")
             return render(request, "events/manage_activities.html", {
-                "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                "form_data": form_data, "can_manage": can_create_activity, "can_view_manage_page": can_view_manage_page,
+                "selected_event_id": selected_event_id, "can_view_event_names": can_view_event_names,
+                "events": events, "activities": activity_rows,
                 "users": users,
             })
 
@@ -2075,8 +2240,9 @@ def manage_activities(request):
         if not _can_manage_event_activities(request.user, event):
             messages.error(request, "You do not have permission to add activities for this event.")
             return render(request, "events/manage_activities.html", {
-                "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                "form_data": form_data, "can_manage": can_create_activity, "can_view_manage_page": can_view_manage_page,
+                "selected_event_id": selected_event_id, "can_view_event_names": can_view_event_names,
+                "events": events, "activities": activity_rows,
                 "users": users,
             })
 
@@ -2100,8 +2266,9 @@ def manage_activities(request):
         if not created:
             messages.info(request, "This activity already exists for the event.")
             return render(request, "events/manage_activities.html", {
-                "form_data": form_data, "can_manage": can_manage, "selected_event_id": selected_event_id,
-                "can_view_event_names": can_view_event_names, "events": events, "activities": activities,
+                "form_data": form_data, "can_manage": can_create_activity, "can_view_manage_page": can_view_manage_page,
+                "selected_event_id": selected_event_id, "can_view_event_names": can_view_event_names,
+                "events": events, "activities": activity_rows,
                 "users": users,
             })
 
@@ -2124,13 +2291,61 @@ def manage_activities(request):
     # For GET or after error, show form with preserved data and all context
     return render(request, "events/manage_activities.html", {
         "form_data": form_data,
-        "can_manage": can_manage,
+        "can_manage": can_create_activity,
+        "can_view_manage_page": can_view_manage_page,
         "selected_event_id": selected_event_id,
         "can_view_event_names": can_view_event_names,
         "events": events,
-        "activities": activities,
+        "activities": activity_rows,
         "users": users,
     })
+
+
+@login_required
+def edit_activity(request, activity_id):
+    activity = get_object_or_404(Activity.objects.select_related("event"), id=activity_id)
+    if not _can_manage_activity(request.user, activity):
+        messages.error(request, "You do not have permission to edit this activity.")
+        return redirect("events:manage_activities", event_id=activity.event_id)
+
+    if request.method == "POST":
+        form = ActivityEditForm(request.POST, instance=activity)
+        if form.is_valid():
+            try:
+                form.save()
+            except IntegrityError:
+                form.add_error("name", "This activity already exists for the selected event.")
+                messages.error(request, "This activity already exists for the selected event.")
+            else:
+                messages.success(request, "Activity updated successfully.")
+                return redirect("events:manage_activities", event_id=activity.event_id)
+    else:
+        form = ActivityEditForm(instance=activity)
+
+    return render(
+        request,
+        "events/edit_activity.html",
+        {
+            "form": form,
+            "activity": activity,
+        },
+    )
+
+
+@login_required
+def delete_activity(request, activity_id):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    activity = get_object_or_404(Activity.objects.select_related("event"), id=activity_id)
+    if not _can_manage_activity(request.user, activity):
+        messages.error(request, "You do not have permission to delete this activity.")
+        return redirect("events:manage_activities", event_id=activity.event_id)
+
+    event_id = activity.event_id
+    activity.delete()
+    messages.success(request, "Activity deleted successfully.")
+    return redirect("events:manage_activities", event_id=event_id)
 
 
 @login_required
@@ -2138,10 +2353,11 @@ def event_dashboard(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     
     # Use centralized permission check as requested
+    can_view_dashboard = _can_view_event_dashboard(request.user, event)
     can_manage = _can_manage_event_activities(request.user, event)
     can_view_participants = _can_view_event_participants(request.user, event)
     
-    if not (can_manage or can_view_participants):
+    if not (can_view_dashboard or can_view_participants):
         messages.error(request, "You do not have permission to access this event dashboard.")
         return HttpResponse("Forbidden: You do not have permission to access this dashboard.", status=403)
     can_invite_event_coordinator = (
@@ -2271,6 +2487,8 @@ def event_dashboard(request, event_id):
                 "activity": activity,
                 "coordinator_names": coordinator_names,
                 "registration_count": registration_counts.get(activity.id, 0),
+                "can_edit": _can_manage_activity(request.user, activity),
+                "can_delete": _can_manage_activity(request.user, activity),
             }
         )
 
@@ -3028,6 +3246,8 @@ def event_website_home(request, event_id):
         'event': event,
         'days_left': days_left,
         'activities_count': event.activities.count(),
+        'participant_login_url': reverse('events:participant_login'),
+        'participant_signup_url': reverse('events:event_participant_signup', args=[event.id]),
     }
     return render(request, 'website/event_home.html', context)
 
@@ -3113,7 +3333,7 @@ def activity_register(request, activity_id):
     # Visitors are not allowed to register; redirect to login/participant signup
     if not request.user.is_authenticated or not _is_participant(request.user):
         messages.error(request, "Please log in as a Participant to register for activities.")
-        return redirect(f"{reverse('events:unified_login')}?role=participant")
+        return redirect("events:participant_login")
 
     existing_registration = ActivityRegistration.objects.filter(
         participant=request.user,

@@ -24,6 +24,7 @@
                 <i data-lucide="shield" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);"></i>
                 <select id="id_role" name="role" class="form-input" style="padding-left: 3rem; appearance: none; cursor: pointer;" required>
                     <option value="">Select a role</option>
+                    <option value="participant" {% if selected_role == "participant" %}selected{% endif %}>Participant</option>
                     <option value="coordinator" {% if selected_role == "coordinator" %}selected{% endif %}>Coordinator</option>
                     <option value="organizer" {% if selected_role == "organizer" %}selected{% endif %}>Organizer</option>
                 </select>

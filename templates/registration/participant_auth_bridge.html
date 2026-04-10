@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Register for {{ event.event }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-page-header" style="background-image: url('{% static "images/landing_hero_dark.png" %}'); height: 350px;">
+    <div class="header-content-rel">
+        <span class="eyebrow" style="color: white; opacity: 0.8;">Participant Portal</span>
+        <h1 style="color: white; margin-bottom: 0.5rem;">Join {{ event.event }}</h1>
+        <p style="color: rgba(255,255,255,0.7);">Register, Login or Sign Up to continue.</p>
+    </div>
+</div>
+
+<div style="max-width: 1000px; margin: 0 auto; margin-top: -3rem; position: relative; z-index: 40; padding: 0 1rem;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        
+        <!-- Login Section -->
+        <section class="glass-card" style="display: flex; flex-direction: column;">
+            <div style="margin-bottom: 1.5rem;">
+                <h2 style="color: white; font-size: 1.5rem;"><i data-lucide="log-in"></i> Log In</h2>
+                <p style="color: var(--text-muted); font-size: 0.875rem;">Already have a participant account?</p>
+            </div>
+            
+            <form action="{% url 'accounts:participant_login' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next }}">
+                
+                <div class="form-group">
+                    <label class="form-label">Email or Username</label>
+                    <input type="text" name="email" class="form-input" placeholder="Your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-input" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="btn btn-secondary" style="width: 100%; margin-top: 1rem;">Sign In to Register</button>
+            </form>
+        </section>
+
+        <!-- Signup Section -->
+        <section class="glass-card" style="display: flex; flex-direction: column; border-top: 4px solid var(--primary);">
+            <div style="margin-bottom: 1.5rem;">
+                <h2 style="color: white; font-size: 1.5rem;"><i data-lucide="user-plus"></i> Create Account</h2>
+                <p style="color: var(--text-muted); font-size: 0.875rem;">New to EventSync? Join as a participant.</p>
+            </div>
+            
+            <form action="{% url 'accounts:participant_signup' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next }}">
+                
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="fullname" class="form-input" placeholder="John Doe" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" class="form-input" placeholder="john@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Create Password</label>
+                    <input type="password" name="password1" class="form-input" placeholder="••••••••" required>
+                </div>
+
+                <div class="form-group">
+                    <input type="password" name="password2" class="form-input" placeholder="Confirm Password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Sign Up & Continue</button>
+            </form>
+        </section>
+
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+        <p style="color: var(--text-muted); font-size: 0.875rem;">
+            Not a participant? <a href="{% url 'accounts:role_selection' %}" style="color: var(--primary); text-decoration: none;">Choose another role</a>
+        </p>
+    </div>
+</div>
+
+<style>
+    @media (max-width: 768px) {
+        div[style*="grid-template-columns: 1fr 1fr"] {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
+{% endblock %}

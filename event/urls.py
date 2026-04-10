@@ -2,7 +2,8 @@ from django.urls import path
 
 # Register a namespace so templates can use the 'events:' URL namespace
 app_name = 'events'
-from . import views, event_pdf_views
+from participant import views as participant_views
+from . import views, event_pdf_views, pure_views
 
 urlpatterns = [
     path("create/step2/", views.step2_activities, name="step2_activities"),
@@ -14,6 +15,7 @@ urlpatterns = [
     path("", views.role_based_user_page, name="home"),
     path("dashboard/", views.participant_dashboard, name="dashboard"),
     path("login/", views.unified_login, name="unified_login"),
+    path("signup/participant/", views.participant_signup, name="participant_signup"),
     path("manage-events/", views.manage_events, name="manage_events"),
     path("manage-events/edit/<int:event_id>/", views.edit_event, name="edit_event"),
     path(
@@ -27,6 +29,8 @@ urlpatterns = [
         name="ai_generate_event_banner",
     ),
     path("manage-activities/", views.manage_activities, name="manage_activities"),
+    path("activities/<int:activity_id>/edit/", views.edit_activity, name="edit_activity"),
+    path("activities/<int:activity_id>/delete/", views.delete_activity, name="delete_activity"),
     path("events/<int:event_id>/dashboard/", views.event_dashboard, name="event_dashboard"),
     path(
         "events/<int:event_id>/register/",
@@ -71,6 +75,11 @@ urlpatterns = [
     path("event/<int:event_id>/schedule/", views.event_website_schedule, name="event_website_schedule"),
     path("event/<int:event_id>/gallery/", views.event_website_gallery, name="event_website_gallery"),
     path("event/<int:event_id>/contact/", views.event_website_contact, name="event_website_contact"),
+    path(
+        "event/<int:event_id>/participant-registration/",
+        participant_views.participant_signup_for_event,
+        name="event_participant_signup",
+    ),
     path("activity/<int:activity_id>/register/", views.activity_register, name="activity_register"),
     path("user/", views.role_based_user_page, name="user"),
     path(
@@ -85,12 +94,7 @@ urlpatterns = [
         {"expected_role": "organizer", "template_name": "registration/organizer_login.html"},
         name="organizer_login",
     ),
-    path(
-        "login/participant/",
-        views.role_login,
-        {"expected_role": "participant", "template_name": "registration/participant_login.html"},
-        name="participant_login",
-    ),
+    path("login/participant/", views.participant_login, name="participant_login"),
     path("signup/", views.signup, name="signup"),
     path(
         "activities/<int:activity_id>/register/",
@@ -122,8 +126,10 @@ urlpatterns = [
     path("create/step4/", views.step4_coordinators, name="step4_coordinators"),
     path("create/step5/", views.step5_website_setup, name="step5_website_setup"),
     path("create/complete/", views.event_creation_complete, name="event_creation_complete"),
+
+    # Pure EMS (No JS) routes
+    path("pure/dashboard/", pure_views.OrganizerLandingView.as_view(), name="pure_dashboard"),
+    path("pure/create/step1/", pure_views.Step1DetailsView.as_view(), name="pure_step1_details"),
+    path("pure/create/step1/<int:event_id>/", pure_views.Step1DetailsView.as_view(), name="pure_step1_details_edit"),
+    path("pure/create/step2/<int:event_id>/", pure_views.Step2ActivitiesView.as_view(), name="pure_step2_activities"),
 ]
-
-
-
-

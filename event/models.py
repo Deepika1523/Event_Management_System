@@ -64,6 +64,9 @@ class Event(models.Model):
         default="classic",
     )
     image_url = models.CharField(max_length=500, blank=True, help_text="Event image URL")
+    website = models.URLField(blank=True, help_text="Event website URL")
+    is_draft = models.BooleanField(default=True)
+    form_schema = models.JSONField(default=dict, blank=True)
 
     class Meta:
         ordering = ["-date_of_event"]
