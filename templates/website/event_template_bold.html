@@ -60,25 +60,6 @@
 
 {% block content %}
     <main class="event-shell">
-            <div class="event-top" style="margin-bottom: 0.5rem;">
-                <!-- Hide redundant top links -->
-            <div class="left-area">
-                <!-- could be breadcrumbs or small meta -->
-            </div>
-            <div class="event-actions">
-                <a class="pill ghost" href="{{ coordinator_login_url }}">Coordinator Login</a>
-                <a class="pill ghost" href="{{ participant_login_url }}">Participant Login</a>
-                <a class="pill ghost" href="{{ participant_signup_url }}">Participant Signup</a>
-                {% if event.status != 'completed' %}
-                    <a class="pill primary" href="{% url 'events:event_registration_form' event.id %}">Register</a>
-                {% else %}
-                    <button class="pill ghost" disabled style="opacity:0.6;">Registration Closed</button>
-                {% endif %}
-                {% if can_create_activity %}
-                    <a class="pill ghost" href="{% if request.user.is_superuser %}{{ admin_activity_url }}{% else %}{{ organizer_activity_url }}{% endif %}">Create Activity</a>
-                {% endif %}
-            </div>
-        </div>
 
         <section class="event-header">
             <div class="event-meta">
@@ -88,10 +69,17 @@
                     <div class="event-sub"><strong>{{ event.tagline }}</strong></div>
                 {% endif %}
                 <p class="event-sub">{{ event.description|linebreaksbr }}</p>
-                <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+                <div style="margin-top:16px; display:flex; gap:12px; align-items:center; flex-wrap: wrap;">
+                        {% if event.status != 'completed' %}
+                            <a class="pill primary" href="{% url 'events:event_registration_form' event.id %}">Register Now</a>
+                        {% endif %}
+                        {% if event.activities.count > 0 %}
+                            <a class="pill ghost" href="{{ participant_login_url }}">Participant Login</a>
+                            <a class="pill ghost" href="{{ participant_signup_url }}">Participant Signup</a>
+                        {% endif %}
                         <a class="pill ghost" href="#details">Details</a>
                         <a class="pill ghost" href="#activities">Activities</a>
-                        <div style="margin-left:12px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:0.85rem;color:var(--muted)">
+                        <div style="padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:0.85rem;color:var(--muted)">
                             Status: <strong style="color:white;margin-left:6px; text-transform:capitalize;">{{ event.get_status_display }}</strong>
                         </div>
                     </div>

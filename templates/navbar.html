@@ -14,14 +14,23 @@
         <a href="{% url 'events:event_create_or_list' %}" class="{% if current_name == 'event_create_or_list' or current_name == 'event_detail' %}is-active{% endif %}">Events</a>
         <a href="{% url 'events:dashboard' %}" class="{% if current_name == 'dashboard' %}is-active{% endif %}">Activities</a>
         <a href="{% url 'events:dashboard' %}#leaderboard">Leaderboard</a>
+        
+        {% if user.is_authenticated %}
+            {% if user.is_superuser or user.profile.role == 'organizer' or user.organizer_profile %}
+                <a href="{% url 'events:organizer_dashboard' %}" class="{% if current_name == 'organizer_dashboard' %}is-active{% endif %}">Dashboard</a>
+            {% elif user.profile.role == 'coordinator' %}
+                <a href="{% url 'events:coordinator_dashboard' %}" class="{% if current_name == 'coordinator_dashboard' %}is-active{% endif %}">Dashboard</a>
+            {% else %}
+                <a href="{% url 'events:participant_dashboard' %}" class="{% if current_name == 'participant_dashboard' %}is-active{% endif %}">Dashboard</a>
+            {% endif %}
+        {% endif %}
     </nav>
 
     <div class="navbar-links-auth">
         {% if user.is_authenticated %}
             <a href="{% url 'participant_logout' %}" class="nav-logout">Logout</a>
-        {% else %}
-            <a href="{% url 'accounts:unified_login' %}" class="{% if current_name == 'unified_login' or current_name == 'participant_login' or current_name == 'organizer_login' %}is-active{% endif %}">Login</a>
-            <a href="{% url 'accounts:participant_signup' %}" class="nav-join">Join As Participant</a>
+        {% elif current_name != 'website-index' and current_name != 'home' %}
+            <a href="{% url 'events:unified_login' %}" class="{% if current_name == 'unified_login' or current_name == 'participant_login' or current_name == 'organizer_login' %}is-active{% endif %}">Organizer Login</a>
         {% endif %}
     </div>
 </header>

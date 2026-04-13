@@ -16,7 +16,7 @@
             Manage registrations, scale activities, and engage your audience seamlessly.
         </p>
         <div class="hero-actions">
-            <a href="{% url 'accounts:role_selection' %}" class="btn btn-primary btn-lg">Get Started</a>
+            <a href="{% url 'accounts:role_selection' %}" class="btn btn-primary btn-lg">Start Organizing</a>
             <a href="{% url 'events:event_create_or_list' %}" class="btn btn-outline btn-lg">Explore Events</a>
         </div>
     </div>
@@ -43,9 +43,9 @@
 <section class="glass-card" style="margin-top: 1.5rem; padding: 2rem; text-align: center;">
     <span class="eyebrow">Ready to sync your event?</span>
     <h2 style="margin: 0.75rem 0 0.5rem;">A single premium product for every event role.</h2>
-    <p class="hero-description" style="margin-inline: auto;">Join organizers, coordinators, and participants on the same streamlined experience.</p>
+    <p class="hero-description" style="margin-inline: auto;">Join organizers and coordinators to launch your next big event.</p>
     <div class="hero-actions" style="justify-content: center;">
-        <a href="{% url 'events:signup' %}" class="btn btn-primary btn-lg">Join EventSync Now</a>
+        <a href="{% url 'events:signup' %}?role=organizer" class="btn btn-primary btn-lg">Join as Organizer</a>
     </div>
 </section>
 

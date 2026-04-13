@@ -62,6 +62,15 @@
 </head>
 <body>
   <div class="shell">
+    <!-- Notification Modal -->
+    <div id="notification-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(15,23,42,0.32);z-index:9999;align-items:center;justify-content:center;">
+      <div style="background:white;color:#222;padding:2rem 2.5rem;border-radius:1.5rem;box-shadow:0 8px 32px rgba(0,0,0,0.18);max-width:340px;display:flex;flex-direction:column;align-items:center;gap:1rem;">
+        <i data-lucide="mail-check" style="font-size:2.2rem;color:#4f46e5;"></i>
+        <strong style="font-size:1.2rem;">Email Sent</strong>
+        <div id="notification-modal-message">You will be updated within 24 hours via email. You will receive both the gate pass and activity pass.</div>
+        <button onclick="document.getElementById('notification-modal').style.display='none'" style="margin-top:1rem;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:white;padding:0.7rem 1.5rem;border:none;border-radius:999px;font-weight:700;">OK</button>
+      </div>
+    </div>
     <header class="topbar">
       <a class="brand" href="{% url 'events:home' %}"><span class="brand-mark">E</span><span>Event Portal</span></a>
       <nav class="links">
@@ -142,7 +151,27 @@
           <section class="step" data-step="4">
             <div class="panel-head"><div><span class="kicker">Step 4</span><h3>Download Pass</h3></div>{% if registration_complete %}<span class="mini ok">Registration complete</span>{% else %}<span class="mini warn">Available after submit</span>{% endif %}</div>
             <div class="download-grid">
-              <div class="confirm">{% if registration_complete %}<div class="success"><i data-lucide="check-circle-2"></i><div><strong>Registration successful</strong><p>Your registration has been submitted for review.</p></div></div>{% else %}<div class="success muted"><i data-lucide="clock-3"></i><div><strong>Pass unlocks after submission</strong><p>Complete all steps to reveal your pass.</p></div></div>{% endif %}<div class="summary"><div><span class="mini">Activity</span><strong>{{ activity.name }}</strong></div><div><span class="mini">Event</span><strong>{{ event.event }}</strong></div><div><span class="mini">Fee</span><strong>{{ activity.registration_fee|default:"Free" }}</strong></div></div>{% if download_pass_url %}<a class="btn primary wide" href="{{ download_pass_url }}">Download Pass</a>{% endif %}</div>
+              <div class="confirm">
+                {% if registration_complete %}
+                  <div class="success"><i data-lucide="check-circle-2"></i><div><strong>Registration successful</strong><p>Your registration has been submitted for review.</p></div></div>
+                {% else %}
+                  <div class="success muted"><i data-lucide="clock-3"></i><div><strong>Pass unlocks after submission</strong><p>Complete all steps to reveal your pass.</p></div></div>
+                {% endif %}
+                <div class="summary">
+                  <div><span class="mini">Activity</span><strong>{{ activity.name }}</strong></div>
+                  <div><span class="mini">Event</span><strong>{{ event.event }}</strong></div>
+                  <div><span class="mini">Fee</span><strong>{{ activity.registration_fee|default:"Free" }}</strong></div>
+                </div>
+                {% if download_pass_url %}
+                  <a class="btn primary wide" href="{{ download_pass_url }}">Download Pass</a>
+                {% endif %}
+                {% if messages %}
+                  {% for message in messages %}
+                    <div class="msg msg-success" style="margin-top:1rem;">{{ message }}</div>
+                    <script>setTimeout(function(){document.getElementById('notification-modal').style.display='flex';}, 500);</script>
+                  {% endfor %}
+                {% endif %}
+              </div>
               <div class="entry"><span class="mini">Entry QR</span><div class="entry-box"><span>{{ request.user.username|slice:":1"|upper }}</span></div><p>Show your pass at the gate after approval.</p></div>
             </div>
             <div class="actions"><button type="button" class="btn ghost" data-prev>Previous</button>{% if registration_complete %}<button type="submit" class="btn primary loading" disabled>Submitted</button>{% else %}<button type="submit" class="btn primary" id="submitBtn">Submit Registration</button>{% endif %}</div>

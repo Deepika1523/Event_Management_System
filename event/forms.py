@@ -9,12 +9,21 @@ class EventNameValidationMixin:
         if not name:
             return name
 
-        qs = Event.objects.filter(name__iexact=name)
+        user = self.initial.get("user") or self.instance.user if self.instance and self.instance.pk else None
+        if not user and hasattr(self, 'user'):
+            user = self.user
+        if not user and hasattr(self, 'request'):
+            user = getattr(self.request, 'user', None)
+        if not user:
+            # fallback: don't enforce uniqueness if user is not available
+            return name
+
+        qs = Event.objects.filter(name__iexact=name, user=user)
         if self.instance and self.instance.pk:
             qs = qs.exclude(pk=self.instance.pk)
 
         if qs.exists():
-            raise forms.ValidationError("An event with this name already exists.")
+            raise forms.ValidationError("You already have an event with this name.")
 
         return name
 
@@ -47,6 +56,35 @@ class EventForm(forms.ModelForm):
             "time_of_event": forms.TimeInput(attrs={"type": "time"}),
             "last_registration_date": forms.DateInput(attrs={"type": "date"}),
             "template_choice": forms.Select(),
+            "category": forms.Select(),
+        }
+
+    clean_name = EventNameValidationMixin.clean_name
+
+
+
+class EventCreationForm(forms.ModelForm):
+    """Specific form for Step 1 of the multi-step creation flow."""
+    image = forms.ImageField(required=False, label="Event Image")
+    qr_code_image = forms.ImageField(required=False, label="Event QR Code Image")
+    class Meta:
+        model = Event
+        fields = [
+            "name",
+            "description",
+            "date_of_event",
+            "time_of_event",
+            "venue",
+            "location",
+            "category",
+            "contact_info",
+            "image_url",
+            "image",
+            "qr_code_image",
+        ]
+        widgets = {
+            "date_of_event": forms.DateInput(attrs={"type": "date"}),
+            "time_of_event": forms.TimeInput(attrs={"type": "time"}),
             "category": forms.Select(),
         }
 

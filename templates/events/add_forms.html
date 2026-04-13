@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Registration Form | {{ event.name }}{% endblock %}
+{% block page_title %}Step 3: Registration Form Builder{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'events:organizer_dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator">/</span>
+    <a href="{% url 'events:manage_events' %}">Events</a>
+    <span class="breadcrumb-separator">/</span>
+    <span>{{ event.name }}</span>
+</div>
+
+<div class="form-nav" style="margin-bottom:20px;">
+    <a href="{% url 'events:create_event_step1' %}" class="tab-btn completed">1. Event Detail</a>
+    <a href="{% url 'events:create_event_step2' %}" class="tab-btn completed">2. Add Activity</a>
+    <a href="#" class="tab-btn active">3. Add Forms</a>
+    <a href="{% url 'events:create_event_step4' %}" class="tab-btn">4. Add Coordinators</a>
+    <a href="{% url 'events:create_event_step5' %}" class="tab-btn">5. Create Website</a>
+</div>
+
+<div class="layout-grid" style="display: grid; grid-template-columns: 1fr 350px; gap: 30px;">
+    <div class="main-content">
+        <div class="card">
+            <div class="card-header">
+                <h2>📝 Custom Registration Fields</h2>
+                <p>Add custom questions you want participants to answer when they register.</p>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label class="form-label required">Field Label (Question)</label>
+                        {{ form.label }}
+                        <small style="color: #888;">e.g., "Food Preferences", "T-Shirt Size", "Roll Number"</small>
+                    </div>
+
+                    <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                        <div class="form-group">
+                            <label class="form-label required">Field Type</label>
+                            {{ form.field_type }}
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="choices-group">
+                        <label class="form-label">Options (for Dropdowns)</label>
+                        {{ form.dropdown_options }}
+                        <small style="color: #888;">Separate options with commas. e.g., "Small, Medium, Large"</small>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 30px; display: flex; gap: 15px;">
+                        <button type="submit" name="action" value="add_another" class="btn btn-secondary">
+                            + Add Another Field
+                        </button>
+                        <button type="submit" name="action" value="next" class="btn btn-primary" style="flex: 1;">
+                            Save & Continue →
+                        </button>
+                        <button type="submit" name="action" value="skip" class="btn btn-outline-secondary" style="flex: 1;">
+                            Skip (Optional)
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="card">
+            <div class="card-header">
+                <h3>📋 Form Preview ({{ fields|length }})</h3>
+            </div>
+            <div class="card-body" style="background: #f9fafb;">
+                <div class="preview-container" style="background: white; border: 1px dashed var(--border-color); border-radius: 8px; padding: 15px;">
+                    <div class="base-fields" style="opacity: 0.5;">
+                        <div style="margin-bottom:10px;"><label style="font-size:12px; font-weight:bold;">Name</label><div style="height:35px; border:1px solid #ddd; background:#eee;"></div></div>
+                        <div style="margin-bottom:10px;"><label style="font-size:12px; font-weight:bold;">Email</label><div style="height:35px; border:1px solid #ddd; background:#eee;"></div></div>
+                    </div>
+                    
+                    {% for field in fields %}
+                    <div style="margin-bottom:15px; border-top:1px solid #eee; padding-top:10px;">
+                        <label style="font-size:12px; font-weight:bold; display:block;">{{ field.field_name }}{% if field.required %} <span style="color:red;">*</span>{% endif %}</label>
+                        <div style="height:30px; border:1px solid #ccd; border-radius:4px; margin-top:5px; padding: 5px; font-size: 11px; color:#aaa;">
+                            {% if field.field_type == 'dropdown' %} Select... ({{ field.choices|truncatechars:20 }}) {% else %} [ {{ field.field_type|title }} Input ] {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if not fields %}
+                    <p style="text-align:center; color:#999; font-size:12px; margin-top:10px;">No custom fields added yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box" style="margin-top: 20px; background: #eff6ff; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+            <p style="font-size: 13px; color: #1e40af; margin: 0;">
+                <strong>Standard Fields:</strong> Name, Email, and Phone are always collected by default. Add only supplementary fields here.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tab-btn.completed { color: #10b981; border-color: #10b981; }
+    .form-nav { display: flex; gap: 10px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
+    .tab-btn { padding: 10px 20px; border: 1px solid transparent; border-radius: 6px; text-decoration: none; color: #666; font-weight: 500; }
+    .tab-btn.active { background: var(--primary-color); color: white; }
+    .tab-btn:hover:not(.active) { background: #f3f4f6; }
+</style>
+{% endblock %}

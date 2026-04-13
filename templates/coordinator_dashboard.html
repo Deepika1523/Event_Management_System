@@ -3,10 +3,25 @@
 
 {% block title %}Coordinator Dashboard | EventSync{% endblock %}
 
+{% block extra_css %}
+<style>
+    .coordinator-hero {
+        background-image: url("{% static 'images/dashboard_header_dark.png' %}");
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        padding: 4rem 2rem;
+        overflow: hidden;
+        border-radius: var(--radius-lg);
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="dashboard-container">
     <!-- Welcome Header -->
-    <header class="dashboard-header" style="background-image: url('{% static 'images/dashboard_header_dark.png' %}'); position: relative; padding: 4rem 2rem; overflow: hidden; border-radius: var(--radius-lg); margin-bottom: 2rem;">
+    <header class="dashboard-header coordinator-hero">
         <div class="header-overlay" style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15, 23, 42, 0.4), var(--bg-deep)); z-index: 1;"></div>
         <div class="header-content" style="position: relative; z-index: 10;">
             <h1 style="font-size: 3rem; margin-bottom: 0.5rem; color: white;">Coordinator Workspace</h1>

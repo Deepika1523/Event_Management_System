@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Coordinators | {{ event.name }}{% endblock %}
+{% block page_title %}Step 4: Add Coordinators{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'events:organizer_dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator">/</span>
+    <a href="{% url 'events:manage_events' %}">Events</a>
+    <span class="breadcrumb-separator">/</span>
+    <span>{{ event.name }}</span>
+</div>
+
+<div class="form-nav" style="margin-bottom:20px;">
+    <a href="{% url 'events:create_event_step1' %}" class="tab-btn completed">1. Event Detail</a>
+    <a href="{% url 'events:create_event_step2' %}" class="tab-btn completed">2. Add Activity</a>
+    <a href="{% url 'events:create_event_step3' %}" class="tab-btn completed">3. Add Forms</a>
+    <a href="#" class="tab-btn active">4. Add Coordinators</a>
+    <a href="{% url 'events:create_event_step5' %}" class="tab-btn">5. Create Website</a>
+</div>
+
+<div class="layout-grid" style="display: grid; grid-template-columns: 1fr 350px; gap: 30px;">
+    <div class="main-content">
+        <div class="card">
+            <div class="card-header">
+                <h2>🤝 Assignment of Coordinators</h2>
+                <p>Add coordinators to help manage your event. They will receive an invitation to join.</p>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label class="form-label required">Full Name</label>
+                        {{ form.name }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label required">Email Address</label>
+                        {{ form.email }}
+                        <small style="color: #888;">Coordinators will use this email to log in.</small>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 30px; display: flex; gap: 15px;">
+                        <button type="submit" name="action" value="add_another" class="btn btn-secondary">
+                            + Add Another Coordinator
+                        </button>
+                        <button type="submit" name="action" value="next" class="btn btn-primary" style="flex: 1;">
+                            Save & Continue →
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="card">
+            <div class="card-header">
+                <h3>👥 Assigned Team ({{ coordinators|length }})</h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                {% if coordinators %}
+                    <ul class="coordinator-list" style="list-style: none; margin: 0; padding: 0;">
+                        {% for coord in coordinators %}
+                            <li style="padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 12px;">
+                                <div class="avatar" style="width: 35px; height: 35px; border-radius: 50%; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
+                                    {{ coord.name|slice:":1"|upper }}
+                                </div>
+                                <div style="overflow: hidden;">
+                                    <strong style="display: block; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ coord.name }}</strong>
+                                    <small style="color: #666; font-size: 12px;">{{ coord.email }}</small>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div style="padding: 30px; text-align: center; color: #999;">
+                        <p>No coordinators assigned yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="info-box" style="margin-top: 20px; background: #fff7ed; padding: 15px; border-radius: 8px; border-left: 4px solid #ea580c;">
+            <p style="font-size: 13px; color: #9a3412; margin: 0;">
+                <strong>Note:</strong> If the email is already registered, they will be given coordinator access semi-automatically. Otherwise, they'll be marked as a guest coordinator.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tab-btn.completed { color: #10b981; border-color: #10b981; }
+    .form-nav { display: flex; gap: 10px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
+    .tab-btn { padding: 10px 20px; border: 1px solid transparent; border-radius: 6px; text-decoration: none; color: #666; font-weight: 500; }
+    .tab-btn.active { background: var(--primary-color); color: white; }
+    .tab-btn:hover:not(.active) { background: #f3f4f6; }
+</style>
+{% endblock %}

@@ -1,8 +1,11 @@
+
 from django.urls import path
 from event import views as event_views
 from . import views
 
 urlpatterns = [
+    path("login/organizer/", views.organizer_login, name="organizer_login"),
+    path("login/coordinator/", views.coordinator_login, name="coordinator_login"),
     path("", views.index, name="website-index"),
     path("about/", views.about, name="about"),
     path("activities/", views.activities, name="activities"),
@@ -11,11 +14,5 @@ urlpatterns = [
     path("contact/", views.contact, name="contact"),
     path("event/<int:event_id>/", views.event_site, name="event_site"),
 
-    # Organizer dashboards
-    path("organizer-dashboard/", event_views.organizer_dashboard, name="organizer_dashboard"),
-    path("coordinator-dashboard/", event_views.coordinator_dashboard, name="coordinator_dashboard"),
-    path("participant-dashboard/", event_views.participant_dashboard, name="participant_dashboard"),
-
-    # Your feature
-    path("unified-login/", views.unified_login, name="unified_login"),
+    # Dashboard and login routes are managed in the events namespace
 ]

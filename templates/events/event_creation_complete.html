@@ -2,5 +2,8 @@
 {% block content %}
 <h2>Event Created Successfully!</h2>
 <p>Your event and all details have been saved.</p>
-<a href="{% url 'events:dashboard' %}">Go to Dashboard</a>
+<div style="margin-top: 30px; display: flex; gap: 20px;">
+	<a href="{% url 'events:dashboard' %}" class="btn btn-secondary">Go to Dashboard</a>
+	<a href="{% url 'events:create_activity' event_id=event_id %}" class="btn btn-primary">Create Activity for this Event</a>
+</div>
 {% endblock %}

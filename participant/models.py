@@ -97,9 +97,11 @@ class EventRegistration(models.Model):
     # Participation type: individual or team (kept for compatibility with older schema)
     PARTICIPATION_INDIVIDUAL = "individual"
     PARTICIPATION_TEAM = "team"
+    PARTICIPATION_AUDIENCE = "audience"
     PARTICIPATION_CHOICES = [
         (PARTICIPATION_INDIVIDUAL, "Individual"),
         (PARTICIPATION_TEAM, "Team"),
+        (PARTICIPATION_AUDIENCE, "Audience"),
     ]
     participation_type = models.CharField(
         max_length=32,

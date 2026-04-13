@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Participation Choice | {{ event.event }}{% endblock %}
+
+{% block content %}
+<div class="choice-container">
+    <div class="choice-content-card glass-card animate-fade-in">
+        <div class="choice-header">
+            <span class="eyebrow">Registration Successful</span>
+            <h1>How will you experience the event?</h1>
+            <p class="description-text">Choose your participation mode for <strong>{{ event.event }}</strong>. You can compete in activities or join as an audience member.</p>
+        </div>
+
+        <div class="choice-options-grid">
+            <form method="post" class="choice-form-item">
+                {% csrf_token %}
+                <input type="hidden" name="choice" value="activities">
+                <button type="submit" class="choice-nav-button activity-mode">
+                    <div class="icon-orb">
+                        <i data-lucide="award"></i>
+                    </div>
+                    <div class="text-content">
+                        <h3>Competition Participant</h3>
+                        <p>Register for specific activities, compete for glory, and track your scores on the leaderboard.</p>
+                    </div>
+                    <div class="arrow-hint">
+                        <i data-lucide="chevron-right"></i>
+                    </div>
+                </button>
+            </form>
+
+            <form method="post" class="choice-form-item">
+                {% csrf_token %}
+                <input type="hidden" name="choice" value="audience">
+                <button type="submit" class="choice-nav-button audience-mode">
+                    <div class="icon-orb">
+                        <i data-lucide="users"></i>
+                    </div>
+                    <div class="text-content">
+                        <h3>Event Audience</h3>
+                        <p>Join the event to watch activities, attend general sessions, and soak in the atmosphere.</p>
+                    </div>
+                    <div class="arrow-hint">
+                        <i data-lucide="chevron-right"></i>
+                    </div>
+                </button>
+            </form>
+        </div>
+
+        <div class="choice-notice">
+            <p>Don't worry, you can always view your gate pass and event details from your dashboard later.</p>
+            <a href="{% url 'events:participant_dashboard' %}" class="btn-link">Go to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .choice-container {
+        min-height: calc(100vh - 120px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent),
+                    radial-gradient(circle at bottom left, rgba(168, 85, 247, 0.05), transparent);
+    }
+
+    .choice-content-card {
+        max-width: 1000px;
+        width: 100%;
+        padding: 4rem 3rem;
+        border-radius: 40px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.5);
+    }
+
+    .choice-header {
+        margin-bottom: 4rem;
+    }
+
+    .eyebrow {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: rgba(99, 102, 241, 0.1);
+        color: #818cf8;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 1.5rem;
+    }
+
+    .choice-header h1 {
+        font-family: 'Outfit', sans-serif;
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+        letter-spacing: -0.04em;
+        background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .description-text {
+        font-size: 1.1rem;
+        color: #94a3b8;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    .choice-options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+
+    .choice-form-item {
+        display: block;
+    }
+
+    .choice-nav-button {
+        width: 100%;
+        height: 100%;
+        padding: 2.5rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 32px;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        color: inherit;
+    }
+
+    .choice-nav-button::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), transparent);
+        opacity: 0;
+        transition: opacity 0.4s;
+    }
+
+    .choice-nav-button:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(99, 102, 241, 0.4);
+        transform: translateY(-8px);
+        box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3);
+    }
+
+    .choice-nav-button:hover::before {
+        opacity: 1;
+    }
+
+    .icon-orb {
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 16px 32px -8px rgba(99, 102, 241, 0.5);
+    }
+
+    .audience-mode .icon-orb {
+        background: linear-gradient(135deg, #a855f7, #7c3aed);
+        box-shadow: 0 16px 32px -8px rgba(168, 85, 247, 0.5);
+    }
+
+    .icon-orb i {
+        width: 34px;
+        height: 34px;
+        color: white;
+    }
+
+    .text-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .text-content h3 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: #f1f5f9;
+    }
+
+    .text-content p {
+        color: #94a3b8;
+        line-height: 1.6;
+        font-size: 1rem;
+    }
+
+    .arrow-hint {
+        position: absolute;
+        bottom: 2.5rem;
+        right: 2.5rem;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+        display: grid;
+        place-items: center;
+        opacity: 0;
+        transform: translateX(-10px);
+        transition: all 0.4s;
+    }
+
+    .choice-nav-button:hover .arrow-hint {
+        opacity: 1;
+        transform: translateX(0);
+        background: rgba(99, 102, 241, 0.2);
+    }
+
+    .choice-notice {
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .choice-notice p {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .btn-link {
+        color: #818cf8;
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .btn-link:hover {
+        color: #a5b4fc;
+        text-decoration: underline;
+    }
+
+    @media (max-width: 900px) {
+        .choice-options-grid {
+            grid-template-columns: 1fr;
+        }
+        .choice-content-card {
+            padding: 3rem 2rem;
+        }
+    }
+
+    .animate-fade-in {
+        animation: cardFade 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    @keyframes cardFade {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}

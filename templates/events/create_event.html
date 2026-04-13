@@ -29,67 +29,121 @@
         <h2>📅 Event Details</h2>
     </div>
     <div class="card-body">
+        {% if form.errors and not form.non_field_errors %}
+            <div class="alert alert-error" style="background: #fee2e2; color: #b91c1c; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ef4444;">
+                <i data-lucide="alert-circle" style="display: inline-block; vertical-align: middle; margin-right: 8px;"></i>
+                Please correct the errors below to continue.
+            </div>
+        {% endif %}
+        
+        {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <div class="alert alert-error" style="background: #fee2e2; color: #b91c1c; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ef4444;">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
         <form method="POST" action="{% url 'events:create_event_step1' %}" class="form-row full">
             {% csrf_token %}
             
             <div class="form-group">
                 <label class="form-label required">Event Name</label>
-                <input type="text" name="event_name" class="form-control" placeholder="e.g., Tech Conference 2024" required>
+                <input type="text" name="name" class="form-control {% if form.name.errors %}is-invalid{% endif %}" placeholder="e.g., Tech Conference 2024" value="{{ form.name.value|default:'' }}" required>
+                {% if form.name.errors %}
+                    <div class="field-error" style="color: #ef4444; font-size: 13px; margin-top: 5px;">{{ form.name.errors.0 }}</div>
+                {% endif %}
             </div>
 
             <div class="form-group">
                 <label class="form-label">Description</label>
-                <textarea name="description" class="form-textarea" placeholder="Describe your event in detail..."></textarea>
+                <textarea name="description" class="form-textarea {% if form.description.errors %}is-invalid{% endif %}" placeholder="Describe your event in detail...">{{ form.description.value|default:'' }}</textarea>
+                {% if form.description.errors %}
+                    <div class="field-error" style="color: #ef4444; font-size: 13px; margin-top: 5px;">{{ form.description.errors.0 }}</div>
+                {% endif %}
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label required">Date</label>
-                    <input type="date" name="date_of_event" class="form-control" required>
+                    <input type="date" name="date_of_event" class="form-control {% if form.date_of_event.errors %}is-invalid{% endif %}" value="{{ form.date_of_event.value|default:'' }}" required>
+                    {% if form.date_of_event.errors %}
+                        <div class="field-error" style="color: #ef4444; font-size: 13px; margin-top: 5px;">{{ form.date_of_event.errors.0 }}</div>
+                    {% endif %}
                 </div>
                 <div class="form-group">
                     <label class="form-label required">Time</label>
-                    <input type="time" name="time_of_event" class="form-control" required>
+                    <input type="time" name="time_of_event" class="form-control {% if form.time_of_event.errors %}is-invalid{% endif %}" value="{{ form.time_of_event.value|default:'' }}" required>
+                    {% if form.time_of_event.errors %}
+                        <div class="field-error" style="color: #ef4444; font-size: 13px; margin-top: 5px;">{{ form.time_of_event.errors.0 }}</div>
+                    {% endif %}
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">Venue</label>
-                    <input type="text" name="venue" class="form-control" placeholder="e.g., Grand Ballroom">
+                    <input type="text" name="venue" class="form-control {% if form.venue.errors %}is-invalid{% endif %}" placeholder="e.g., Grand Ballroom" value="{{ form.venue.value|default:'' }}">
+                    {% if form.venue.errors %}
+                        <div class="field-error" style="color: #ef4444; font-size: 13px; margin-top: 5px;">{{ form.venue.errors.0 }}</div>
+                    {% endif %}
                 </div>
                 <div class="form-group">
                     <label class="form-label">Location</label>
-                    <input type="text" name="location" class="form-control" placeholder="City / Address">
+                    <input type="text" name="location" class="form-control {% if form.location.errors %}is-invalid{% endif %}" placeholder="City / Address" value="{{ form.location.value|default:'' }}">
+                    {% if form.location.errors %}
+                        <div class="field-error" style="color: #ef4444; font-size: 13px; margin-top: 5px;">{{ form.location.errors.0 }}</div>
+                    {% endif %}
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">Category</label>
-                    <select name="category" class="form-select">
+                    <select name="category" class="form-select {% if form.category.errors %}is-invalid{% endif %}">
                         <option value="other">Select a category</option>
                         {% for value, label in categories %}
-                        <option value="{{ value }}">{{ label }}</option>
+                        <option value="{{ value }}" {% if form.category.value == value %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
                     </select>
+                    {% if form.category.errors %}
+                        <div class="field-error" style="color: #ef4444; font-size: 13px; margin-top: 5px;">{{ form.category.errors.0 }}</div>
+                    {% endif %}
                 </div>
                 <div class="form-group">
                     <label class="form-label">Contact Information</label>
-                    <input type="text" name="contact_info" class="form-control" placeholder="contact@example.com or phone">
+                    <input type="text" name="contact_info" class="form-control {% if form.contact_info.errors %}is-invalid{% endif %}" placeholder="contact@example.com or phone" value="{{ form.contact_info.value|default:'' }}">
+                    {% if form.contact_info.errors %}
+                        <div class="field-error" style="color: #ef4444; font-size: 13px; margin-top: 5px;">{{ form.contact_info.errors.0 }}</div>
+                    {% endif %}
                 </div>
             </div>
 
+
+           
+
+
             <div class="form-group">
-                <label class="form-label">Banner Image URL</label>
-                <input type="url" name="image_url" class="form-control" placeholder="https://example.com/image.jpg">
+                <label class="form-label">Banner Image URL (Optional)</label>
+                <input type="url" name="image_url" class="form-control {% if form.image_url.errors %}is-invalid{% endif %}" placeholder="https://example.com/image.jpg" value="{{ form.image_url.value|default:'' }}">
+                {% if form.image_url.errors %}
+                    <div class="field-error" style="color: #ef4444; font-size: 13px; margin-top: 5px;">{{ form.image_url.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Event QR Code Image </label>
+                <input type="file" name="qr_code_image" accept="image/*" class="form-control {% if form.qr_code_image.errors %}is-invalid{% endif %}">
+                {% if form.qr_code_image.errors %}
+                    <div class="field-error" style="color: #ef4444; font-size: 13px; margin-top: 5px;">{{ form.qr_code_image.errors.0 }}</div>
+                {% endif %}
             </div>
 
             <div class="form-actions">
                 <a href="{% url 'events:manage_events' %}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-primary btn-lg">
-    Save & Continue →
-</button>
+                    Save & Continue →
+                </button>
             </div>
         </form>
     </div>

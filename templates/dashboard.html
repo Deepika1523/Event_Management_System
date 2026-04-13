@@ -1,240 +1,651 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Event Dashboard | EventSync{% endblock %}
+{% block title %}Organizer Dashboard | EventSync{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --dash-primary: #6366f1;
+        --dash-secondary: #10b981;
+        --dash-accent: #f59e0b;
+        --dash-bg: #f8fafc;
+        --dash-card-bg: #ffffff;
+        --dash-sidebar-bg: #1e293b;
+        --dash-text-main: #1e293b;
+        --dash-text-muted: #64748b;
+        --dash-border: #e2e8f0;
+        --dash-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    body {
+        background: var(--dash-bg);
+        color: var(--dash-text-main);
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Layout */
+    .dashboard-layout {
+        display: flex;
+        min-height: calc(100vh - 64px); /* Subtracting navbar height */
+        position: relative;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        width: 260px;
+        background: var(--dash-sidebar-bg);
+        color: white;
+        padding: 2rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        position: sticky;
+        top: 64px;
+        height: calc(100vh - 64px);
+        transition: transform 0.3s ease;
+        z-index: 100;
+    }
+
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        color: #cbd5e1;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-weight: 500;
+    }
+
+    .sidebar-link:hover, .sidebar-link.active {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .sidebar-link i {
+        width: 18px;
+        height: 18px;
+    }
+
+    .sidebar-divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 1rem 0;
+    }
+
+    /* Main Content */
+    .main-content {
+        flex: 1;
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    /* Header Section */
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2.5rem;
+    }
+
+    .header-title h1 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.875rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+
+    .header-title p {
+        color: var(--dash-text-muted);
+    }
+
+    .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: white;
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        box-shadow: var(--dash-shadow);
+    }
+
+    .user-info {
+        text-align: right;
+    }
+
+    .user-name {
+        font-weight: 600;
+        display: block;
+    }
+
+    .logout-btn {
+        font-size: 0.75rem;
+        color: #ef4444;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        box-shadow: var(--dash-shadow);
+        transition: transform 0.2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+
+    .stat-val {
+        font-size: 1.5rem;
+        font-weight: 700;
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.8125rem;
+        color: var(--dash-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Sections */
+    .dashboard-section {
+        margin-bottom: 3rem;
+        scroll-margin-top: 100px;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+    }
+
+    .section-header h2 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Cards & Tables */
+    .data-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--dash-shadow);
+        overflow: hidden;
+        border: 1px solid var(--dash-border);
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    th {
+        background: #f1f5f9;
+        padding: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--dash-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--dash-border);
+        font-size: 0.875rem;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Status Badges */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.625rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .badge-upcoming { background: #e0e7ff; color: #4338ca; }
+    .badge-ongoing { background: #dcfce7; color: #15803d; }
+    .badge-completed { background: #f1f5f9; color: #475569; }
+
+    /* Action Buttons */
+    .action-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        border: 1px solid var(--dash-border);
+        background: white;
+        color: var(--dash-text-muted);
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .btn-icon:hover {
+        background: #f8fafc;
+        border-color: var(--dash-primary);
+        color: var(--dash-primary);
+    }
+
+    .btn-icon.delete:hover {
+        border-color: #ef4444;
+        color: #ef4444;
+        background: #fef2f2;
+    }
+
+    /* Mobile Sidebar Toggle */
+    .mobile-header {
+        display: none;
+        padding: 1rem;
+        background: var(--dash-sidebar-bg);
+        color: white;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 200;
+    }
+
+    #sidebar-toggle {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-layout {
+            flex-direction: column;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            transform: translateX(-100%);
+            width: 280px;
+        }
+
+        .sidebar.is-open {
+            transform: translateX(0);
+        }
+
+        .mobile-header {
+            display: flex;
+        }
+
+        .main-content {
+            padding: 1rem;
+        }
+
+        .content-header {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-    <!-- Summary Header -->
-    <header class="dashboard-header" style="background-image: url('{% static 'images/dashboard_header_dark.png' %}');">
-        <div class="header-overlay"></div>
-        <div class="header-content">
-            <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: white;">Analytics Hub</h1>
-            <p style="color: rgba(255,255,255,0.8); font-size: 1.125rem;">Real-time overview of registrations, participants, and payments.</p>
-        </div>
-    </header>
+<div class="mobile-header">
+    <div style="font-family: 'Outfit', sans-serif; font-weight: 700;">Organizer Hub</div>
+    <button id="sidebar-toggle"><i data-lucide="menu"></i></button>
+</div>
 
-    <!-- Summary Stats -->
-    <section style="margin-top: -3rem; position: relative; z-index: 10; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
-        <div class="glass-card" style="display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid var(--primary);">
-            <div style="width: 48px; height: 48px; background: rgba(99, 102, 241, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
-                <i data-lucide="calendar"></i>
-            </div>
-            <div>
-                <div style="font-size: 0.8125rem; color: var(--text-muted); text-transform: uppercase;">Total Events</div>
-                <div style="font-size: 1.5rem; font-weight: 700; color: white;">{{ total_events }}</div>
-            </div>
-        </div>
-        <div class="glass-card" style="display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid var(--secondary);">
-            <div style="width: 48px; height: 48px; background: rgba(34, 197, 94, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--secondary);">
-                <i data-lucide="users"></i>
-            </div>
-            <div>
-                <div style="font-size: 0.8125rem; color: var(--text-muted); text-transform: uppercase;">Participants</div>
-                <div style="font-size: 1.5rem; font-weight: 700; color: white;">{{ total_participants }}</div>
-            </div>
-        </div>
-        <div class="glass-card" style="display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid var(--accent);">
-            <div style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--accent);">
-                <i data-lucide="credit-card"></i>
-            </div>
-            <div>
-                <div style="font-size: 0.8125rem; color: var(--text-muted); text-transform: uppercase;">Revenue</div>
-                <div style="font-size: 1.5rem; font-weight: 700; color: white;">₹{{ total_payments }}</div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Registered Events -->
-    <section class="glass-card" style="margin-bottom: 2rem; padding: 0; overflow: hidden;">
-        <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center;">
-            <h2 style="font-size: 1.25rem; color: white; display: flex; align-items: center; gap: 0.75rem;">
-                <i data-lucide="clipboard-check" style="color: var(--primary);"></i> Registered Events
-            </h2>
-            {% if can_check_payments %}
-                <a href="{% url 'payment_status' %}" class="btn btn-outline" style="font-size: 0.8125rem;">Payment Status</a>
-            {% endif %}
-        </div>
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <a href="#overview" class="sidebar-link active" data-section="overview">
+            <i data-lucide="layout-dashboard"></i> Dashboard
+        </a>
+        <a href="#events" class="sidebar-link" data-section="events">
+            <i data-lucide="calendar"></i> My Events
+        </a>
+        <a href="#activities" class="sidebar-link" data-section="activities">
+            <i data-lucide="activity"></i> Activities
+        </a>
+        <a href="#registrations" class="sidebar-link" data-section="registrations">
+            <i data-lucide="users"></i> Registrations
+        </a>
         
-        {% if registered_events %}
-        <div style="overflow-x: auto;">
-            <table class="dark-table">
-                <thead>
-                    <tr>
-                        {% if can_view_participant_map %}<th>Participant</th>{% endif %}
-                        <th>Event</th>
-                        <th>Date & Time</th>
-                        <th>Registered At</th>
-                        {% if can_register %}<th style="text-align: right;">Action</th>{% endif %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in registered_events %}
-                    <tr>
-                        {% if can_view_participant_map %}<td>{{ row.participant.username }}</td>{% endif %}
-                        <td><div style="font-weight: 600; color: white;">{{ row.event.event }}</div></td>
-                        <td>
-                            <div style="font-size: 0.875rem;">{{ row.event.date_of_event }}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ row.event.time_of_event }}</div>
-                        </td>
-                        <td><div style="font-size: 0.875rem;">{{ row.registered_at }}</div></td>
-                        {% if can_register %}
-                        <td style="text-align: right;">
-                            <a href="{% url 'events:generate_gate_pass' row.id %}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">
-                                <i data-lucide="download"></i> Gate Pass
-                            </a>
-                        </td>
-                        {% endif %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div style="padding: 3rem; text-align: center; color: var(--text-muted);">No registered events found.</div>
-        {% endif %}
-    </section>
-
-    <!-- Activities Hub -->
-    <section class="glass-card" style="margin-bottom: 2rem; padding: 0; overflow: hidden;">
-        <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-glass);">
-            <h2 style="font-size: 1.25rem; color: white; display: flex; align-items: center; gap: 0.75rem;">
-                <i data-lucide="activity" style="color: var(--secondary);"></i> Activity Hub
-            </h2>
-        </div>
+        <div class="sidebar-divider"></div>
         
-        {% if activities %}
-        <div style="overflow-x: auto;">
-            <table class="dark-table">
-                <thead>
-                    <tr>
-                        <th>Activity</th>
-                        <th>Event</th>
-                        <th>Type</th>
-                        <th>Fee</th>
-                        <th style="text-align: right;">Registration</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for activity in activities %}
-                    <tr>
-                        <td><div style="font-weight: 600; color: white;">{{ activity.name }}</div></td>
-                        <td>{{ activity.event.event }}</td>
-                        <td>
-                            {% if activity.is_team_event %}
-                                <span class="badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">Team ({{ activity.team_size|default:"2+" }})</span>
-                            {% else %}
-                                <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-muted);">Solo</span>
-                            {% endif %}
-                        </td>
-                        <td>₹{{ activity.registration_fee }}</td>
-                        <td style="text-align: right;">
-                            {% if can_register %}
-                                {% if activity.is_team_event %}
-                                    {% if activity.id in participant_team_activity_ids %}
-                                        <button class="btn btn-outline" disabled style="opacity: 0.5;">Team Joined</button>
+        <a href="{% url 'events:create_event_step1' %}" class="sidebar-link">
+            <i data-lucide="plus-circle"></i> Create Event
+        </a>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-header" id="overview">
+            <div class="header-title">
+                <h1>Organizer Dashboard</h1>
+                <p>Welcome back, manage your events and track performance.</p>
+            </div>
+            
+            <div class="user-profile">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: var(--dash-primary);">
+                    <i data-lucide="user"></i>
+                </div>
+                <div class="user-info">
+                    <span class="user-name">{{ request.user.username }}</span>
+                    <a href="{% url 'accounts:logout' %}" class="logout-btn">Sign Out</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--dash-primary);">
+                    <i data-lucide="calendar"></i>
+                </div>
+                <div>
+                    <span class="stat-val">{{ total_events }}</span>
+                    <span class="stat-label">Total Events</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--dash-secondary);">
+                    <i data-lucide="activity"></i>
+                </div>
+                <div>
+                    <span class="stat-val">{{ total_activities }}</span>
+                    <span class="stat-label">Total Activities</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: var(--dash-accent);">
+                    <i data-lucide="users"></i>
+                </div>
+                <div>
+                    <span class="stat-val">{{ total_registrations }}</span>
+                    <span class="stat-label">Registrations</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Events Section -->
+        <section class="dashboard-section" id="events">
+            <div class="section-header">
+                <h2><i data-lucide="calendar"></i> My Events</h2>
+                <a href="{% url 'events:create_event_step1' %}" class="btn btn-primary btn-sm">New Event</a>
+            </div>
+            <div class="data-card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Event Name</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                                <th>Public Website</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in events %}
+                            <tr>
+                                <td style="font-weight: 600;">{{ event.name }}</td>
+                                <td>{{ event.date_of_event|default:"TBD" }}</td>
+                                <td>
+                                    {% if event.date_of_event %}
+                                        {% if event.date_of_event > today %}
+                                            <span class="badge badge-upcoming">Upcoming</span>
+                                        {% elif event.date_of_event == today %}
+                                            <span class="badge badge-ongoing">Ongoing</span>
+                                        {% else %}
+                                            <span class="badge badge-completed">Completed</span>
+                                        {% endif %}
                                     {% else %}
-                                        <button class="btn btn-primary" onclick="showTeamModal('{{ activity.id }}', '{{ activity.name }}')" style="padding: 0.5rem 1rem; font-size: 0.75rem;">Join Team</button>
+                                        <span class="badge badge-upcoming">Planned</span>
                                     {% endif %}
-                                {% else %}
-                                    {% if activity.id in participant_registered_activity_ids %}
-                                        <button class="btn btn-outline" disabled style="opacity: 0.5;">Registered</button>
-                                    {% else %}
-                                        <form method="post" action="{% url 'events:dashboard' %}" style="display: inline;">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="register_activity">
-                                            <input type="hidden" name="activity_id" value="{{ activity.id }}">
-                                            <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.75rem;">Register</button>
+                                </td>
+                                <td>
+                                    <div class="action-group">
+                                        <a href="{% url 'events:edit_event' event.id %}" class="btn-icon" title="Edit Event">
+                                            <i data-lucide="edit"></i>
+                                        </a>
+                                        <a href="{% url 'events:create_activity' event.id %}" class="btn-icon" title="Add Activity">
+                                            <i data-lucide="plus-square" style="color: var(--dash-secondary);"></i>
+                                        </a>
+                                        <a href="#activities" class="btn-icon" title="View Activities" onclick="scrollToSection('activities')">
+                                            <i data-lucide="list"></i>
+                                        </a>
                                         </form>
-                                    {% endif %}
-                                {% endif %}
-                                {% if activity.id in participant_certificate_activity_ids %}
-                                    <a href="{% url 'participant_certificate' activity.id %}" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.75rem; margin-left: 0.5rem;">
-                                        <i data-lucide="award"></i> Cert
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{% url 'event_site' event.id %}" target="_blank" class="sidebar-link" style="color: var(--dash-primary); padding: 0.5rem; justify-content: flex-start; background: none; font-size: 0.8125rem;">
+                                        <i data-lucide="external-link" style="width: 14px;"></i> View Site
                                     </a>
-                                {% endif %}
-                            {% else %}
-                                <span style="color: var(--text-muted);">--</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div style="padding: 3rem; text-align: center; color: var(--text-muted);">No activities available.</div>
-        {% endif %}
-    </section>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--dash-text-muted); padding: 3rem;">No events found. Start by creating one!</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
 
-    <!-- Coordinator / Admin Specific Sections -->
-    {% if can_export_events %}
-    <section class="glass-card" style="margin-bottom: 2rem; padding: 0; overflow: hidden;">
-        <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-glass);">
-            <h2 style="font-size: 1.25rem; color: white; display: flex; align-items: center; gap: 0.75rem;">
-                <i data-lucide="file-spreadsheed" style="color: var(--accent);"></i> Data Exports
-            </h2>
-        </div>
-        <div style="overflow-x: auto;">
-            <table class="dark-table">
-                <thead>
-                    <tr>
-                        <th>Event Name</th>
-                        <th>Date</th>
-                        <th style="text-align: right;">Export</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for event in export_events %}
-                    <tr>
-                        <td>{{ event.event }}</td>
-                        <td>{{ event.date_of_event }}</td>
-                        <td style="text-align: right;">
-                            <a href="{% url 'events:export_event_excel' event.id %}" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.75rem;">
-                                <i data-lucide="download-cloud"></i> Excel
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </section>
-    {% endif %}
+        <!-- Activities Section -->
+        <section class="dashboard-section" id="activities">
+            <div class="section-header">
+                <h2><i data-lucide="activity"></i> Activities</h2>
+            </div>
+            <div class="data-card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Activity Name</th>
+                                <th>Event</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity in activities %}
+                            <tr>
+                                <td style="font-weight: 600;">{{ activity.name }}</td>
+                                <td>{{ activity.event.name }}</td>
+                                <td>
+                                    {% if activity.event.date_of_event %}
+                                        {% if activity.event.date_of_event > today %}
+                                            <span class="badge badge-upcoming">Upcoming</span>
+                                        {% elif activity.event.date_of_event == today %}
+                                            <span class="badge badge-ongoing">Ongoing</span>
+                                        {% else %}
+                                            <span class="badge badge-completed">Completed</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge badge-upcoming">Planned</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-group">
+                                        <a href="{% url 'events:edit_activity' activity.id %}" class="btn-icon" title="Edit">
+                                            <i data-lucide="edit"></i>
+                                        </a>
+                                        <form method="post" action="{% url 'events:delete_activity' activity.id %}" style="display:inline;" onsubmit="return confirmDelete()">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn-icon delete" title="Delete">
+                                                <i data-lucide="trash-2"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--dash-text-muted); padding: 3rem;">No activities found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
 
+        <!-- Registrations Section -->
+        <section class="dashboard-section" id="registrations">
+            <div class="section-header">
+                <h2><i data-lucide="users"></i> Registrations</h2>
+            </div>
+            <div class="data-card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Participant</th>
+                                <th>Activity</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reg in registrations %}
+                            <tr>
+                                <td style="font-weight: 600;">{{ reg.participant.username }}</td>
+                                <td>{{ reg.activity.name }}</td>
+                                <td>
+                                    <span class="badge" style="background: #e2e8f0;">{{ reg.status|title }}</span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" style="text-align: center; color: var(--dash-text-muted); padding: 3rem;">No registrations yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
 </div>
 
-<!-- Simple Modal for Team Registration -->
-<div id="teamModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; padding: 2rem;">
-    <div class="glass-card" style="max-width: 500px; width: 100%; position: relative;">
-        <button onclick="hideTeamModal()" style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
-        <h2 id="modalTitle" style="margin-bottom: 1.5rem; color: white;">Team Registration</h2>
-        <form method="post" action="{% url 'events:dashboard' %}">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="register_team">
-            <input type="hidden" name="activity_id" id="modalActivityId">
-            <div class="form-group">
-                <label class="form-label">Team Name</label>
-                <input type="text" name="team_name" class="form-input" required placeholder="e.g. Neon Avengers">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Member Names</label>
-                <textarea name="member_names" class="form-input" rows="4" placeholder="One name per line..." required></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%; height: 3rem; margin-top: 1rem;">Confirm Registration</button>
-        </form>
-    </div>
-</div>
-
+{% block extra_js %}
 <script>
-    function showTeamModal(id, name) {
-        document.getElementById('modalActivityId').value = id;
-        document.getElementById('modalTitle').innerText = 'Register for ' + name;
-        document.getElementById('teamModal').style.display = 'flex';
-        lucide.createIcons();
+    // Sidebar toggle for mobile
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+    
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('is-open');
+        });
     }
-    function hideTeamModal() {
-        document.getElementById('teamModal').style.display = 'none';
+
+    // Smooth scroll and active state for sidebar links
+    const sidebarLinks = document.querySelectorAll('.sidebar-link[data-section]');
+    
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('href').substring(1);
+            scrollToSection(targetId);
+            
+            // Close sidebar on mobile after click
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('is-open');
+            }
+        });
+    });
+
+    function scrollToSection(id) {
+        const target = document.getElementById(id);
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+            
+            // Update active state
+            sidebarLinks.forEach(l => l.classList.remove('active'));
+            const activeLink = document.querySelector(`.sidebar-link[href="#${id}"]`);
+            if (activeLink) activeLink.classList.add('active');
+        }
     }
+
+    // Delete confirmation
+    function confirmDelete() {
+        return confirm("Are you sure you want to delete this? This action cannot be undone.");
+    }
+
+    // Intersection Observer for highlighting sidebar links on scroll
+    const sections = document.querySelectorAll('.dashboard-section, .content-header');
+    const observerOptions = {
+        root: null,
+        rootMargin: '-20% 0px -70% 0px',
+        threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.id;
+                sidebarLinks.forEach(link => {
+                    link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+                });
+            }
+        });
+    }, observerOptions);
+
+    sections.forEach(section => observer.observe(section));
+
+    // Initialize Lucide icons
+    lucide.createIcons();
 </script>
+{% endblock %}
 {% endblock %}

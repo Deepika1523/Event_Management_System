@@ -18,8 +18,9 @@
     <form method="post">
         {% csrf_token %}
 
+        <input type="hidden" name="role" value="{{ selected_role }}">
         <div class="form-group">
-            <label class="form-label" for="id_role">User Role</label>
+            <label class="form-label">User Role</label>
             <div style="position: relative;">
                 <i data-lucide="shield" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);"></i>
                 <select id="id_role" name="role" class="form-input" style="padding-left: 3rem; appearance: none; cursor: pointer;" required>

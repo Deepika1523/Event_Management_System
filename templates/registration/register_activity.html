@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Register for Activity{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Register for Activity: {{ activity }}</h2>
+    {% if already_registered %}
+        <div class="alert alert-info">You are already registered for this activity.</div>
+    {% else %}
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Register</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

@@ -11,20 +11,6 @@
 
 {% block content %}
     <main class="event-shell">
-        <section class="card" style="margin-bottom: 1rem;">
-            <div class="event-links">
-          <a class="event-link" href="{{ participant_login_url }}">Participant Login</a>
-          <a class="event-link" href="{{ participant_signup_url }}">Participant Signup</a>
-                {% if event.status != 'completed' %}
-                    <a class="event-link" href="{% url 'events:event_registration_form' event.id %}">Register</a>
-                {% else %}
-                    <span class="event-link" style="opacity:0.6;">Registration Closed</span>
-                {% endif %}
-                {% if can_create_activity %}
-                    <a class="event-link" href="{% if request.user.is_superuser %}{{ admin_activity_url }}{% else %}{{ organizer_activity_url }}{% endif %}">Create Activity</a>
-                {% endif %}
-            </div>
-        </section>
         <section class="card hero">
             <div>
                 <p class="eyebrow">{{ event.get_category_display }}</p>
@@ -33,6 +19,20 @@
                     <p><strong>{{ event.tagline }}</strong></p>
                 {% endif %}
                 <p>{{ event.description }}</p>
+                <div class="event-actions" style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                    {% if event.status != 'completed' %}
+                        <a class="btn btn-primary" href="{% url 'events:event_registration_form' event.id %}">Register Now</a>
+                    {% endif %}
+                    
+                    {% if event.activities.count > 0 %}
+                        <a class="btn btn-outline" href="{{ participant_login_url }}">Participant Login</a>
+                        <a class="btn btn-outline" href="{{ participant_signup_url }}">Participant Signup</a>
+                    {% endif %}
+                    
+                    {% if can_create_activity %}
+                        <a class="btn btn-outline" href="{% if request.user.is_superuser %}{{ admin_activity_url }}{% else %}{{ organizer_activity_url }}{% endif %}">Create Activity</a>
+                    {% endif %}
+                </div>
             </div>
             {% if event.image %}
                 <img src="{{ event.image.url }}" alt="{{ event.event }}">

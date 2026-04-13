@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Add Activity</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label>Activity Name</label>
+      <input type="text" name="name" class="form-control" required>
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea name="description" class="form-control" required></textarea>
+    </div>
+    <div class="form-group">
+      <label>Date</label>
+      <input type="date" name="date" class="form-control" required>
+    </div>
+    <div class="form-group">
+      <label>Time</label>
+      <input type="time" name="time" class="form-control" required>
+    </div>
+    <div class="form-group">
+      <label>Type</label>
+      <input type="text" name="type" class="form-control" required>
+    </div>
+    <div class="form-group">
+      <label>Mode</label>
+      <input type="text" name="mode" class="form-control" required>
+    </div>
+    <div class="form-group">
+      <label>Team Size</label>
+      <input type="number" name="team_size" class="form-control" min="1" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Activity</button>
+    <a href="{% url 'step3' %}" class="btn btn-secondary">Continue</a>
+  </form>
+  {% if activities %}
+    <h4>Added Activities:</h4>
+    <ul>
+      {% for a in activities %}
+        <li>{{ a.name }} ({{ a.date }}, {{ a.type }})</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>
+{% endblock %}

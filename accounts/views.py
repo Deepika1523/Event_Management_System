@@ -5,6 +5,8 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from .models import OrganizerProfile
+from event.models import Profile
+from event.views import get_user_dashboard_redirect
 
 def role_selection(request):
     """
@@ -85,6 +87,12 @@ def organizer_signup(request):
             phone_number=phone_number
         )
 
+        # Sync with event.Profile
+        Profile.objects.get_or_create(
+            user=user,
+            role='organizer'
+        )
+
         messages.success(request, "Account created successfully! Please log in.")
         return redirect('accounts:organizer_login')
 
@@ -109,7 +117,8 @@ def organizer_login(request):
         if user is not None:
             login(request, user)
             messages.success(request, f"Welcome back, {user.first_name or user.username}!")
-            return redirect('events:organizer_dashboard')
+            # Ensure we send them to the correct dashboard based on detected role
+            return get_user_dashboard_redirect(user)
         else:
             messages.error(request, "Invalid username or password.")
 

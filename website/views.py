@@ -1,14 +1,64 @@
+from django.views.decorators.csrf import csrf_protect
+
+@csrf_protect
+def organizer_login(request):
+    from event.views import get_user_dashboard_redirect
+    error_message = None
+    username = ""
+    if request.method == "POST":
+        username = request.POST.get("username", "")
+        password = request.POST.get("password", "")
+        user = authenticate(request, username=username, password=password)
+        if user is None:
+            UserModel = get_user_model()
+            candidate = UserModel.objects.filter(email__iexact=(username or '').strip()).first()
+            if candidate:
+                user = authenticate(request, username=candidate.username, password=password)
+        if user is not None:
+            login(request, user)
+            return get_user_dashboard_redirect(user)
+        else:
+            error_message = "Invalid username or password."
+    return render(request, "registration/unified_login.html", {
+        "error_message": error_message,
+        "username": username,
+        "selected_role": "organizer",
+    })
+
+@csrf_protect
+def coordinator_login(request):
+    from event.views import get_user_dashboard_redirect
+    error_message = None
+    username = ""
+    if request.method == "POST":
+        username = request.POST.get("username", "")
+        password = request.POST.get("password", "")
+        user = authenticate(request, username=username, password=password)
+        if user is None:
+            UserModel = get_user_model()
+            candidate = UserModel.objects.filter(email__iexact=(username or '').strip()).first()
+            if candidate:
+                user = authenticate(request, username=candidate.username, password=password)
+        if user is not None:
+            login(request, user)
+            return get_user_dashboard_redirect(user)
+        else:
+            error_message = "Invalid username or password."
+    return render(request, "registration/unified_login.html", {
+        "error_message": error_message,
+        "username": username,
+        "selected_role": "coordinator",
+    })
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, get_user_model
 def unified_login(request):
+    from event.views import get_user_dashboard_redirect
     error_message = None
-    selected_role = request.GET.get("role", "")
     username = ""
     if request.method == "POST":
-        selected_role = request.POST.get("role", "")
         username = request.POST.get("username", "")
         password = request.POST.get("password", "")
         user = authenticate(request, username=username, password=password)
@@ -20,21 +70,13 @@ def unified_login(request):
                 user = authenticate(request, username=candidate.username, password=password)
         if user is not None:
             login(request, user)
-            # Redirect based on role
-            if selected_role == "organizer":
-                return redirect("organizer_dashboard")
-            elif selected_role == "coordinator":
-                return redirect("coordinator_dashboard")
-            elif selected_role == "participant":
-                return redirect("participant_dashboard")
-            else:
-                return redirect("website-index")
+            return get_user_dashboard_redirect(user)
         else:
             error_message = "Invalid username or password."
     return render(request, "registration/unified_login.html", {
         "error_message": error_message,
-        "selected_role": selected_role,
         "username": username,
+        "selected_role": "coordinator",
     })
 
 from event.models import Event

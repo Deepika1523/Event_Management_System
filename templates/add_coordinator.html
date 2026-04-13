@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Add Coordinator</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label>Coordinator Name</label>
+      <input type="text" name="name" class="form-control" required>
+    </div>
+    <div class="form-group">
+      <label>Coordinator Email</label>
+      <input type="email" name="email" class="form-control" required>
+    </div>
+    <button type="submit" name="add_another" class="btn btn-secondary">+ Add Another</button>
+    <button type="submit" name="continue" class="btn btn-primary">Continue</button>
+  </form>
+  {% if coordinators %}
+    <h4>Added Coordinators:</h4>
+    <ul>
+      {% for c in coordinators %}
+        <li>{{ c.name }} ({{ c.email }})</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>
+{% endblock %}

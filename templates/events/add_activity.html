@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Activities | {{ event.name }}{% endblock %}
+{% block page_title %}Step 2: Add Activities{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'events:organizer_dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator">/</span>
+    <a href="{% url 'events:manage_events' %}">Events</a>
+    <span class="breadcrumb-separator">/</span>
+    <span>{{ event.name }}</span>
+</div>
+
+<div class="form-nav" style="margin-bottom:20px;">
+    <a href="{% url 'events:create_event_step1' %}" class="tab-btn completed">1. Event Detail</a>
+    <a href="#" class="tab-btn active">2. Add Activity</a>
+    <a href="{% url 'events:create_event_step3' %}" class="tab-btn">3. Add Forms</a>
+    <a href="{% url 'events:create_event_step4' %}" class="tab-btn">4. Add Coordinators</a>
+    <a href="{% url 'events:create_event_step5' %}" class="tab-btn">5. Create Website</a>
+</div>
+
+<div class="layout-grid" style="display: grid; grid-template-columns: 1fr 350px; gap: 30px;">
+    <div class="main-content">
+        <div class="card">
+            <div class="card-header">
+                <h2>🏆 Add New Activity</h2>
+                <p>Add competitions, workshops, or seminars to your event.</p>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <ul>
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    {% for field in form %}
+                        <div class="form-group">
+                            <label class="form-label{% if field.field.required %} required{% endif %}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<small class="form-text text-muted">{{ field.help_text }}</small>{% endif %}
+                        </div>
+                    {% endfor %}
+                    <div class="form-actions" style="margin-top: 30px; display: flex; gap: 15px;">
+                        <button type="submit" name="action" value="add_another" class="btn btn-secondary">
+                            + Save & Add Another
+                        </button>
+                        <button type="submit" name="action" value="next" class="btn btn-primary" style="flex: 1;">
+                            Save & Continue →
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="card">
+            <div class="card-header">
+                <h3>📋 Activities Added ({{ activities|length }})</h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                {% if activities %}
+                    <ul class="activity-list" style="list-style: none; margin: 0; padding: 0;">
+                        {% for activity in activities %}
+                            <li style="padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong style="display: block; color: var(--primary-color);">{{ activity.name }}</strong>
+                                    <small style="color: #666;">{{ activity.start_time|time:"h:i A" }} - {{ activity.end_time|time:"h:i A" }}</small>
+                                </div>
+                                <span class="badge" style="background: var(--bg-color); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; font-size: 11px;">
+                                    {{ activity.registration_fee }}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div style="padding: 30px; text-align: center; color: #999;">
+                        <p>No activities added yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="info-box" style="margin-top: 20px; background: #fffbeb; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+            <p style="font-size: 13px; color: #92400e; margin: 0;">
+                <strong>Pro Tip:</strong> Activities help categorize your event. You can add multiple activities and set different coordinators for each later.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tab-btn.completed { color: #10b981; border-color: #10b981; }
+    .form-nav { display: flex; gap: 10px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
+    .tab-btn { padding: 10px 20px; border: 1px solid transparent; border-radius: 6px; text-decoration: none; color: #666; font-weight: 500; }
+    .tab-btn.active { background: var(--primary-color); color: white; }
+    .tab-btn:hover:not(.active) { background: #f3f4f6; }
+</style>
+{% endblock %}

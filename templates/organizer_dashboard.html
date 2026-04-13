@@ -1,4 +1,3 @@
-{% extends "base.html" %}
 {% load static %}
 
 {% block title %}Organizer Dashboard | EventSync{% endblock %}
@@ -6,8 +5,8 @@
 {% block content %}
 <div class="dashboard-container">
     <!-- Welcome Header -->
-    <header class="dashboard-header" style="background-image: url('{% if event_activity_rows.0.event.image_url %}{{ event_activity_rows.0.event.image_url }}{% else %}{% static "images/dashboard_header_dark.png" %}{% endif %}'); position: relative; padding: 4rem 2rem; overflow: hidden; border-radius: var(--radius-lg); margin-bottom: 2rem;">
-        <div class="header-overlay" style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15, 23, 42, 0.4), var(--bg-deep)); z-index: 1;"></div>
+    <header class="dashboard-header" style="background-image: url({% if event_activity_rows.0.event.image_url %}{{ event_activity_rows.0.event.image_url }}{% else %}{% static 'images/dashboard_header_dark.png' %}{% endif %}); position: relative; padding: 4rem 2rem; overflow: hidden; border-radius: var(--radius-lg); margin-bottom: 2rem; background-size: cover; background-position: center;">
+        <div class="header-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(15, 23, 42, 0.4), var(--bg-deep)); z-index: 1;"></div>
         <div class="header-content" style="position: relative; z-index: 10;">
             <h1 style="font-size: 3rem; margin-bottom: 0.5rem; color: white;">Organizer Hub</h1>
             <p style="color: rgba(255,255,255,0.8); font-size: 1.125rem;">Manage your events, coordinate activities, and analyze performance.</p>
@@ -80,62 +79,61 @@
                     <p style="color: var(--text-muted); font-size: 0.875rem;">Assign team roles and access</p>
                 </div>
             </a>
+            {% if event_activity_rows %}
+                <a href="{% url 'event_site' event_activity_rows.0.event.id %}" class="glass-card" style="text-decoration: none; display: flex; flex-direction: column; gap: 1rem; border: 1px solid var(--border-glass);">
+                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #6366F1 0%, #818CF8 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;">
+                        <i data-lucide="globe"></i>
+                    </div>
+                    <div>
+                        <h3 style="color: white; margin-bottom: 0.25rem;">Event Website</h3>
+                        <p style="color: var(--text-muted); font-size: 0.875rem;">
+                            View your event's public site.<br>
+                            <span style="color: var(--secondary); font-weight: 500;">Participants can register directly on the event website.</span>
+                        </p>
+                    </div>
+                </a>
+            {% endif %}
         </div>
     </section>
 
     <!-- My Live Events (Grid) -->
+
     <section>
         <div class="section-header">
             <h2 class="section-title">
-                <i data-lucide="layers" style="color: var(--secondary);"></i> Active Events
+                <i data-lucide="layers" style="color: var(--secondary);"></i> My Events
             </h2>
-            {% if event_activity_rows %}
-                <a href="{% url 'events:manage_events' %}" class="btn btn-outline" style="font-size: 0.875rem;">Manage All</a>
-            {% endif %}
         </div>
 
-        {% if event_activity_rows %}
-            <div class="dashboard-grid">
+        <table class="glass-card" style="width:100%; margin-bottom:2rem;">
+            <thead>
+                <tr style="color:var(--text-muted); font-size:0.95rem;">
+                    <th style="text-align:left; padding:0.75rem 1rem;">Event Name</th>
+                    <th style="text-align:left; padding:0.75rem 1rem;">Date</th>
+                    <th style="text-align:left; padding:0.75rem 1rem;">Status</th>
+                    <th style="text-align:left; padding:0.75rem 1rem;">Actions</th>
+                    <th style="text-align:left; padding:0.75rem 1rem;">Event Website</th>
+                </tr>
+            </thead>
+            <tbody>
                 {% for row in event_activity_rows %}
-                    <div class="glass-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; height: 100%;">
-                        <div style="height: 160px; position: relative;">
-                            {% if row.event.image_url %}
-                                <img src="{{ row.event.image_url }}" alt="{{ row.event.event }}" style="width: 100%; height: 100%; object-fit: cover;">
-                            {% else %}
-                                <div style="width: 100%; height: 100%; background: var(--primary-gradient); opacity: 0.1;"></div>
-                            {% endif %}
-                            <div style="position: absolute; top: 1rem; right: 1rem;">
-                                <span class="badge" style="background: var(--primary); color: white;">{{ row.event.get_category_display }}</span>
-                            </div>
-                        </div>
-                        <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                                <h3 style="font-size: 1.25rem; color: white;">{{ row.event.event }}</h3>
-                                <div style="text-align: right;">
-                                    <div style="font-size: 1.25rem; font-weight: 700; color: var(--secondary);">{{ row.participant_count }}</div>
-                                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Participants</div>
-                                </div>
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-                                <span style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="calendar" style="width: 12px;"></i> {{ row.event.date_of_event }}</span>
-                                <span style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="activity" style="width: 12px;"></i> {{ row.activity_names|truncatechars:40 }}</span>
-                            </div>
-                            <div style="margin-top: auto; display: flex; gap: 0.75rem;">
-                                <a href="{% url 'events:event_dashboard' row.event.id %}" class="btn btn-primary" style="flex: 2; font-size: 0.8125rem;">Control Panel</a>
-                                <a href="{% url 'events:edit_event' row.event.id %}" class="btn btn-outline" style="flex: 1; padding: 0.5rem; border-color: rgba(255,255,255,0.1);"><i data-lucide="edit-3" style="width: 16px;"></i></a>
-                            </div>
-                        </div>
-                    </div>
+                <tr>
+                    <td style="padding:0.75rem 1rem;">{{ row.event.event }}</td>
+                    <td style="padding:0.75rem 1rem;">{{ row.event.date_of_event }}</td>
+                    <td style="padding:0.75rem 1rem;"><span class="badge" style="background: var(--primary); color: white;">{{ row.event.status|capfirst }}</span></td>
+                    <td style="padding:0.75rem 1rem;">
+                        <a href="{% url 'events:event_dashboard' row.event.id %}" class="btn btn-primary" style="font-size: 0.8125rem;">Control Panel</a>
+                        <a href="{% url 'events:edit_event' row.event.id %}" class="btn btn-outline" style="padding: 0.5rem; border-color: rgba(255,255,255,0.1);"><i data-lucide="edit-3" style="width: 16px;"></i></a>
+                    </td>
+                    <td style="padding:0.75rem 1rem;">
+                        <a href="{% url 'event_site' row.event.id %}" target="_blank" class="btn btn-accent" style="background: var(--accent-gradient); color: white; font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="external-link" style="width: 14px;"></i> View Website
+                        </a>
+                    </td>
+                </tr>
                 {% endfor %}
-            </div>
-        {% else %}
-            <div class="glass-card" style="text-align: center; padding: 5rem 2rem; border: 1px dashed var(--border-glass);">
-                <i data-lucide="calendar-plus" style="width: 48px; height: 48px; margin-bottom: 1.5rem; color: var(--text-muted); opacity: 0.3;"></i>
-                <h3 style="color: white; margin-bottom: 0.5rem;">Launch your first hub</h3>
-                <p style="color: var(--text-muted); margin-bottom: 2rem;">Ready to sync your vision with the world?</p>
-                <a href="{% url 'events:manage_events' %}" class="btn btn-primary" style="padding: 1rem 2rem;">Create Your First Event</a>
-            </div>
-        {% endif %}
+            </tbody>
+        </table>
     </section>
 
 </div>

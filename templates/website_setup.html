@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Website Setup</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label>Template Selection</label>
+      <select name="template" class="form-control" required>
+        <option value="minimal">Minimal</option>
+        <option value="modern">Modern</option>
+        <option value="fest">Fest</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Banner Text</label>
+      <input type="text" name="banner_text" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Finish</button>
+  </form>
+</div>
+{% endblock %}

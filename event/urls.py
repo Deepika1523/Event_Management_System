@@ -3,14 +3,15 @@ from django.urls import path
 # Register a namespace so templates can use the 'events:' URL namespace
 app_name = 'events'
 from participant import views as participant_views
-from . import views, event_pdf_views, pure_views
+from . import views, pure_views
 
 urlpatterns = [
-    path("create/step2/", views.step2_activities, name="step2_activities"),
-    path("create/step3/", views.step3_registration_form, name="step3_registration_form"),
-    path("create/step4/", views.step4_coordinators, name="step4_coordinators"),
-    path("create/step5/", views.step5_website_setup, name="step5_website_setup"),
-    path("create/complete/", views.event_creation_complete, name="event_creation_complete"),
+    path("create/step1/", views.create_event_step1, name="create_event_step1"),
+    path("create/step2/", views.create_event_step2, name="create_event_step2"),
+    path("create/step3/", views.create_event_step3, name="create_event_step3"),
+    path("create/step4/", views.create_event_step4, name="create_event_step4"),
+    path("create/step5/", views.create_event_step5, name="create_event_step5"),
+    path("create/complete/<int:event_id>/", views.event_creation_complete, name="event_creation_complete"),
     # ...existing code...
     path("", views.role_based_user_page, name="home"),
     path("dashboard/", views.participant_dashboard, name="dashboard"),
@@ -31,18 +32,18 @@ urlpatterns = [
     path("manage-activities/", views.manage_activities, name="manage_activities"),
     path("activities/<int:activity_id>/edit/", views.edit_activity, name="edit_activity"),
     path("activities/<int:activity_id>/delete/", views.delete_activity, name="delete_activity"),
-    path("events/<int:event_id>/dashboard/", views.event_dashboard, name="event_dashboard"),
+    path("<int:event_id>/dashboard/", views.event_dashboard, name="event_dashboard"),
     path(
-        "events/<int:event_id>/register/",
+        "<int:event_id>/register/",
         views.event_registration_form,
         name="event_registration_form",
     ),
     path(
-        "events/<int:event_id>/export/",
+        "<int:event_id>/export/",
         views.export_event_excel,
         name="export_event_excel",
     ),
-    path("events/<int:event_id>/report.pdf", views.event_report_pdf, name="event_report_pdf"),
+    path("<int:event_id>/report.pdf", views.event_report_pdf, name="event_report_pdf"),
     path("registrations/<int:registration_id>/summary.pdf", views.registration_summary_pdf, name="registration_summary_pdf"),
     path("reports/export/", views.export_role_reports_excel, name="export_role_reports_excel"),
     path("manage-events/delete/<int:event_id>/", views.delete_event, name="delete_event"),
@@ -67,8 +68,8 @@ urlpatterns = [
         views.issue_certificate,
         name="issue_certificate",
     ),
-    path("events/", views.event_list, name="event_create_or_list"),
-    path("events/<int:event_id>/", views.event_detail, name="event_detail"),
+    path("", views.event_list, name="event_create_or_list"),
+    path("<int:event_id>/", views.event_detail, name="event_detail"),
     # Public website views
     path("event/<int:event_id>/", views.event_website_home, name="event_website_home"),
     path("event/<int:event_id>/activities/", views.event_website_activities, name="event_website_activities"),
@@ -105,7 +106,12 @@ urlpatterns = [
     path("organizer-dashboard/", views.organizer_dashboard, name="organizer_dashboard"),
     path("coordinator-dashboard/", views.coordinator_dashboard, name="coordinator_dashboard"),
     path("participant-dashboard/", views.participant_dashboard, name="participant_dashboard"),
-    path("events/<int:event_id>/activities.pdf/", event_pdf_views.event_activities_pdf, name="event_activities_pdf"),
+    path("<int:event_id>/activities.pdf/", views.event_activities_pdf, name="event_activities_pdf"),
+    path("activities/create/<int:event_id>/", views.create_activity, name="create_activity"),
+    path("<int:event_id>/select-activities/", views.activity_selection, name="activity_selection"),
+    path("<int:event_id>/registration-choice/", views.registration_choice, name="registration_choice"),
+    path("activities/edit/<int:activity_id>/", views.edit_activity, name="edit_activity"),
+    path("activities/delete/<int:activity_id>/", views.delete_activity, name="delete_activity"),
     path("invite-coordinator/", views.invite_coordinator, name="invite_coordinator"),
     # Coordinator: approve/reject registrations
     path("registrations/<int:registration_id>/approve/", views.approve_registration, name="approve_registration"),

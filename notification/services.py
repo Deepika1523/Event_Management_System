@@ -1,3 +1,20 @@
+# Notification/email sending utility
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import Notification
+
+def notify_user(user, message, email_subject=None, email_body=None):
+    # Create notification in DB
+    Notification.objects.create(user=user, message=message)
+    # Optionally send email
+    if email_subject and email_body and user.email:
+        send_mail(
+            email_subject,
+            email_body,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            fail_silently=True,
+        )
 import logging
 
 from django.conf import settings

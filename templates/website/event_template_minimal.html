@@ -77,20 +77,18 @@
 
 {% block content %}
     <main class="event-shell">
-        <!-- Quick Nav -->
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
-            <a href="{% url 'events:event_registration_form' event.id %}" class="btn btn-primary" style="box-shadow: var(--shadow-neon);">
-                <i data-lucide="ticket"></i> Register Now
-            </a>
-            <a href="{{ participant_login_url }}" class="btn btn-outline">
-                <i data-lucide="user"></i> Participant Login
-            </a>
-            <a href="{{ participant_signup_url }}" class="btn btn-outline">
-                <i data-lucide="user-plus"></i> Participant Signup
-            </a>
-            {% if can_create_activity %}
-                <a class="btn btn-outline" href="{% if request.user.is_superuser %}{{ admin_activity_url }}{% else %}{{ organizer_activity_url }}{% endif %}">
-                    <i data-lucide="plus-circle"></i> Create Activity
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; justify-content: center;">
+            {% if event.status != 'completed' %}
+                <a href="{% url 'events:event_registration_form' event.id %}" class="btn btn-primary" style="padding: 1rem 2rem; border-radius: 99px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="ticket"></i> Register Now
+                </a>
+            {% endif %}
+            {% if event.activities.count > 0 %}
+                <a href="{{ participant_login_url }}" class="btn btn-outline" style="padding: 1rem 1.5rem; border-radius: 99px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="log-in"></i> Participant Login
+                </a>
+                <a href="{{ participant_signup_url }}" class="btn btn-outline" style="padding: 1rem 1.5rem; border-radius: 99px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="user-plus"></i> Participant Signup
                 </a>
             {% endif %}
         </div>

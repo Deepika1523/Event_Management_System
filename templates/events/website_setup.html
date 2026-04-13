@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Website Setup | {{ event.name }}{% endblock %}
+{% block page_title %}Step 5: Website Setup{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'events:organizer_dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator">/</span>
+    <a href="{% url 'events:manage_events' %}">Events</a>
+    <span class="breadcrumb-separator">/</span>
+    <span>{{ event.name }}</span>
+</div>
+
+<div class="form-nav" style="margin-bottom:20px;">
+    <a href="{% url 'events:create_event_step1' %}" class="tab-btn completed">1. Event Detail</a>
+    <a href="{% url 'events:create_event_step2' %}" class="tab-btn completed">2. Add Activity</a>
+    <a href="{% url 'events:create_event_step3' %}" class="tab-btn completed">3. Add Forms</a>
+    <a href="{% url 'events:create_event_step4' %}" class="tab-btn completed">4. Add Coordinators</a>
+    <a href="#" class="tab-btn active">5. Create Website</a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>🌐 Event Website Customization</h2>
+        <p>Choose a theme and customize the appearance of your public event page.</p>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap:30px;">
+                <div class="theme-selection">
+                    <label class="form-label required">Select Theme</label>
+                    {{ form.template }}
+                    
+                    <div class="theme-previews" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                        <div class="theme-card" style="border: 2px solid var(--border-color); border-radius: 8px; padding: 10px; cursor: pointer;">
+                            <div style="height: 60px; background: #f3f4f6; margin-bottom: 5px;"></div>
+                            <small>Classic</small>
+                        </div>
+                        <div class="theme-card" style="border: 2px solid var(--border-color); border-radius: 8px; padding: 10px; cursor: pointer;">
+                            <div style="height: 60px; background: #e0f2fe; margin-bottom: 5px;"></div>
+                            <small>Bold</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="banner-customization">
+                    <div class="form-group">
+                        <label class="form-label required">Banner Text / Headline</label>
+                        {{ form.banner_text }}
+                        <small style="color: #888;">This will be the main title displayed on your event website.</small>
+                    </div>
+
+                    <div class="preview-box" style="margin-top: 20px; background: #000; height: 120px; border-radius: 8px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        {% if event.image_url %}
+                            <img src="{{ event.image_url }}" style="position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.6;">
+                        {% endif %}
+                        <h3 id="preview-text" style="position: relative; color: white; text-align: center; padding: 0 20px;">{{ event.name }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+                <div class="info" style="color: #666;">
+                    <span style="color: #10b981;">●</span> Ready to publish
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg" style="padding: 12px 40px;">
+                    Finalize & Create Event 🚀
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .tab-btn.completed { color: #10b981; border-color: #10b981; }
+    .form-nav { display: flex; gap: 10px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
+    .tab-btn { padding: 10px 20px; border: 1px solid transparent; border-radius: 6px; text-decoration: none; color: #666; font-weight: 500; }
+    .tab-btn.active { background: var(--primary-color); color: white; }
+    .tab-btn:hover:not(.active) { background: #f3f4f6; }
+</style>
+
+<script>
+    // Minimal JS JUST for real-time preview (doesn't break the form if it fails)
+    const bannerInput = document.querySelector('input[name="banner_text"]');
+    const previewText = document.getElementById('preview-text');
+    if(bannerInput && previewText) {
+        bannerInput.addEventListener('input', (e) => {
+            previewText.textContent = e.target.value || "{{ event.name }}";
+        });
+    }
+</script>
+{% endblock %}

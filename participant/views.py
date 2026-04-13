@@ -1,3 +1,12 @@
+from django.views.decorators.http import require_http_methods
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.http import FileResponse
+from payment.models import PaymentCheck
+from notification.services import notify_user
+import io
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
 from io import BytesIO
 
 from django.contrib.auth.decorators import login_required
@@ -69,7 +78,101 @@ def _handle_participant_signup(request):
     return None, errors, form_data
 
 # SIGNUP
+# SIGNUP
+@require_http_methods(["GET", "POST"])
 def participant_signup(request):
+
+    # Multi-step registration for activity (website/activity_register.html)
+    @login_required
+    @require_http_methods(["GET", "POST"])
+    def activity_register(request, activity_id):
+        from event.models import Activity
+        from participant.models import ActivityRegistration
+        activity = get_object_or_404(Activity, id=activity_id)
+        event = activity.event
+        user = request.user
+        registration = ActivityRegistration.objects.filter(activity=activity, participant=user).first()
+        registration_complete = False
+        download_pass_url = None
+        messages_list = []
+
+        if registration and registration.status == 'approved':
+            registration_complete = True
+            download_pass_url = reverse('participant:download_pass', args=[registration.id])
+
+        if request.method == 'POST':
+            # Step 1: Basic Info
+            name = request.POST.get('name', '').strip()
+            phone = request.POST.get('phone', '').strip()
+            email = request.POST.get('email', '').strip()
+            college = request.POST.get('college', '').strip()
+            # Step 2: File Upload
+            id_proof = request.FILES.get('id_proof')
+            photo = request.FILES.get('photo')
+            # Step 3: Payment
+            payment_proof = request.FILES.get('payment_proof')
+            payment_reference = request.POST.get('payment_reference', '').strip()
+
+            if not registration:
+                registration = ActivityRegistration.objects.create(
+                    activity=activity,
+                    participant=user,
+                    status='pending',
+                    phone=phone,
+                    email=email,
+                    college=college,
+                )
+            # Save files if uploaded
+            if id_proof:
+                registration.id_proof.save(id_proof.name, id_proof)
+            if photo:
+                registration.photo.save(photo.name, photo)
+            if payment_proof:
+                # Save payment proof in PaymentCheck
+                payment_check, _ = PaymentCheck.objects.get_or_create(registration=registration)
+                payment_check.payment_proof.save(payment_proof.name, payment_proof)
+                payment_check.save()
+            if payment_reference:
+                registration.payment_reference = payment_reference
+            registration.save()
+
+            # Notify user and coordinator
+            notify_user(user, f"Your registration for {activity.name} is under review.",
+                email_subject="Registration Submitted",
+                email_body="Your application is under review. You will be updated within 24 hours via email. You will receive both the gate pass and activity pass.")
+            # TODO: Notify coordinator (if needed)
+
+            messages.success(request, "Your application is under review. You will be updated within 24 hours via email. You will receive both the gate pass and activity pass.")
+            registration_complete = False
+
+        context = {
+            'activity': activity,
+            'event': event,
+            'registration_complete': registration_complete,
+            'download_pass_url': download_pass_url,
+            'messages': messages.get_messages(request),
+        }
+        return render(request, 'website/activity_register.html', context)
+
+    # Pass download (PDF placeholder)
+    @login_required
+    def download_pass(request, registration_id):
+        from participant.models import ActivityRegistration
+        registration = get_object_or_404(ActivityRegistration, id=registration_id, participant=request.user)
+        if registration.status != 'approved':
+            return HttpResponseForbidden("Pass not available until approved.")
+        # Generate PDF pass
+        buffer = io.BytesIO()
+        p = canvas.Canvas(buffer, pagesize=letter)
+        p.setFont("Helvetica-Bold", 20)
+        p.drawString(100, 700, f"Event Pass for {registration.activity.name}")
+        p.setFont("Helvetica", 14)
+        p.drawString(100, 670, f"Name: {registration.participant.get_full_name()}")
+        p.drawString(100, 650, f"Event: {registration.activity.event.event}")
+        p.drawString(100, 630, f"Status: Approved")
+        p.save()
+        buffer.seek(0)
+        return FileResponse(buffer, as_attachment=True, filename="event_pass.pdf")
     user, errors, form_data = _handle_participant_signup(request)
     if user is not None:
         return redirect("events:participant_dashboard")
@@ -125,7 +228,7 @@ def participant_login(request):
 # LOGOUT
 def participant_logout(request):
     logout(request)
-    return redirect('event_home')
+    return redirect('website-index')
 
 
 

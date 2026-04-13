@@ -1,3 +1,4 @@
+ 
 from .forms_event_creation import ActivityForm, RegistrationFieldForm, CoordinatorForm, WebsiteSetupForm, ActivityEditForm
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
@@ -166,9 +167,10 @@ from .auth_decorators import (
 @login_required
 def activity_registration_form(request, activity_id):
     activity = get_object_or_404(Activity, id=activity_id)
-    if not _is_participant(request.user):
-        messages.error(request, "Only participants can register for activities.")
-        return redirect("events:dashboard")
+    # Ensure the user has a Participant record
+    from participant.models import Participant
+    if not Participant.objects.filter(user=request.user).exists():
+        Participant.objects.get_or_create(user=request.user)
 
     # If you have custom fields for activities, parse them here
     fields = []
@@ -283,45 +285,43 @@ def generate_gate_pass(request, registration_id):
     response = HttpResponse(pdf_buffer, content_type="application/pdf")
     response['Content-Disposition'] = f'attachment; filename=gate_pass_{registration.id}.pdf'
     return response
+ 
+ 
 import base64
+import datetime
+import io
 import json
 import os
-import uuid
+import re
 import urllib.error
 import urllib.request
+import uuid
 from io import BytesIO
-import re
 
+import qrcode
+from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.db import IntegrityError, models
+from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
-from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
-from django.contrib.sessions.models import Session
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET
 from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, PatternFill
+from openpyxl.styles import Alignment, Font, PatternFill
+from functools import wraps
+from reportlab.lib.pagesizes import A4, letter
 
-from .models import (
-    Activity,
-    Event,
-    EventCoordinator,
-    EventCoordinatorInvite,
-    Profile,
-    ActivityRegistrationFormField,
-    ActivityRegistrationFormResponse,
-    ActivityCoordinator,
-)
-from .forms import EventForm
+from notification.services import send_event_registration_email
+from payment.models import PaymentCheck
 from participant.models import (
     ActivityRegistration,
     AttendanceRecord,
@@ -330,11 +330,60 @@ from participant.models import (
     LeaderboardEntry,
     TeamRegistration,
 )
-from payment.models import PaymentCheck
-from notification.services import (
-    send_activity_registration_email,
-    send_event_registration_email,
+from reportlab.lib.units import mm
+from .forms import EventForm, EventCreationForm
+from .forms_event_creation import (
+    CoordinatorForm,
+    RegistrationFieldForm,
+    WebsiteSetupForm,
 )
+
+# Always use the ModelForm for DB-backed activity creation
+from .forms_activity import ActivityForm
+from .models import (
+    Activity,
+    ActivityCoordinator,
+    ActivityRegistrationFormField,
+    ActivityRegistrationFormResponse,
+    Event,
+    EventCoordinator,
+    EventCoordinatorInvite,
+    Profile,
+)
+from accounts.models import OrganizerProfile
+
+
+# Step 2: Activities
+@login_required
+def step2_activities(request):
+    activities = request.session.get('activities', [])
+    if request.method == 'POST':
+        form = ActivityForm(request.POST)
+        if form.is_valid():
+            activities.append(form.cleaned_data)
+            request.session['activities'] = activities
+            if 'add_another' in request.POST:
+                return redirect('step2_activities')
+            else:
+                return redirect('step3_registration_form')
+    else:
+        form = ActivityForm()
+    return render(request, 'events/step2_activities.html', {'form': form, 'activities': activities})
+
+# Step 3: Registration Form Builder
+@login_required
+def step3_registration_form(request):
+    fields = request.session.get('registration_fields', [])
+    if request.method == 'POST':
+        form = RegistrationFieldForm(request.POST)
+        if form.is_valid():
+            fields.append(form.cleaned_data)
+            request.session['registration_fields'] = fields
+            return redirect('step3_registration_form')
+    else:
+        form = RegistrationFieldForm()
+    return render(request, 'events/step3_registration_form.html', {'form': form, 'fields': fields})
+
 
 
 def _can_manage_event(user, event):
@@ -353,6 +402,101 @@ def _is_coordinator(user):
     return Profile.objects.filter(user=user, role="coordinator").exists()
 
 
+def get_user_role(user):
+    """Strict role resolution: Superusers are organizers."""
+    if not user.is_authenticated:
+        return None
+    if user.is_superuser:
+        return 'organizer'
+    
+    # Try event Profile first
+    try:
+        return user.profile.role
+    except Exception:
+        # Fallback to OrganizerProfile
+        if hasattr(user, 'organizer_profile'):
+            return 'organizer'
+    return 'participant'
+
+
+def get_user_dashboard_redirect(user):
+    """Unified redirection based on role, with superuser support."""
+    if user.is_superuser:
+        return redirect("events:organizer_dashboard")
+        
+    user_role = get_user_role(user)
+    if user_role == "organizer":
+        return redirect("events:organizer_dashboard")
+    elif user_role == "coordinator":
+        return redirect("events:coordinator_dashboard")
+    elif user_role == "participant":
+        return redirect("events:participant_dashboard")
+    else:
+        return redirect("events:user")
+
+
+def require_role(*allowed_roles):
+    """Decorator to enforce role-based access control."""
+    def decorator(view_func):
+        @wraps(view_func)
+        @login_required(login_url="events:organizer_login")
+        def wrapper(request, *args, **kwargs):
+            user_role = get_user_role(request.user)
+            if request.user.is_superuser:
+                return view_func(request, *args, **kwargs)
+            if user_role not in allowed_roles:
+                messages.error(
+                    request,
+                    f"You do not have permission to access this page. Required: {', '.join(allowed_roles)}",
+                )
+                return redirect("events:user")
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def require_organizer(view_func):
+    """Decorator to restrict access to organizers only."""
+    @wraps(view_func)
+    @login_required(login_url="events:organizer_login")
+    def wrapper(request, *args, **kwargs):
+        user_role = get_user_role(request.user)
+        if request.user.is_superuser or user_role == "organizer":
+            return view_func(request, *args, **kwargs)
+        messages.error(request, "Only organizers can access this page.")
+        return redirect("events:user")
+    return wrapper
+
+
+def require_coordinator(view_func):
+    """Decorator to restrict access to coordinators only."""
+    @wraps(view_func)
+    @login_required(login_url="events:coordinator_login")
+    def wrapper(request, *args, **kwargs):
+        user_role = get_user_role(request.user)
+        if request.user.is_superuser or user_role == "coordinator":
+            return view_func(request, *args, **kwargs)
+        messages.error(request, "Only coordinators can access this page.")
+        return redirect("events:user")
+    return wrapper
+
+
+def require_participant(view_func):
+    """Decorator to restrict access to participants only."""
+    @wraps(view_func)
+    @login_required(login_url="events:participant_login")
+    def wrapper(request, *args, **kwargs):
+        user_role = get_user_role(request.user)
+        if user_role == "participant":
+            return view_func(request, *args, **kwargs)
+        messages.error(request, "Only participants can access this page.")
+        return redirect("events:user")
+    return wrapper
+
+
+
+
+
 def _get_coordinator_role(user):
     if not user.is_authenticated:
         return None
@@ -361,7 +505,7 @@ def _get_coordinator_role(user):
         .values_list("coordinator_role", flat=True)
         .first()
     )
-    if role is None and _is_coordinator(user):
+    if role is None and (get_user_role(user) == "coordinator"):
         return "activity"
     return role
 
@@ -440,25 +584,9 @@ def _is_activity_coordinator_for_event(user, event):
     return ActivityCoordinator.objects.filter(activity__event=event, user=user).exists()
 
 
-def _can_manage_event_activities(user, event):
-    return (
-        user.is_superuser
-        or user.is_staff
-        or (event.user_id == user.id)
-        or _is_event_coordinator_for_event(user, event)
-    )
-
-
-def _can_view_event_participants(user, event):
-    return (
-        user.is_superuser
-        or user.is_staff
-        or event.user_id == user.id
-        or _is_event_coordinator_for_event(user, event)
-    )
-
-
 def _can_manage_activity(user, activity):
+    if not user.is_authenticated:
+        return False
     if user.is_superuser or user.is_staff:
         return True
     if _is_organizer(user) and activity.event.user_id == user.id:
@@ -466,41 +594,87 @@ def _can_manage_activity(user, activity):
     return _is_activity_coordinator_for_activity(user, activity)
 
 
-def _can_view_event_dashboard(user, event):
+def _can_manage_event_activities(user, event):
     if not user.is_authenticated:
         return False
-    return _can_manage_event_activities(user, event) or _is_activity_coordinator_for_event(
-        user,
-        event,
+    if user.is_superuser or user.is_staff:
+        return True
+    if _is_organizer(user) and event.user_id == user.id:
+        return True
+    return _is_event_coordinator_for_event(user, event)
+
+
+def _can_view_event_participants(user, event):
+    return _can_manage_event_activities(user, event)
+
+
+def _send_event_invite_email(request, invite):
+    accept_path = reverse("events:accept_event_invite", args=[str(invite.token)])
+    accept_url = request.build_absolute_uri(accept_path)
+    signup_url = request.build_absolute_uri(
+        f"{reverse('events:signup')}?role=coordinator&next={accept_path}"
     )
 
+    subject = f"Event coordinator invite for {invite.event.event}"
+    message = (
+        f"You have been invited to coordinate the event: {invite.event.event}.\n\n"
+        f"Accept invite: {accept_url}\n"
+        f"If you need an account, sign up here: {signup_url}\n\n"
+        "This invite is tied to this email address."
+    )
 
-def _authenticate_for_role(request, username, password, expected_role):
-    # Try authenticating by username first, then fall back to email lookup.
+    from_email = settings.EMAIL_HOST_USER or settings.DEFAULT_FROM_EMAIL
+    send_mail(subject, message, from_email, [invite.email], fail_silently=False)
+
+
+def _authenticate_for_role(request, username, password, role):
     user = authenticate(request, username=username, password=password)
     if user is None:
-        # Allow users to login with their email address as well
+        # fallback: allow login using email address
         UserModel = get_user_model()
         candidate = UserModel.objects.filter(email__iexact=(username or "").strip()).first()
         if candidate:
             user = authenticate(request, username=candidate.username, password=password)
 
-    if user is None:
-        return None, "Invalid username or password. Please try again."
-
-    if user.is_superuser:
+    if user is not None:
+        if not Profile.objects.filter(user=user, role=role).exists() and not user.is_superuser:
+            return None, f"You do not have a {role} profile associated with this account."
         return user, None
+    return None, "Invalid username or password."
 
-    profile_role = (
-        Profile.objects.filter(user=user).values_list("role", flat=True).first()
-    )
-    if profile_role != expected_role:
-        return (
-            None,
-            f"This account is not registered as {expected_role.title()}.",
-        )
 
-    return user, None
+def _parse_registration_fields(raw_fields):
+    if not raw_fields:
+        return []
+    # Try JSON
+    import json
+    try:
+        data = json.loads(raw_fields)
+        if isinstance(data, list):
+            return data
+    except Exception:
+        pass
+    # Fallback to text (comma/newline)
+    from django.utils.text import slugify
+    fields = []
+    lines = raw_fields.splitlines() if "\n" in raw_fields else raw_fields.split(",")
+    for line in lines:
+        label = line.strip()
+        if not label:
+            continue
+        required = label.endswith("*")
+        if required:
+            label = label[:-1].strip()
+        if not label:
+            continue
+        fields.append({
+            "label": label,
+            "key": slugify(label),
+            "required": required,
+            "type": "text"
+        })
+    return fields
+
 
 
 def _get_openai_key():
@@ -553,28 +727,6 @@ def _parse_json_object(text):
         raise
 
 
-def _parse_registration_fields(text):
-    fields = []
-    if not text:
-        return fields
-
-    for line in text.splitlines():
-        label = line.strip()
-        if not label:
-            continue
-        required = label.endswith("*")
-        if required:
-            label = label[:-1].strip()
-        if not label:
-            continue
-        fields.append(
-            {
-                "key": f"field_{len(fields) + 1}",
-                "label": label,
-                "required": required,
-            }
-        )
-    return fields
 
 
 def _normalize_registration_fields(raw_text):
@@ -684,23 +836,6 @@ def _send_activity_invite_email(request, invite):
     send_mail(subject, message, from_email, [invite.email], fail_silently=False)
 
 
-def _send_event_invite_email(request, invite):
-    accept_path = reverse("events:accept_event_invite", args=[str(invite.token)])
-    accept_url = request.build_absolute_uri(accept_path)
-    signup_url = request.build_absolute_uri(
-        f"{reverse('events:signup')}?role=coordinator&next={accept_path}"
-    )
-
-    subject = f"Event coordinator invite for {invite.event.event}"
-    message = (
-        f"You have been invited to coordinate the event: {invite.event.event}.\n\n"
-        f"Accept invite: {accept_url}\n"
-        f"If you need an account, sign up here: {signup_url}\n\n"
-        "This invite is tied to this email address."
-    )
-
-    from_email = settings.EMAIL_HOST_USER or settings.DEFAULT_FROM_EMAIL
-    send_mail(subject, message, from_email, [invite.email], fail_silently=False)
 
 
 @csrf_exempt
@@ -799,7 +934,11 @@ def event_list(request):
 
 @csrf_exempt #removed login required temp
 def event_detail(request, event_id):
+    # Ensure user only accesses their own event
     event = get_object_or_404(Event, id=event_id)
+    if not (request.user.is_superuser or event.user == request.user):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied("You do not have permission to view this event's management details.")
 
     # Determine if the currently authenticated user is already registered
     from participant.models import EventRegistration
@@ -1044,10 +1183,7 @@ def signup(request):
     if not selected_role or selected_role not in valid_roles:
         return redirect("accounts:role_selection")
 
-    # Coordinators are NOT allowed to sign up directly
-    if selected_role == "coordinator":
-        messages.error(request, "Coordinators cannot sign up directly. You must be invited by an Organizer.")
-        return redirect("accounts:role_selection")
+    # Coordinators are now allowed to sign up directly
 
     if request.method == "POST":
         username = (request.POST.get("username") or "").strip()
@@ -1088,9 +1224,8 @@ def signup(request):
             )
             request.session["selected_role"] = role
             login(request, user)
-            # Redirect to role-specific dashboard
-            dashboard_redirect = get_user_dashboard_redirect(user)
-            return redirect(dashboard_redirect)
+            # Redirect to event creation after signup
+            return redirect("events:create_event_step1")
 
         return render(
             request,
@@ -1315,8 +1450,7 @@ def unified_login(request):
                 login(request, user)
                 request.session["selected_role"] = role
                 # Redirect to role-specific dashboard
-                dashboard_redirect = get_user_dashboard_redirect(user)
-                return redirect(dashboard_redirect)
+                return get_user_dashboard_redirect(user)
             else:
                 context["error_message"] = error_message
                 context["username"] = username
@@ -1353,22 +1487,21 @@ def role_login(request, expected_role, template_name):
 
         login(request, user)
         # Redirect to role-specific dashboard
-        dashboard_redirect = get_user_dashboard_redirect(user)
-        return redirect(dashboard_redirect)
+        return get_user_dashboard_redirect(user)
 
     return render(request, template_name, context)
 
 
 @login_required
 def manage_events(request):
-    can_create_event = _is_organizer(request.user)
+    """Event management strictly for organizers."""
+    if get_user_role(request.user) != 'organizer':
+        return HttpResponseForbidden("Access Denied: Only organizers can manage events.")
+    
+    can_create_event = True
     form = EventForm()
 
     if request.method == "POST":
-        if not can_create_event:
-            messages.error(request, "Only organizers can create events.")
-            return redirect("events:manage_events")
-
         form = EventForm(request.POST, request.FILES)
         images = request.FILES.getlist("images")
         
@@ -1390,15 +1523,15 @@ def manage_events(request):
                 messages.success(request, "Event created successfully.")
                 return redirect("event_site", event_id=created_event.id)
         else:
-            # If form is invalid, we return the errors to the template.
-            # The template will need to be updated to show these.
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"{field.replace('_', ' ').capitalize()}: {error}")
 
+    # Only show events owned by this organizer
     if request.user.is_superuser or request.user.is_staff:
         events = Event.objects.all().order_by("-id")
     elif _is_organizer(request.user):
+        # Enforce event isolation
         events = Event.objects.filter(user=request.user).order_by("-id")
     else:
         events = Event.objects.none()
@@ -1418,7 +1551,8 @@ def manage_events(request):
 
 @login_required
 def edit_event(request, event_id):
-    event = get_object_or_404(Event, id=event_id)
+    # Ensure user only edits their own event
+    event = get_object_or_404(Event, id=event_id, user=request.user)
     can_edit = request.user.is_superuser or request.user.is_staff or (
         _is_organizer(request.user) and event.user_id == request.user.id
     )
@@ -1455,16 +1589,6 @@ def edit_event(request, event_id):
         },
     )
 
-    return render(
-        request,
-        "events/edit_event.html",
-        {
-            "event": event,
-            "category_choices": Event.CATEGORY_CHOICES,
-            "template_choices": Event.TEMPLATE_CHOICES,
-        },
-    )
-
 
 def event_registration_form(request, event_id):
     event = get_object_or_404(Event, id=event_id)
@@ -1486,10 +1610,14 @@ def event_registration_form(request, event_id):
         messages.info(request, "You are already registered for this event.")
         return redirect("events:event_detail", event_id=event.id)
 
-    # Only participants may register; if user hasn't chosen a role, send them to role selection
-    if not _is_participant(request.user):
-        messages.error(request, "Only participants can register for events. Please choose your role.")
-        return redirect("accounts:role_selection")
+    # Ensure the user has a Participant record
+    from participant.models import Participant
+    if not Participant.objects.filter(user=request.user).exists():
+        Participant.objects.get_or_create(user=request.user)
+    
+    # If the user doesn't have a participant role in their profile, we can selectively add it 
+    # or just allow them to proceed if they have a Participant object. 
+    # For now, we'll allow anyone with a Participant object to proceed.
 
     # Prevent an organizer from registering for their own event
     if _is_organizer(request.user) and event.user_id == request.user.id:
@@ -1591,6 +1719,7 @@ def event_registration_form(request, event_id):
             existing_registration = registration
             submission_complete = True
             download_pass_url = reverse("events:generate_gate_pass", args=[registration.id])
+            return redirect("events:activity_selection", event_id=event.id)
 
     return render(
         request,
@@ -1607,19 +1736,75 @@ def event_registration_form(request, event_id):
 
 
 @login_required
+def registration_choice(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    from participant.models import EventRegistration
+    registration = get_object_or_404(EventRegistration, participant=request.user, event=event)
+    
+    if request.method == "POST":
+        choice = request.POST.get("choice")
+        if choice == "audience":
+            registration.participation_type = "audience"
+            registration.save()
+            messages.success(request, f"Successfully registered as audience for {event.event}.")
+            return redirect("events:participant_dashboard")
+        elif choice == "activities":
+            return redirect("events:activity_selection", event_id=event.id)
+            
+    return render(request, "events/registration_choice.html", {
+        "event": event,
+        "registration": registration
+    })
+
+
+@login_required
+def activity_selection(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    # Only allow if user is registered for the event
+    from participant.models import EventRegistration, ActivityRegistration
+    if not EventRegistration.objects.filter(participant=request.user, event=event).exists():
+        messages.error(request, "You must register for the event before selecting activities.")
+        return redirect("submit_registration", event_id=event.id)
+
+    activities = Activity.objects.filter(event=event)
+    if request.method == "POST":
+        selected_ids = request.POST.getlist("activities")
+        selected_activities = activities.filter(id__in=selected_ids)
+        
+        # Register for selected activities
+        import uuid
+        for activity in selected_activities:
+            ActivityRegistration.objects.get_or_create(
+                participant=request.user, 
+                activity=activity,
+                defaults={'qr_token': uuid.uuid4()}
+            )
+            
+        messages.success(request, f"Successfully registered for {len(selected_activities)} activities.")
+        return redirect("events:activity_selection", event_id=event.id)
+
+    # For GET, show form
+    registered_ids = set(ActivityRegistration.objects.filter(participant=request.user, activity__event=event).values_list("activity_id", flat=True))
+    return render(request, "events/activity_selection.html", {
+        "event": event,
+        "activities": activities,
+        "registered_ids": registered_ids,
+    })
+
+
+@login_required
 def export_event_excel(request, event_id):
     event = get_object_or_404(Event, id=event_id)
-    can_export = request.user.is_superuser or request.user.is_staff
-    if not can_export:
-        can_export = _is_organizer(request.user) and event.user_id == request.user.id
+    can_export = get_user_role(request.user) == 'organizer' and event.user_id == request.user.id
     # Allow activity coordinators to export if they coordinate any activity in this event
     if not can_export:
         is_activity_coordinator = ActivityCoordinator.objects.filter(
             user=request.user, activity__event=event
         ).exists()
         can_export = is_activity_coordinator
-    if not can_export:
-        return HttpResponse("You do not have permission to export this event.", status=403)
+    
+    if not can_export and not request.user.is_superuser:
+        return HttpResponseForbidden("Access Denied: You do not have permission to export this event.")
 
     activity_coordinators = ActivityCoordinator.objects.select_related("user")
     activity_coordinator_map = {}
@@ -1859,8 +2044,8 @@ def export_event_excel(request, event_id):
 def export_role_reports_excel(request):
     """Export role-scoped Excel reports (participants, activities, analytics, teams, leaderboard)."""
     role = get_user_role(request.user)
-    if role not in {"organizer", "coordinator"} and not request.user.is_superuser:
-        return HttpResponse("You are not allowed to export reports.", status=403)
+    if role not in {"organizer", "coordinator"}:
+        return HttpResponseForbidden("Access Denied: You are not allowed to export reports.")
 
     # Events the user can see
     if request.user.is_superuser:
@@ -2037,6 +2222,7 @@ def export_role_reports_excel(request):
 
 @login_required
 def manage_activities(request):
+ 
     is_head = _is_head_coordinator(request.user)
     is_event_coord = _is_event_coordinator(request.user)
     is_activity_coord = _is_activity_coordinator(request.user)
@@ -2048,17 +2234,43 @@ def manage_activities(request):
         or is_event_coord
     )
     can_view_manage_page = can_create_activity or is_activity_coord
+ 
+    """Organizer/Coordinator-only activity management."""
+    role = get_user_role(request.user)
+    if role not in {'organizer', 'coordinator'}:
+        return HttpResponseForbidden("Access Denied: You must be an organizer or coordinator.")
+ 
     selected_event_id = request.GET.get("event_id") or request.POST.get("event_id")
+
+    # Remove undefined is_head and is_event_coord, only allow superuser, staff, or organizer
     can_view_event_names = (
         request.user.is_superuser
         or request.user.is_staff
         or _is_organizer(request.user)
+ 
         or is_head
         or is_event_coord
         or is_activity_coord
+ 
+ 
     )
 
-    # Provide all events for dropdown
+    # Define can_manage: only allow if user is superuser, staff, or organizer for the selected event
+    can_manage = False
+    if selected_event_id:
+        try:
+            event = Event.objects.get(id=selected_event_id)
+            can_manage = (
+                request.user.is_superuser
+                or request.user.is_staff
+                or (hasattr(event, 'user_id') and event.user_id == request.user.id)
+            )
+        except Event.DoesNotExist:
+            can_manage = False
+    else:
+        can_manage = request.user.is_superuser or request.user.is_staff or _is_organizer(request.user)
+
+    # Provide all events for dropdown (enforce event isolation)
     if request.user.is_superuser or request.user.is_staff:
         events = Event.objects.all().order_by("-id")
     elif _is_organizer(request.user):
@@ -2070,10 +2282,13 @@ def manage_activities(request):
     else:
         events = Event.objects.none()
 
-    # Provide all activities for the selected event
+    # Provide all activities for the selected event (enforce event and organizer isolation)
     activities = []
     if selected_event_id:
-        activities = Activity.objects.filter(event_id=selected_event_id).order_by("start_time")
+        activities = Activity.objects.filter(
+            event_id=selected_event_id,
+            organizer=request.user
+        ).order_by("start_time")
 
     activity_rows = []
     activity_coordinator_map = {}
@@ -2236,7 +2451,8 @@ def manage_activities(request):
                 "users": users,
             })
 
-        event = get_object_or_404(Event, id=form_data["event_id"])
+        # Ensure user only manages their own event
+        event = get_object_or_404(Event, id=form_data["event_id"], user=request.user)
         if not _can_manage_event_activities(request.user, event):
             messages.error(request, "You do not have permission to add activities for this event.")
             return render(request, "events/manage_activities.html", {
@@ -2249,6 +2465,7 @@ def manage_activities(request):
         activity, created = Activity.objects.get_or_create(
             event=event,
             name=form_data["activity_name"],
+            organizer=request.user,
             defaults={
                 "registration_fee": form_data["registration_fee"],
                 "start_time": start_time,
@@ -2350,7 +2567,12 @@ def delete_activity(request, activity_id):
 
 @login_required
 def event_dashboard(request, event_id):
+    """Strictly restricted event dashboard."""
+    if get_user_role(request.user) not in {'organizer', 'coordinator'}:
+        return HttpResponseForbidden("Access Denied.")
+
     event = get_object_or_404(Event, id=event_id)
+ 
     
     # Use centralized permission check as requested
     can_view_dashboard = _can_view_event_dashboard(request.user, event)
@@ -2360,6 +2582,8 @@ def event_dashboard(request, event_id):
     if not (can_view_dashboard or can_view_participants):
         messages.error(request, "You do not have permission to access this event dashboard.")
         return HttpResponse("Forbidden: You do not have permission to access this dashboard.", status=403)
+ 
+ 
     can_invite_event_coordinator = (
         request.user.is_superuser
         or request.user.is_staff
@@ -2439,6 +2663,7 @@ def event_dashboard(request, event_id):
         activity, created = Activity.objects.get_or_create(
             event=event,
             name=activity_name,
+            organizer=request.user,
             defaults={
                 "registration_fee": registration_fee,
                 "start_time": start_time,
@@ -2520,12 +2745,14 @@ def event_dashboard(request, event_id):
     )
 
 
+
 @login_required
 def delete_event(request, event_id):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
-    event = get_object_or_404(Event, id=event_id)
+    # Ensure user only deletes their own event
+    event = get_object_or_404(Event, id=event_id, user=request.user)
 
     if not _can_manage_event(request.user, event):
         messages.error(request, "You do not have permission to delete this event.")
@@ -2731,7 +2958,9 @@ def qr_scanner_page(request):
 @login_required
 def activity_participants(request, activity_id):
     """Coordinator views all participants registered for their activity."""
-    activity = get_object_or_404(Activity, id=activity_id)
+
+    # Ensure user only accesses their own activity
+    activity = get_object_or_404(Activity, id=activity_id, event__user=request.user)
     if not _can_manage_activity(request.user, activity):
         return HttpResponse("Forbidden", status=403)
 
@@ -3000,94 +3229,75 @@ def generate_activity_gate_pass(request, registration_id):
     return response
 
 
+@login_required
+@require_GET
+def generate_gate_pass(request, registration_id):
+    """Event gate pass for a registered participant."""
+    registration = get_object_or_404(EventRegistration, id=registration_id, participant=request.user)
+    event = registration.event
+
+    qr_data = f"EVENT-REG-{registration.id}|PART-{request.user.id}|EVENT-{event.id}"
+    qr_img = qrcode.make(qr_data)
+    qr_buffer = io.BytesIO()
+    qr_img.save(qr_buffer, format="PNG")
+    qr_buffer.seek(0)
+
+    pdf_buffer = io.BytesIO()
+    c = canvas.Canvas(pdf_buffer, pagesize=A4)
+    width, height = A4
+
+    c.setFont("Helvetica-Bold", 20)
+    c.drawString(30 * mm, height - 40 * mm, "Event Gate Pass")
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(30 * mm, height - 55 * mm, f"Event: {event.event}")
+    c.setFont("Helvetica", 12)
+    c.drawString(30 * mm, height - 68 * mm, f"Participant: {request.user.get_full_name() or request.user.username}")
+    c.drawString(30 * mm, height - 80 * mm, f"Date: {event.date_of_event or 'TBA'}")
+    c.drawString(30 * mm, height - 92 * mm, f"Venue: {event.venue or 'TBA'}")
+
+    c.drawInlineImage(qr_buffer, 30 * mm, height - 165 * mm, 55 * mm, 55 * mm)
+    c.showPage()
+    c.save()
+    pdf_buffer.seek(0)
+
+    response = HttpResponse(pdf_buffer, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="gate_pass_{registration.id}.pdf"'
+    return response
+
+
 
 # Organizer Dashboard (superuser only)
 @login_required
 def organizer_dashboard(request):
-    """Organizer dashboard - shows their created events."""
-    user_role = get_user_role(request.user)
-    if user_role != 'organizer' and not request.user.is_superuser:
-        messages.error(request, "Only organizers can access this dashboard.")
-        return redirect('events:user')
-    
-    is_head = _is_head_coordinator(request.user)
-    is_event_coord = _is_event_coordinator(request.user)
-    is_activity_coord = _is_activity_coordinator(request.user)
-    can_view_participant_map = _is_organizer(request.user) or is_head or is_event_coord
-    can_register = _is_participant(request.user)
-    can_view_event_dashboard = request.user.is_superuser or _is_organizer(request.user)
-    can_check_payments = (
-        _is_coordinator(request.user)
-        or can_view_participant_map
-        or request.user.is_staff
-        or request.user.is_superuser
-    )
+    role = get_user_role(request.user)
+    if not request.user.is_authenticated or role != 'organizer':
+        return get_user_dashboard_redirect(request.user)
 
-    # Show only events created by this organizer
-    if request.user.is_superuser:
-        events = Event.objects.select_related("user").all().order_by("-id")
-    else:
-        events = Event.objects.filter(user=request.user).select_related("user").order_by("-id")
-    
-    event_activity_rows = []
-    if can_view_event_dashboard:
-        # Optimization: use prefetch_related for activities and count registrations
-        if request.user.is_superuser:
-            qs = Event.objects.prefetch_related("activities", "event_registrations").order_by("-id")
-        else:
-            qs = Event.objects.filter(user=request.user).prefetch_related("activities", "event_registrations").order_by("-id")
-        
-        for event in qs:
-            activity_names = ", ".join(activity.name for activity in event.activities.all())
-            participant_count = event.event_registrations.count()
-            event_activity_rows.append({
-                "event": event,
-                "activity_names": activity_names or "-",
-                "participant_count": participant_count,
-            })
+    # Only organizer's data
+    events = Event.objects.filter(user=request.user)
+    activities = Activity.objects.filter(organizer=request.user)
+    registrations = ActivityRegistration.objects.filter(activity__event__user=request.user)
 
-    # Organizer analytics
-    total_events = events.count() if hasattr(events, 'count') else len(events)
-    total_registrations = EventRegistration.objects.filter(event__user=request.user).count()
-    # Registrations per activity
-    regs_per_activity = {
-        r['activity_id']: r['count']
-        for r in ActivityRegistration.objects.filter(activity__event__user=request.user).values('activity_id').annotate(count=models.Count('id'))
+    context = {
+        'events': events,
+        'activities': activities,
+        'registrations': registrations,
+        'total_events': events.count(),
+        'total_activities': activities.count(),
+        'total_registrations': registrations.count(),
+        'today': timezone.now().date(),
     }
-    # Visitor count: active anonymous sessions (no _auth_user_id in session data)
-    try:
-        active_sessions = Session.objects.filter(expire_date__gt=timezone.now())
-        visitor_count = sum(1 for s in active_sessions if not s.get_decoded().get('_auth_user_id'))
-    except Exception:
-        visitor_count = 0
 
-    return render(
-        request,
-        "organizer_dashboard.html",
-        {
-            "event_activity_rows": event_activity_rows,
-            "events": events,
-            "can_register": can_register,
-            "can_view_participant_map": can_view_participant_map,
-            "can_check_payments": can_check_payments,
-            "analytics": {
-                "total_events": total_events,
-                "total_registrations": total_registrations,
-                    "regs_per_activity": regs_per_activity,
-                    "visitor_count": visitor_count,
-            },
-        },
-    )
+    return render(request, 'dashboard.html', context)
+
 
 
 # Coordinator Dashboard (organizer or coordinator)
 @login_required
 def coordinator_dashboard(request):
-    """Coordinator dashboard - shows assigned events and activities."""
-    user_role = get_user_role(request.user)
-    if user_role != 'coordinator' and not request.user.is_superuser:
-        messages.error(request, "Only coordinators can access this dashboard.")
-        return redirect('events:user')
+    """Coordinator dashboard - strictly restricted to coordinators."""
+    if get_user_role(request.user) != 'coordinator':
+        return get_user_dashboard_redirect(request.user)
     
     is_head = _is_head_coordinator(request.user)
     is_event_coord = _is_event_coordinator(request.user)
@@ -3148,14 +3358,9 @@ def coordinator_dashboard(request):
 # Shared Dashboard (participants, organizers, and coordinators)
 @login_required
 def participant_dashboard(request):
-    """Shared dashboard - shows the role-appropriate dashboard experience."""
-    user_role = get_user_role(request.user)
-    if (
-        user_role not in {"participant", "organizer", "coordinator"}
-        and not request.user.is_superuser
-    ):
-        messages.error(request, "Only participants, organizers, and coordinators can access this dashboard.")
-        return redirect('accounts:role_selection')
+    """Participant dashboard - strictly restricted to participants."""
+    if get_user_role(request.user) != 'participant':
+        return get_user_dashboard_redirect(request.user)
     is_head = _is_head_coordinator(request.user)
     is_event_coord = _is_event_coordinator(request.user)
     can_view_participant_map = _is_organizer(request.user) or is_head or is_event_coord
@@ -3171,24 +3376,58 @@ def participant_dashboard(request):
     joined_registrations = EventRegistration.objects.filter(participant=request.user).select_related("event", "event__user")
     joined_event_ids = joined_registrations.values_list("event_id", flat=True)
     
+    # Role-based query refinement
+    is_org = _is_organizer(request.user)
     joined_events = [reg.event for reg in joined_registrations]
-    recommended_events = Event.objects.exclude(id__in=joined_event_ids).select_related("user").order_by("-id")[:6]
-    featured_event = recommended_events[0] if recommended_events else (joined_events[0] if joined_events else None)
-
+    
     # Activity Registrations Overhaul
     activity_registrations = ActivityRegistration.objects.filter(
         participant=request.user
     ).select_related("activity", "activity__event").order_by("-registered_at")
+    
+    has_joined_events = joined_registrations.exists()
+    has_joined_activities = activity_registrations.exists()
 
-    available_activities = Activity.objects.select_related("event", "event__user").order_by("-created_at")[:8]
-    upcoming_activities = Activity.objects.select_related("event", "event__user").filter(
-        event__date_of_event__gte=timezone.now().date()
-    ).order_by("event__date_of_event", "start_time")[:4]
+    if is_org:
+        # Organizers: ONLY see their own activities/events (Strict Isolation)
+        events = Event.objects.filter(user=request.user).order_by("-id")
+        available_activities = Activity.objects.filter(organizer=request.user).select_related("event", "event__user").order_by("-created_at")[:8]
+        upcoming_activities = Activity.objects.filter(organizer=request.user).select_related("event", "event__user").filter(
+            event__date_of_event__gte=timezone.now().date()
+        ).order_by("event__date_of_event", "start_time")[:4]
+        recommended_events = Event.objects.none()
+        featured_event = events.first() if hasattr(events, 'first') else (events[0] if events else None)
+    else:
+        # Participants & Coordinators:
+        if not has_joined_events:
+            # Global discovery for new participants (Maintain Good UX)
+            available_activities = Activity.objects.select_related("event", "event__user").order_by("-created_at")[:8]
+            upcoming_activities = Activity.objects.select_related("event", "event__user").filter(
+                event__date_of_event__gte=timezone.now().date()
+            ).order_by("event__date_of_event", "start_time")[:4]
+            recommended_events = Event.objects.select_related("user").order_by("-id")[:6]
+        else:
+            # Personal focus for returning participants
+            # Show activities from organizers of events they have already joined
+            joined_organizers = joined_registrations.values_list("event__user", flat=True)
+            available_activities = Activity.objects.filter(organizer__in=joined_organizers).select_related("event", "event__user").order_by("-created_at")[:8]
+            upcoming_activities = Activity.objects.filter(organizer__in=joined_organizers).select_related("event", "event__user").filter(
+                event__date_of_event__gte=timezone.now().date()
+            ).order_by("event__date_of_event", "start_time")[:4]
+            recommended_events = Event.objects.exclude(id__in=joined_event_ids).filter(user__in=joined_organizers).select_related("user").order_by("-id")[:6]
+
+        featured_event = recommended_events[0] if recommended_events else (joined_events[0] if joined_events else None)
 
     leaderboard_preview = (
         LeaderboardEntry.objects.select_related("activity", "participant", "activity__event")
-        .order_by("-score", "-updated_at")[:5]
     )
+    if is_org:
+        leaderboard_preview = leaderboard_preview.filter(activity__organizer=request.user)
+    elif has_joined_events:
+        joined_organizers = joined_registrations.values_list("event__user", flat=True)
+        leaderboard_preview = leaderboard_preview.filter(activity__organizer__in=joined_organizers)
+    
+    leaderboard_preview = leaderboard_preview.order_by("-score", "-updated_at")[:5]
 
     # We need attendance and certificate for these activities
     activity_ids = [reg.activity_id for reg in activity_registrations]
@@ -3382,6 +3621,38 @@ def activity_register(request, activity_id):
     return render(request, 'website/activity_register.html', context)
 
 
+@login_required
+def activity_registration_form(request, activity_id):
+    """Detailed custom registration form for an activity."""
+    activity = get_object_or_404(Activity, id=activity_id)
+    fields = activity.registration_fields.all()
+    
+    existing_responses = ActivityRegistrationFormResponse.objects.filter(
+        activity=activity, participant=request.user
+    )
+    if request.method == "POST":
+        # Handle custom form submission
+        for field in fields:
+            value = request.POST.get(f"field_{field.id}")
+            file = request.FILES.get(f"field_{field.id}")
+            
+            response, _ = ActivityRegistrationFormResponse.objects.update_or_create(
+                activity=activity,
+                participant=request.user,
+                field=field,
+                defaults={"value": value, "file": file}
+            )
+        messages.success(request, "Registration details saved.")
+        return redirect("events:activity_register", activity_id=activity.id)
+
+    context = {
+        "activity": activity,
+        "fields": fields,
+        "responses": {r.field_id: r for r in existing_responses},
+    }
+    return render(request, "events/activity_registration_form.html", context)
+
+
 # ================================
 # SIMPLE MULTI-STEP EVENT CREATION
 # ================================
@@ -3389,89 +3660,255 @@ def activity_register(request, activity_id):
 @login_required
 def create_event_step1(request):
     if request.method == "POST":
-        event = Event.objects.create(
-            event=request.POST.get("event_name"),
-            description=request.POST.get("description"),
-            date_of_event=request.POST.get("date_of_event"),
-            time_of_event=request.POST.get("time_of_event"),
-            venue=request.POST.get("venue"),
-            location=request.POST.get("location"),
-            category=request.POST.get("category"),
-            contact_info=request.POST.get("contact_info"),
-            image_url=request.POST.get("image_url"),
-            user=request.user,
-        )
+        form = EventCreationForm(request.POST)
+        form.user = request.user  # Required for clean_name uniqueness check
 
-        request.session["event_id"] = event.id
-        return redirect("events:create_event_step2")
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.user = request.user
+            event.is_draft = True
+            event.form_schema = '[]'
+            event.website = ''
+            event.banner_text = ''
+            event.save()
 
-    return render(request, "events/create_event.html")
+            request.session["event_id"] = event.id
+            return redirect("events:create_event_step2")
+        else:
+            # Debug: print form errors to console/log
+            import logging
+            logging.error(f"EventCreationForm errors: {form.errors.as_json()}")
+            print("EventCreationForm errors:", form.errors)
+    else:
+        form = EventCreationForm()
+
+    context = {
+        "form": form,
+        "categories": Event.CATEGORY_CHOICES,
+    }
+    return render(request, "events/create_event.html", context)
+
+
+@require_organizer
+def create_activity(request, event_id):
+    """Securely create an activity and assign the logged-in user as organizer."""
+    event = get_object_or_404(Event, id=event_id, user=request.user)
+    from .forms_activity import ActivityForm
+
+    if request.method == "POST":
+        form = ActivityForm(request.POST, event=event, organizer=request.user)
+        if form.is_valid():
+            activity = form.save(commit=False)
+            activity.event = event
+            activity.organizer = request.user
+            activity.save()
+            messages.success(request, f"Activity '{activity.name}' created successfully.")
+            return redirect("events:manage_activities")
+        else:
+            import logging
+            logging.error(f"ActivityForm errors: {form.errors.as_json()}")
+            print("ActivityForm errors:", form.errors)
+    else:
+        form = ActivityForm(event=event, organizer=request.user)
+
+    return render(request, "events/add_activity.html", {"form": form, "event": event})
+
+
+@require_organizer
+def edit_activity(request, activity_id):
+    """Securely edit an activity - restricted to the owner only."""
+    activity = get_object_or_404(Activity, id=activity_id, organizer=request.user)
+    
+    if request.method == "POST":
+        activity.name = request.POST.get("name")
+        activity.description = request.POST.get("description")
+        activity.date = request.POST.get("date")
+        activity.start_time = request.POST.get("start_time")
+        activity.end_time = request.POST.get("end_time")
+        activity.registration_fee = request.POST.get("registration_fee")
+        activity.save()
+        
+        messages.success(request, f"Activity '{activity.name}' updated successfully.")
+        return redirect("events:manage_activities")
+    
+    return render(request, "events/edit_activity.html", {"activity": activity})
+
+
+@require_organizer
+def delete_activity(request, activity_id):
+    """Securely delete an activity - restricted to the owner only."""
+    activity = get_object_or_404(Activity, id=activity_id, organizer=request.user)
+    
+    if request.method == "POST":
+        name = activity.name
+        activity.delete()
+        messages.success(request, f"Activity '{name}' deleted successfully.")
+        return redirect("events:manage_activities")
+    
+    return render(request, "events/delete_activity_confirm.html", {"activity": activity})
 
 
 @login_required
+def event_activities_pdf(request, event_id):
+    """Generate PDF of activities for an event - secured at query level."""
+    # Ensure user can only download PDFs for their own events OR if they are a participant
+    # For now, let's keep it restricted to organizers/assigned coordinators for full security
+    event = get_object_or_404(Event, id=event_id)
+    if not (request.user.is_superuser or event.user_id == request.user.id):
+         # If not organizer, check if coordinator
+         from .models import EventCoordinator
+         if not EventCoordinator.objects.filter(event=event, user=request.user).exists():
+             return HttpResponse("Unauthorized", status=403)
+
+    activities = Activity.objects.filter(event=event).order_by("start_time")
+    
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+    
+    # Header
+    pdf.setFont("Helvetica-Bold", 20)
+    pdf.drawString(50, height - 80, event.event)
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawString(50, height - 110, f"Date: {event.date_of_event}")
+    pdf.drawString(50, height - 130, f"Venue: {event.venue}")
+    pdf.drawString(50, height - 150, f"Total Activities: {activities.count()}")
+    
+    y = height - 180
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawString(50, y, "Activities")
+    y -= 30
+    
+    # Activities
+    pdf.setFont("Helvetica-Bold", 12)
+    for i, activity in enumerate(activities, 1):
+        pdf.drawString(50, y, f"{i}. {activity.name}")
+        y -= 20
+        pdf.setFont("Helvetica", 11)
+        pdf.drawString(70, y, f"Time: {activity.start_time} - {activity.end_time or ''}")
+        y -= 15
+        pdf.drawString(70, y, f"Fee: {activity.registration_fee}")
+        y -= 15
+        pdf.drawString(70, y, "Coordinators: N/A")
+        y -= 20
+        if y < 100:
+            pdf.showPage()
+            y = height - 60
+    
+    pdf.save()
+    buffer.seek(0)
+    
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="event_{event.id}_activities.pdf"'
+    return response
+
+
+@login_required
+
 def create_event_step2(request):
     event_id = request.session.get("event_id")
-    event = get_object_or_404(Event, id=event_id)
+    # Ensure user only accesses their own event
+    event = get_object_or_404(Event, id=event_id, user=request.user)
+
+    from .forms_activity import ActivityForm
 
     if request.method == "POST":
-        Activity.objects.create(
-            event=event,
-            name=request.POST.get("name"),
-            description=request.POST.get("description"),
-            date=request.POST.get("date"),
-            start_time=request.POST.get("start_time"),
-            end_time=request.POST.get("end_time"),
-        )
-
-        if request.POST.get("action") == "next":
+        form = ActivityForm(request.POST, event=event, organizer=request.user)
+        if form.is_valid():
+            activity = form.save(commit=False)
+            activity.event = event
+            activity.organizer = request.user
+            activity.save()
+            # Store activity_id in session for use in step 3
+            request.session["activity_id"] = activity.id
+            # Always go to add forms after adding an activity
             return redirect("events:create_event_step3")
+        else:
+            import logging
+            logging.error(f"ActivityForm errors: {form.errors.as_json()}")
+            print("ActivityForm errors:", form.errors)
+    else:
+        form = ActivityForm(event=event, organizer=request.user)
 
-    return render(request, "events/add_activity.html")
+    return render(request, "events/add_activity.html", {"form": form, "event": event})
+
 
 
 @login_required
+
 def create_event_step3(request):
     event_id = request.session.get("event_id")
-
+    event = get_object_or_404(Event, id=event_id, user=request.user)
+    activity_id = request.session.get("activity_id")
+    activity = get_object_or_404(Activity, id=activity_id, event=event)
+    from .forms_event_creation import RegistrationFieldForm
+    form = RegistrationFieldForm(request.POST or None)
     if request.method == "POST":
-        ActivityRegistrationFormField.objects.create(
-            activity_id=event_id,
-            label=request.POST.get("field_name"),
-            field_type=request.POST.get("field_type"),
-        )
+        if form.is_valid():
+            # Save the form field for the correct activity
+            ActivityRegistrationFormField.objects.create(
+                activity=activity,
+                label=form.cleaned_data.get("label"),
+                field_type=form.cleaned_data.get("field_type"),
+                required=form.cleaned_data.get("required", True),
+                choices=form.cleaned_data.get("dropdown_options", ""),
+            )
+            if request.POST.get("action") == "next":
+                return redirect("events:create_event_step4")
+            # else stay on the page to add another
+            form = RegistrationFieldForm()  # reset form
+    return render(request, "events/add_forms.html", {"event": event, "form": form, "activity": activity})
 
-        if request.POST.get("action") == "next":
-            return redirect("events:create_event_step4")
-
-    return render(request, "events/add_forms.html")
 
 
 @login_required
 def create_event_step4(request):
     event_id = request.session.get("event_id")
-
+    event = get_object_or_404(Event, id=event_id, user=request.user)
+    from .forms_event_creation import CoordinatorForm
+    form = CoordinatorForm(request.POST or None)
     if request.method == "POST":
-        Coordinator.objects.create(
-            event_id=event_id,
-            name=request.POST.get("name"),
-            email=request.POST.get("email"),
-        )
-
-        if request.POST.get("action") == "next":
-            return redirect("events:create_event_step5")
-
-    return render(request, "events/add_coordinator.html")
+        if form.is_valid():
+            # Save the coordinator (customize as needed)
+            # Example: EventCoordinator.objects.create(event=event, name=form.cleaned_data["name"], email=form.cleaned_data["email"])
+            if request.POST.get("action") == "next":
+                return redirect("events:create_event_step5")
+            # else stay on the page to add another
+            form = CoordinatorForm()  # reset form
+    return render(request, "events/add_coordinator.html", {"event": event, "form": form})
 
 
 @login_required
 def create_event_step5(request):
     event_id = request.session.get("event_id")
-    event = get_object_or_404(Event, id=event_id)
+    # Ensure user only accesses their own event
+    event = get_object_or_404(Event, id=event_id, user=request.user)
 
     if request.method == "POST":
-        event.template_choice = request.POST.get("template")
-        event.save()
+        form = WebsiteSetupForm(request.POST)
+        if form.is_valid():
+            event.template_choice = form.cleaned_data['template']
+            event.banner_text = form.cleaned_data['banner_text']
+            event.is_draft = False
+            event.save()
+            event_id = event.id
+            # Clear session
+            if "event_id" in request.session:
+                del request.session["event_id"]
+            messages.success(request, f"Event '{event.name}' has been created and published successfully!")
+            # Redirect to the event website after creation
+            return redirect("events:event_website_home", event_id=event_id)
+    else:
+        # Pre-populate with current event data
+        form = WebsiteSetupForm(initial={
+            'template': event.template_choice,
+            'banner_text': event.banner_text or event.name
+        })
 
-        return redirect("events:manage_events")
+    return render(request, "events/website_setup.html", {"form": form, "event": event})
 
-    return render(request, "events/website_setup.html")
+
+@login_required
+def event_creation_complete(request, event_id):
+    return render(request, "events/event_creation_complete.html", {"event_id": event_id})
+

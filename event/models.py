@@ -24,7 +24,7 @@ class Event(models.Model):
     ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    name = models.CharField(max_length=200, unique=True)
+    name = models.CharField(max_length=200)
     slug = models.SlugField(max_length=220, unique=True, blank=True)
     # Event status: upcoming / ongoing / completed
     STATUS_UPCOMING = 'upcoming'
@@ -36,8 +36,8 @@ class Event(models.Model):
         (STATUS_COMPLETED, 'Completed'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_UPCOMING)
-    event = models.CharField(max_length=200)
-    activity = models.CharField(max_length=200)
+    event = models.CharField(max_length=200, blank=True)
+    activity = models.CharField(max_length=200, blank=True)
     description = models.TextField(blank=True)
     tagline = models.CharField(max_length=200, blank=True)
     schedule = models.TextField(blank=True)
@@ -48,9 +48,9 @@ class Event(models.Model):
     venue = models.CharField(max_length=200, blank=True)
     location = models.CharField(max_length=255, blank=True, help_text="Map URL or coordinates")
     category = models.CharField(max_length=40, choices=CATEGORY_CHOICES, blank=True)
-    registration = models.CharField(max_length=200)
+    registration = models.CharField(max_length=200, blank=True)
     last_registration_date = models.DateField(null=True, blank=True)
-    announcement = models.CharField(max_length=200)
+    announcement = models.CharField(max_length=200, blank=True)
     contact_info = models.CharField(max_length=200, blank=True)
     registration_form_fields = models.TextField(blank=True)
     past_event_history = models.TextField(blank=True)
@@ -64,14 +64,19 @@ class Event(models.Model):
         default="classic",
     )
     image_url = models.CharField(max_length=500, blank=True, help_text="Event image URL")
-    website = models.URLField(blank=True, help_text="Event website URL")
+    qr_code_image = models.ImageField(upload_to='events/qr_codes/', blank=True, null=True, help_text="Upload a QR code image for the event.")
+    form_schema = models.TextField(blank=True, default="[]")
     is_draft = models.BooleanField(default=True)
-    form_schema = models.JSONField(default=dict, blank=True)
+    website = models.CharField(max_length=200, blank=True)
+    banner_text = models.CharField(max_length=200, blank=True)
 
     class Meta:
         ordering = ["-date_of_event"]
         constraints = [
-            models.UniqueConstraint(Lower("name"), name="unique_event_name_ci"),
+            models.UniqueConstraint(
+                Lower("name"), "user",
+                name="unique_event_name_per_user_ci"
+            ),
         ]
 
     def __str__(self):
@@ -126,9 +131,17 @@ class Activity(models.Model):
     max_participants = models.PositiveIntegerField(null=True, blank=True)
     date = models.DateField(null=True, blank=True)
     start_time = models.TimeField(null=True, blank=True)
+    qr_code_image = models.ImageField(upload_to='activities/qr_codes/', blank=True, null=True, help_text="Upload a QR code image for the activity.")
     end_time = models.TimeField(null=True, blank=True)
     is_team_event = models.BooleanField(default=False)
     team_size = models.PositiveIntegerField(null=True, blank=True)
+    organizer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="managed_activities",
+        null=True,
+        blank=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
