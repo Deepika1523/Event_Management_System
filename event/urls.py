@@ -6,6 +6,7 @@ from participant import views as participant_views
 from . import views, pure_views
 
 urlpatterns = [
+        path("activities/add-global/", views.add_activity_global, name="add_activity_global"),
     path("create/step1/", views.create_event_step1, name="create_event_step1"),
     path("create/step2/", views.create_event_step2, name="create_event_step2"),
     path("create/step3/", views.create_event_step3, name="create_event_step3"),

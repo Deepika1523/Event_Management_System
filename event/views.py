@@ -1,7 +1,67 @@
  
+
+# --- Add Activity Global View and dependencies ---
 from .forms_event_creation import ActivityForm, RegistrationFieldForm, CoordinatorForm, WebsiteSetupForm, ActivityEditForm
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Event, Activity, Profile, EventCoordinator
+from django.contrib.auth.models import User
+from django.contrib import messages
+
+# Global Add Activity view for dashboard modal
+@login_required
+def add_activity_global(request):
+    if request.method == "POST":
+        event_id = request.POST.get("event_id")
+        activity_name = request.POST.get("activity_name")
+        activity_description = request.POST.get("activity_description")
+        coordinators_raw = request.POST.get("coordinators", "")
+
+        # Validate event
+        try:
+            event = Event.objects.get(id=event_id)
+        except Event.DoesNotExist:
+            messages.error(request, "Selected event does not exist.")
+            return redirect("dashboard")
+
+        # Create activity (set organizer field)
+        activity = Activity.objects.create(
+            event=event,
+            name=activity_name,
+            description=activity_description or "",
+            organizer=request.user
+        )
+
+        # Assign coordinators
+        coordinator_usernames = [c.strip() for c in coordinators_raw.split(",") if c.strip()]
+        assigned = []
+        not_found = []
+        for username in coordinator_usernames:
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                try:
+                    user = User.objects.get(email=username)
+                except User.DoesNotExist:
+                    not_found.append(username)
+                    continue
+            # Get or create Profile
+            profile, _ = Profile.objects.get_or_create(user=user)
+            # Assign as coordinator
+            EventCoordinator.objects.get_or_create(event=event, user=user)
+            activity.coordinators.add(profile)
+            assigned.append(user.username)
+
+        if assigned:
+            messages.success(request, f"Activity '{activity_name}' created and coordinators assigned: {', '.join(assigned)}.")
+        else:
+            messages.success(request, f"Activity '{activity_name}' created.")
+        if not_found:
+            messages.warning(request, f"Some coordinators not found: {', '.join(not_found)}.")
+        return redirect("dashboard")
+    else:
+        messages.error(request, "Invalid request method.")
+        return redirect("dashboard")
 
 # Step 2: Activities
 @login_required

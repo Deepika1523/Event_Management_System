@@ -486,6 +486,40 @@
         <section class="dashboard-section" id="activities">
             <div class="section-header">
                 <h2><i data-lucide="activity"></i> Activities</h2>
+                <button class="btn btn-primary btn-sm" onclick="document.getElementById('addActivityModal').style.display='block'">Add Activity</button>
+            </div>
+
+            <!-- Add Activity Modal -->
+            <div id="addActivityModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(30,41,59,0.7); z-index:9999; align-items:center; justify-content:center;">
+                <div style="background:white; border-radius:12px; max-width:420px; margin:5vh auto; padding:2rem; position:relative; box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+                    <button onclick="document.getElementById('addActivityModal').style.display='none'" style="position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.5rem; color:#64748b; cursor:pointer;">&times;</button>
+                    <h3 style="margin-bottom:1rem;">Add Activity</h3>
+                    <form method="post" action="{% url 'events:add_activity_global' %}">
+                        {% csrf_token %}
+                        <div style="margin-bottom:1rem;">
+                            <label for="event_id" style="font-weight:500;">Event</label>
+                            <select name="event_id" id="event_id" required style="width:100%; padding:0.5rem; border-radius:6px; border:1px solid #e2e8f0;">
+                                <option value="" disabled selected>Select event</option>
+                                {% for event in events %}
+                                    <option value="{{ event.id }}">{{ event.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <label for="activity_name" style="font-weight:500;">Activity Name</label>
+                            <input type="text" name="activity_name" id="activity_name" required style="width:100%; padding:0.5rem; border-radius:6px; border:1px solid #e2e8f0;">
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <label for="activity_description" style="font-weight:500;">Description</label>
+                            <textarea name="activity_description" id="activity_description" rows="2" style="width:100%; padding:0.5rem; border-radius:6px; border:1px solid #e2e8f0;"></textarea>
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <label for="coordinators" style="font-weight:500;">Coordinators (comma-separated usernames or emails)</label>
+                            <input type="text" name="coordinators" id="coordinators" placeholder="e.g. alice,bob,charlie" style="width:100%; padding:0.5rem; border-radius:6px; border:1px solid #e2e8f0;">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">Create Activity</button>
+                    </form>
+                </div>
             </div>
             <div class="data-card">
                 <div class="table-responsive">
